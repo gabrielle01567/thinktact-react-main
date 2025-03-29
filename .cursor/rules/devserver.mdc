@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Manually kill old dev servers before starting a new one
+
+
+
+- You can @ files here
+- You can use markdown but dont have to
