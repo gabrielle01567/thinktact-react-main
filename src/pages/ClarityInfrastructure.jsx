@@ -2,11 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ClarityInfrastructure = () => {
-  const handlePdfClick = (e) => {
-    e.preventDefault();
-    alert('The PDF version of the manifesto will be available soon. Please check back later or view the content on this page.');
-  };
-
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-3xl px-6 py-24 sm:py-32 lg:px-8">
@@ -23,7 +18,7 @@ const ClarityInfrastructure = () => {
             <div className="flex gap-4">
               <a 
                 href="/research/clarity-infrastructure.pdf" 
-                onClick={handlePdfClick}
+                download="clarity-infrastructure.pdf"
                 className="rounded-md bg-pink-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-900"
               >
                 Download PDF
