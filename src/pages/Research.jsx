@@ -15,7 +15,7 @@ const Research = () => {
         <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:mx-0 lg:mt-10 lg:max-w-none lg:grid-cols-2">
           <article className="flex max-w-xl flex-col items-start justify-between">
             <div className="flex items-center gap-x-4 text-xs">
-              <time dateTime="2024-04" className="text-gray-500">April 2024</time>
+              <time dateTime="2025-04-02" className="text-gray-500">April 2, 2025</time>
               <span className="relative z-10 rounded-full bg-pink-50 px-3 py-1.5 font-medium text-pink-900">Manifesto</span>
             </div>
             <div className="group relative">

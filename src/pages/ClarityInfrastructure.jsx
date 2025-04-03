@@ -17,7 +17,7 @@ const ClarityInfrastructure = () => {
               <div className="mt-4 flex items-center gap-x-4 text-sm">
                 <p className="text-gray-500">By Gabrielle Shand</p>
                 <p className="text-gray-500">ThinkTact AI / Independent Researcher</p>
-                <p className="text-gray-500">April 2024</p>
+                <p className="text-gray-500">April 2, 2025</p>
               </div>
             </div>
             <div className="flex gap-4">
