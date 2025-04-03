@@ -1,0 +1,158 @@
+import puppeteer from 'puppeteer';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { writeFileSync } from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const manifestoContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    .metadata {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    .metadata p {
+      margin: 5px 0;
+    }
+    p {
+      margin-bottom: 20px;
+    }
+    ul {
+      margin-bottom: 20px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    .conclusion {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clarity as Infrastructure: The ThinkTact Manifesto for a Logical Web</h1>
+  
+  <div class="metadata">
+    <p>By Gabrielle Shand</p>
+    <p>ThinkTact AI / Independent Researcher</p>
+    <p>April 2024</p>
+  </div>
+
+  <p>The internet gave us infinite expression. It never gave us the tools to audit, validate, or structurally interrogate what's being expressed. In the era of persuasion overload—where virality outruns coherence and arguments mutate faster than they can be examined—we live amid an epistemic breakdown. We scroll through streams of signals without structure. We speak fluently, but reason sparsely. We mimic cognition without confronting contradiction.</p>
+
+  <p>ThinkTact is born from that gap. It is not a startup. It is not an app. It is not designed to maximize retention, engagement, or dopamine. It is designed to slow things down—just enough to ask: "What is this argument built on?" It begins with language but ends with governance. It begins with text but points toward coordination. It is infrastructure for the reasoning layer—a protocol for logic, not merely language.</p>
+
+  <p>Today's AI systems are astonishing in scope and fluency. They simulate expertise, produce poetry, and echo intuition. But they do not interrogate structure. They do not extract premises or score clarity. They do not warn you when your argument smuggles in a false dichotomy or fails to state its burden of proof. They reflect back what we've said before. They do not ask if what we're saying is sound now.</p>
+
+  <p>This is not a trivial gap. As LLMs permeate governance, law, public discourse, and legal automation, the danger is not just misinformation—it is misinference. We are entering a world where logic has no oracle. That must change.</p>
+
+  <p>ThinkTact begins with argument parsing: extracting conclusions, mapping their necessary assumptions, classifying reasoning types (prediction, evaluation, prescription), detecting fallacies and strategic distortions. But that is only the shallow layer. Beneath it sits a core logic engine that observes structure, flags manipulation, and renders arguments machine-readable—not for summarization, but for examination.</p>
+
+  <p>We are building a stack. On top of the parsing layer lies a strategic engine: a module that labels psychological tactics, scores clarity, evaluates risk of misinterpretation. From there, the system can plug into public governance workflows, DAO proposal validations, smart contract clarity audits, and regulatory pre-checks. In that sense, ThinkTact is not a tool for productivity. It is a validator for coherence.</p>
+
+  <p>Imagine the proposal layer of a DAO. A delegate submits a governance motion about treasury allocation. ThinkTact parses the motion, surfaces its implicit predictions, tests whether the underlying premises are actually present, scores the structure for clarity and fallacy, then renders the motion in a logic diagram. Delegates now vote not just on outcome, but on reasoning. The DAO shifts from soft deliberation to auditable rationale.</p>
+
+  <p>Now apply the same idea to public-facing contracts. To legal memos. To on-chain arbitration. To the appeals layer of automated court systems. What emerges is not a simple overlay, but a substrate. We are not trying to make every person a logician. We are trying to give every argument a skeleton—and a shadow.</p>
+
+  <p>ThinkTact is not anti-AI. It is anti-hallucination. It is not trying to outthink humans. It is trying to make human reasoning less vulnerable to deception, distortion, and drift. It is logic for the age of synthetic speech.</p>
+
+  <p>We recognize our limits. Arguments are not binaries. Structure does not guarantee truth. And logic, like language, is subject to the slipperiness of context. Not every flaw can be seen. Not every assumption can be formalized. But none of that means we should accept a world where logic has no infrastructure. If we can embed packets with data integrity checks, we should be able to embed proposals with reasoning checks. If we can scan for malware in code, we should be able to scan for manipulative constructs in text.</p>
+
+  <p>The difference between noise and structure is not volume—it is architecture. ThinkTact is an attempt to inject that architecture beneath speech. Not just as a UX improvement, but as a civilizational layer.</p>
+
+  <p>We do not believe logic will fix everything. But we believe that without logic, nothing gets fixed.</p>
+
+  <p>In the same way that TCP/IP allowed distributed machines to communicate clearly, we need a protocol that allows distributed minds to reason clearly. That protocol must be lightweight, interpretable, and explainable—not just to machines, but to citizens.</p>
+
+  <p>The goal is not to predict what someone wants to say. The goal is to show what they're really saying, and whether it holds.</p>
+
+  <p>We envision a future where proposals cannot be passed unless their underlying logic is visible. Where contracts cannot be executed unless their core assumptions are mapped. Where governance systems—on-chain or off—use clarity as a gatekeeper, not just sentiment.</p>
+
+  <p>We imagine a world where:</p>
+  <ul>
+    <li>Delegates vote on logic, not just language.</li>
+    <li>Courts score argument strength before issuing rulings.</li>
+    <li>Smart contracts come with embedded reasoning tags.</li>
+    <li>Citizens carry logic companions—not to write for them, but to watch what they read.</li>
+  </ul>
+
+  <p>In this world, ThinkTact is a reasoning validator, a proposal auditor, a clarity oracle, and a logic firewall. It is lightweight, modular, and adversarially trained—not just on what people say, but on what they hide.</p>
+
+  <p>To get there, we must break our obsession with fluency. Fluency is not understanding. Coherence is not truth. And charisma is not logic. If we build our systems atop surface language alone, we will drift. And the drift will be subtle—until it becomes irreversible.</p>
+
+  <p>The mission of ThinkTact is not to catch liars. It is to catch slippage. The slow, unnoticed decay of precision that occurs when no one is tasked with defending the structure of speech.</p>
+
+  <p>This is not a call for rationalism in the abstract. It is a call for applied logic in power-concentrated systems. Wherever decisions affect resources, rights, or risk—logic should not be optional. It should be embedded.</p>
+
+  <p>We are not asking institutions to adopt new beliefs. We are asking them to show their reasoning. And if they cannot, we ask the public to demand it.</p>
+
+  <p>This is not a movement of debaters. It is a movement of auditors. We are not here to argue better. We are here to see through the argument entirely.</p>
+
+  <p>If you are building an L2, ThinkTact can become your proposal oracle. If you are running a court DAO, ThinkTact can scan arguments before they become rulings. If you are designing legal systems, we can sit at the intake layer—before your procedures begin. If you are building AI copilots, ThinkTact becomes the logic-check behind your chat output.</p>
+
+  <p>If you are none of the above but simply exhausted by the persuasive fog that surrounds every policy, product, and platform—you are who this is for.</p>
+
+  <p>We are not promising certainty. We are promising scaffolding.</p>
+
+  <p>Every system that touches governance should ask: what is the clarity floor? What logic must be present for this decision to even be considered? What assumptions are we rewarding by omission?</p>
+
+  <p>The problem isn't bad actors. It's invisible reasoning.</p>
+
+  <p>We do not fear disagreement. We fear decisions made with no structure to disagree with.</p>
+
+  <p>The next wave of infrastructure must not only support bandwidth and consensus. It must support coherence.</p>
+
+  <p class="conclusion">The web gave us speech. It's time we gave it structure.</p>
+</body>
+</html>
+`;
+
+async function generatePDF() {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  
+  // Set content and wait for it to load
+  await page.setContent(manifestoContent);
+  
+  // Generate PDF
+  const pdfPath = join(__dirname, '../public/research/clarity-infrastructure.pdf');
+  await page.pdf({
+    path: pdfPath,
+    format: 'A4',
+    printBackground: true,
+    margin: {
+      top: '40px',
+      right: '40px',
+      bottom: '40px',
+      left: '40px'
+    }
+  });
+
+  await browser.close();
+  console.log(`PDF generated at: ${pdfPath}`);
+}
+
+generatePDF().catch(console.error); 
