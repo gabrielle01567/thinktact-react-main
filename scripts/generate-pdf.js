@@ -58,7 +58,7 @@ const manifestoContent = `
   <div class="metadata">
     <p>By Gabrielle Shand</p>
     <p>ThinkTact AI / Independent Researcher</p>
-    <p>April 2024</p>
+    <p>April 2, 2025</p>
   </div>
 
   <p>The internet gave us infinite expression. It never gave us the tools to audit, validate, or structurally interrogate what's being expressed. In the era of persuasion overload—where virality outruns coherence and arguments mutate faster than they can be examined—we live amid an epistemic breakdown. We scroll through streams of signals without structure. We speak fluently, but reason sparsely. We mimic cognition without confronting contradiction.</p>
