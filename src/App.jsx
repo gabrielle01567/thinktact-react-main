@@ -7,6 +7,8 @@ import Blog from './pages/Blog';
 import Founder from './pages/Founder';
 import Dashboard from './pages/Dashboard';
 import ErrorPage from './pages/ErrorPage';
+import Research from './pages/Research';
+import ClarityInfrastructure from './pages/ClarityInfrastructure';
 import React from 'react';
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
           <Route path="blog" element={<Blog />} />
           <Route path="founder" element={<Founder />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="research" element={<Research />} />
+          <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
       </Routes>

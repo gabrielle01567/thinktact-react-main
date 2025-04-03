@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Blog = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -111,41 +112,72 @@ const Blog = () => {
                 {selectedCategory === 'All' ? 'Latest Posts' : selectedCategory}
               </h2>
               
-              <div className="space-y-12">
-                {filteredPosts.map(post => (
-                  <article key={post.id} className="border-b border-gray-200 pb-10">
-                    <div className="mb-4 text-sm">
-                      <span className="text-pink-900 font-medium">{post.category}</span>
-                      <span className="mx-2 text-gray-500">•</span>
-                      <span className="text-gray-500">{post.date}</span>
-                      <span className="mx-2 text-gray-500">•</span>
-                      <span className="text-gray-500">{post.readTime}</span>
+              <div className="mt-16 space-y-20 lg:mt-20 lg:space-y-20">
+                <article className="relative isolate flex flex-col gap-8 lg:flex-row">
+                  <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
+                    <img
+                      src="/images/manifesto-cover.jpg"
+                      alt=""
+                      className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                    />
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-x-4 text-xs">
+                      <time dateTime="2024-04" className="text-gray-500">April 2024</time>
+                      <Link to="/research/clarity-infrastructure" className="relative z-10 rounded-full bg-pink-50 px-3 py-1.5 font-medium text-pink-900">
+                        Research
+                      </Link>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-                    <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                    <a href="#" className="inline-flex items-center text-pink-900 font-medium hover:text-pink-950">
-                      Read more
-                      <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                      </svg>
-                    </a>
-                  </article>
-                ))}
-              </div>
-              
-              {/* Pagination */}
-              <div className="mt-12 flex justify-between items-center">
-                <button className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  Previous
-                </button>
-                <div className="flex space-x-2">
-                  <button className="rounded-md bg-pink-950 px-3 py-2 text-sm font-medium text-white">1</button>
-                  <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">2</button>
-                  <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">3</button>
+                    <div className="group relative max-w-xl">
+                      <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
+                        <Link to="/research/clarity-infrastructure">
+                          <span className="absolute inset-0" />
+                          Why We're Rebuilding the Logic Layer of the Web
+                        </Link>
+                      </h3>
+                      <p className="mt-5 text-sm leading-6 text-gray-600">
+                        Introducing our manifesto on clarity as infrastructure. We're building a protocol for logic, not merely language, to address the epistemic breakdown in digital discourse.
+                      </p>
+                    </div>
+                  </div>
+                </article>
+                <div className="space-y-12">
+                  {filteredPosts.map(post => (
+                    <article key={post.id} className="border-b border-gray-200 pb-10">
+                      <div className="mb-4 text-sm">
+                        <span className="text-pink-900 font-medium">{post.category}</span>
+                        <span className="mx-2 text-gray-500">•</span>
+                        <span className="text-gray-500">{post.date}</span>
+                        <span className="mx-2 text-gray-500">•</span>
+                        <span className="text-gray-500">{post.readTime}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
+                      <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                      <a href="#" className="inline-flex items-center text-pink-900 font-medium hover:text-pink-950">
+                        Read more
+                        <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </a>
+                    </article>
+                  ))}
                 </div>
-                <button className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  Next
-                </button>
+                
+                {/* Pagination */}
+                <div className="mt-12 flex justify-between items-center">
+                  <button className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                  </button>
+                  <div className="flex space-x-2">
+                    <button className="rounded-md bg-pink-950 px-3 py-2 text-sm font-medium text-white">1</button>
+                    <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">2</button>
+                    <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">3</button>
+                  </div>
+                  <button className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
           </div>

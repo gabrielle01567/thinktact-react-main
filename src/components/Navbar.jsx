@@ -58,6 +58,9 @@ const Navbar = () => {
             <Link to="/blog" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/blog')}`}>
               Blog
             </Link>
+            <Link to="/research" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/research')}`}>
+              Research
+            </Link>
             <Link to="/founder" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/founder')}`}>
               Founder
             </Link>
@@ -93,6 +96,9 @@ const Navbar = () => {
           </Link>
           <Link to="/blog" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/blog')}`}>
             Blog
+          </Link>
+          <Link to="/research" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/research')}`}>
+            Research
           </Link>
           <Link to="/founder" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/founder')}`}>
             Founder
