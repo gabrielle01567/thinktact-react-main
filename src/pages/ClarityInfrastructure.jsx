@@ -9,6 +9,7 @@ const ClarityInfrastructure = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Clarity as Infrastructure: The ThinkTact Manifesto for a Logical Web</h1>
+              <p className="mt-2 text-lg text-gray-600">You've been manipulated more times than you've been informed. Let's fix that.</p>
               <div className="mt-4 flex items-center gap-x-4 text-sm">
                 <p className="text-gray-500">By Gabrielle Shand</p>
                 <p className="text-gray-500">ThinkTact AI / Independent Researcher</p>
@@ -18,7 +19,8 @@ const ClarityInfrastructure = () => {
             <div className="flex gap-4">
               <a 
                 href="/research/clarity-infrastructure.pdf" 
-                download="clarity-infrastructure.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded-md bg-pink-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-900"
               >
                 Download PDF

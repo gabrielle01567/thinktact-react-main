@@ -26,6 +26,12 @@ const manifestoContent = `
       margin-bottom: 20px;
       line-height: 1.2;
     }
+    h2 {
+      font-size: 20px;
+      color: #666;
+      margin-top: -15px;
+      margin-bottom: 20px;
+    }
     .metadata {
       color: #666;
       font-size: 14px;
@@ -54,6 +60,7 @@ const manifestoContent = `
 </head>
 <body>
   <h1>Clarity as Infrastructure: The ThinkTact Manifesto for a Logical Web</h1>
+  <h2 style="font-size: 20px; color: #666; margin-top: -15px; margin-bottom: 20px;">You've been manipulated more times than you've been informed. Let's fix that.</h2>
   
   <div class="metadata">
     <p>By Gabrielle Shand</p>

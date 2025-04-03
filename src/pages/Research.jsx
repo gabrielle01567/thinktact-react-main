@@ -25,6 +25,7 @@ const Research = () => {
                   Clarity as Infrastructure: The ThinkTact Manifesto for a Logical Web
                 </Link>
               </h3>
+              <p className="mt-2 text-sm text-gray-600">Because sounding smart isn't the same as being right.</p>
               <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">
                 A foundational document outlining our vision for rebuilding the logic layer of the web, addressing the epistemic breakdown in digital discourse.
               </p>
