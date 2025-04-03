@@ -2,6 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ClarityInfrastructure = () => {
+  const handlePdfClick = (e) => {
+    e.preventDefault();
+    alert('The PDF version of the manifesto will be available soon. Please check back later or view the content on this page.');
+  };
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-3xl px-6 py-24 sm:py-32 lg:px-8">
@@ -16,7 +21,11 @@ const ClarityInfrastructure = () => {
               </div>
             </div>
             <div className="flex gap-4">
-              <a href="/research/clarity-infrastructure.pdf" className="rounded-md bg-pink-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-900">
+              <a 
+                href="/research/clarity-infrastructure.pdf" 
+                onClick={handlePdfClick}
+                className="rounded-md bg-pink-950 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-900"
+              >
                 Download PDF
               </a>
               <a href="https://github.com/gabrielle01567/thinktact-manifesto" className="rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200">
