@@ -9,6 +9,8 @@ import Dashboard from './pages/Dashboard';
 import ErrorPage from './pages/ErrorPage';
 import Research from './pages/Research';
 import ClarityInfrastructure from './pages/ClarityInfrastructure';
+import PatentAudit from './pages/PatentAudit';
+import PatentAuditThanks from './pages/PatentAuditThanks';
 import React from 'react';
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="research" element={<Research />} />
           <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
+          <Route path="patent-audit" element={<PatentAudit />} />
+          <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
       </Routes>
