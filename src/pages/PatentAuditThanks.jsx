@@ -10,7 +10,7 @@ const PatentAuditThanks = () => {
             We got your draft
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Expect your red flag report in 48 hours. You're already smarter than most.
+            Expect a red flag report in 48 hours. You're already smarter than most.
           </p>
           <div className="mt-10">
             <Link

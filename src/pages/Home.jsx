@@ -25,9 +25,9 @@ const Home = () => {
               Your patent draft is probably trash. Let's catch that before the government does.
             </h2>
             <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
-              <Link to="/analyzer" 
+              <Link to="/patent-audit" 
                 className="flex items-center justify-center rounded-md bg-pink-950 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-pink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-950 transition-colors">
-                Analyze Your Argument
+                Get My Patent Audit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
@@ -213,7 +213,7 @@ const Home = () => {
           </div>
           <div className="mt-8 lg:ml-8 lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
-              <Link to="/analyzer" className="inline-flex items-center justify-center rounded-md border border-transparent bg-white px-5 py-3 text-base font-medium text-pink-950 hover:bg-gray-50">
+              <Link to="/patent-audit" className="inline-flex items-center justify-center rounded-md border border-transparent bg-white px-5 py-3 text-base font-medium text-pink-950 hover:bg-gray-50">
                 Try the Analyzer
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
