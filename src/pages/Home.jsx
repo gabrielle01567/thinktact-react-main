@@ -16,7 +16,7 @@ const Home = () => {
               ThinkTact<span className="text-pink-950">AI</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600">
-              Unlock the structure of arguments with AI-powered logical analysis. Identify fallacies, uncover assumptions, and strengthen your reasoning.
+              ThinkTact shows you exactly why your patent will get rejected—before you waste time or cash filing it.
             </p>
             <h2 className="mt-8 text-3xl font-bold text-gray-900 sm:text-4xl text-center">
               Your patent draft is probably trash. Let's catch that before the government does.
