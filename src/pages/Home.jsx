@@ -15,6 +15,9 @@ const Home = () => {
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               ThinkTact<span className="text-pink-950">AI</span>
             </h1>
+            <p className="mt-4 text-xl font-medium text-gray-600">
+              I built the only tool that roasts your AI draft before the USPTO does.
+            </p>
             <p className="mt-6 text-lg leading-8 text-gray-600">
               ThinkTact shows you exactly why your patent will get rejected—before you waste time or cash filing it.
             </p>
