@@ -18,6 +18,9 @@ const Home = () => {
             <p className="mt-6 text-lg leading-8 text-gray-600">
               Unlock the structure of arguments with AI-powered logical analysis. Identify fallacies, uncover assumptions, and strengthen your reasoning.
             </p>
+            <h2 className="mt-8 text-3xl font-bold text-gray-900 sm:text-4xl text-center">
+              Your patent draft is probably trash. Let's catch that before the government does.
+            </h2>
             <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
               <Link to="/analyzer" 
                 className="flex items-center justify-center rounded-md bg-pink-950 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-pink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-950 transition-colors">
