@@ -339,8 +339,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
           <textarea
             id="argument"
             rows="6"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-700 focus:ring-pink-700 sm:text-sm p-4 text-gray-900 placeholder-gray-400"
-            placeholder="Paste the argument text here..."
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-700 focus:ring-pink-700 sm:text-sm p-4 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-500"
+            placeholder="Paste your argument here..."
             value={argumentText}
             onChange={(e) => setArgumentText(e.target.value)}
             disabled={isLoading} // Disable textarea while loading

@@ -64,7 +64,7 @@ const PatentAudit = () => {
                 id="concerns"
                 name="concerns"
                 rows={3}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-950 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white bg-white dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-pink-950 sm:text-sm sm:leading-6"
                 placeholder="Like… I used ChatGPT and I'm scared it makes no sense."
                 value={concerns}
                 onChange={(e) => setConcerns(e.target.value)}
@@ -88,7 +88,7 @@ const PatentAudit = () => {
                   onChange={(e) => setFeedbackType(e.target.value)}
                   className="h-4 w-4 border-gray-300 text-pink-950 focus:ring-pink-950"
                 />
-                <label htmlFor="ai-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                <label htmlFor="ai-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                   AI roast
                 </label>
               </div>
@@ -102,7 +102,7 @@ const PatentAudit = () => {
                   onChange={(e) => setFeedbackType(e.target.value)}
                   className="h-4 w-4 border-gray-300 text-pink-950 focus:ring-pink-950"
                 />
-                <label htmlFor="human-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                <label htmlFor="human-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                   Human roast
                 </label>
               </div>
@@ -116,7 +116,7 @@ const PatentAudit = () => {
                   onChange={(e) => setFeedbackType(e.target.value)}
                   className="h-4 w-4 border-gray-300 text-pink-950 focus:ring-pink-950"
                 />
-                <label htmlFor="both-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                <label htmlFor="both-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                   Both (I can handle the truth)
                 </label>
               </div>
