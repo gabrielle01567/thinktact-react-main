@@ -29,6 +29,7 @@ const Analyzer = () => {
   const [analysisResults, setAnalysisResults] = useState(initialAnalysisState);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [apiKeyStatus, setApiKeyStatus] = useState('');
 
   // Sample data for the donut chart - this should eventually be dynamic
   const chartData = {
@@ -308,75 +309,108 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
     return result;
   };
 
+  // Add test function
+  const testApiKey = async () => {
+    const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+    if (!apiKey) {
+      setApiKeyStatus('❌ API key not found in environment variables');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        'https://api.mistral.ai/v1/chat/completions',
+        {
+          model: 'mistral-small-latest',
+          messages: [{ role: 'user', content: 'Hello, this is a test message.' }],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setApiKeyStatus('✅ API key is working correctly');
+      }
+    } catch (err) {
+      console.error('API Test Error:', err);
+      setApiKeyStatus(`❌ API key test failed: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  // Call test function when component mounts
   useEffect(() => {
-    const key = import.meta.env.VITE_MISTRAL_API_KEY;
-
-    console.log("🔑 API KEY CHECK:", key);
-
-    fetch("https://example.com", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${key}`,
-      },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Bad response");
-        return res.json();
-      })
-      .then(data => console.log("✅ API call success:", data))
-      .catch(err => console.error("❌ API call failed:", err));
+    testApiKey();
   }, []);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-      <h1 className="text-3xl font-bold tracking-tight text-pink-950 text-center mb-10 sm:mb-12">Argument Analyzer</h1>
-      
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <label htmlFor="argument" className="block text-sm font-medium text-gray-700 mb-2">
-            Enter an argument to analyze
-          </label>
-          <textarea
-            id="argument"
-            rows="6"
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-700 focus:ring-pink-700 sm:text-sm p-4 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-500"
-            placeholder="Paste your argument here..."
-            value={argumentText}
-            onChange={(e) => setArgumentText(e.target.value)}
-            disabled={isLoading} // Disable textarea while loading
-          ></textarea>
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={handleAnalyze}
-              className="rounded-md bg-pink-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-950 disabled:opacity-50"
-              disabled={isLoading} // Disable button while loading
-            >
-              {isLoading ? 'Analyzing...' : 'Analyze'}
-            </button>
+    <div className="bg-white min-h-screen">
+      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+            Argument Analyzer
+          </h1>
+          <p className="mt-6 text-lg leading-8 text-gray-600">
+            Paste your argument below and I'll break down its logical structure.
+          </p>
+          
+          {/* Add API key status display */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-md">
+            <p className="text-sm font-medium text-gray-700">API Key Status: {apiKeyStatus}</p>
           </div>
-           {/* Display Error Messages */}
-           {error && (
-                <p className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
-           )}
+
+          <div className="mt-8">
+            <div className="mb-8">
+              <label htmlFor="argument" className="block text-sm font-medium text-gray-700 mb-2">
+                Enter an argument to analyze
+              </label>
+              <textarea
+                id="argument"
+                rows="6"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-700 focus:ring-pink-700 sm:text-sm p-4 text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-500"
+                placeholder="Paste your argument here..."
+                value={argumentText}
+                onChange={(e) => setArgumentText(e.target.value)}
+                disabled={isLoading} // Disable textarea while loading
+              ></textarea>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleAnalyze}
+                  className="rounded-md bg-pink-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-950 disabled:opacity-50"
+                  disabled={isLoading} // Disable button while loading
+                >
+                  {isLoading ? 'Analyzing...' : 'Analyze'}
+                </button>
+              </div>
+               {/* Display Error Messages */}
+               {error && (
+                    <p className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
+               )}
+            </div>
+            
+            {/* --- Results Area --- */}
+            {/* Only show results container if loading or if there are results/errors */}
+            {(isLoading || error) && (
+              <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                {isLoading && (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-900"></div>
+                  </div>
+                )}
+                {error && (
+                  <div className="text-red-500 bg-red-50 p-4 rounded-lg">
+                    <p className="font-medium">Error</p>
+                    <p>{error}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        
-        {/* --- Results Area --- */}
-        {/* Only show results container if loading or if there are results/errors */}
-        {(isLoading || error) && (
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
-            {isLoading && (
-              <div className="flex justify-center items-center py-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-900"></div>
-              </div>
-            )}
-            {error && (
-              <div className="text-red-500 bg-red-50 p-4 rounded-lg">
-                <p className="font-medium">Error</p>
-                <p>{error}</p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
