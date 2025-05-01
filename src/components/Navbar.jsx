@@ -24,20 +24,18 @@ const Navbar = () => {
                 strokeLinecap="round" 
                 strokeLinejoin="round"
               >
-                <path d="M9.5 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-                <path d="M14.5 4a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-                <path d="M19.5 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-                <path d="M19.5 14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-                <path d="M14.5 17a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-                <path d="M9.5 19a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-                <path d="M4.5 17a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-                <path d="M4.5 10a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-                <path d="M8 4.5H16" />
-                <path d="M8 19.5H16" />
-                <path d="M3 8.8C2.28 9.2 2 9.7 2 10c0 .3.28.8 1 1.2" />
-                <path d="M3 15.2c-.72.4-1 .9-1 1.2s.28.8 1 1.2" />
-                <path d="M21 15.2c.72.4 1 .9 1 1.2s-.28.8-1 1.2" />
-                <path d="M21 8.8c.72.4 1 .9 1 1.2s-.28.8-1 1.2" />
+                {/* Brain circuit design */}
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M12 6v12" />
+                <path d="M6 12h12" />
+                <path d="M8.5 8.5l7 7" />
+                <path d="M15.5 8.5l-7 7" />
+                {/* AI circuit nodes */}
+                <circle cx="12" cy="12" r="2" fill="currentColor" />
+                <circle cx="8.5" cy="8.5" r="1" fill="currentColor" />
+                <circle cx="15.5" cy="8.5" r="1" fill="currentColor" />
+                <circle cx="8.5" cy="15.5" r="1" fill="currentColor" />
+                <circle cx="15.5" cy="15.5" r="1" fill="currentColor" />
               </svg>
               <span className="font-semibold text-lg text-pink-950">ThinkTactAI</span>
             </Link>
