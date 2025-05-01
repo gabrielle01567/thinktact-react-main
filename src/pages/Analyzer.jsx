@@ -362,7 +362,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         </label>
         <textarea
           id="argument"
-          className="w-full h-40 p-6 border rounded-xl shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-700 dark:focus:ring-pink-500 focus:border-pink-700 dark:focus:border-pink-500 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+          className="w-full h-40 p-6 border rounded-xl shadow-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-700 dark:focus:ring-pink-500 focus:border-pink-700 dark:focus:border-pink-500 transition-all placeholder-gray-400 dark:placeholder-gray-500"
           value={argumentText}
           onChange={(e) => setArgumentText(e.target.value)}
           placeholder="Type or paste your argument here..."
