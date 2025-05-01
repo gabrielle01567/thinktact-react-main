@@ -5,9 +5,23 @@
 @tailwind utilities;
 
 body {
-  @apply font-sans m-0 min-w-[320px] min-h-screen flex flex-col bg-white text-black;
+  @apply font-sans m-0 min-w-[320px] min-h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark mode text input styles */
+input, textarea {
+  @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600;
+}
+
+input:focus, textarea:focus {
+  @apply border-pink-700 dark:border-pink-500 ring-pink-700 dark:ring-pink-500;
+}
+
+/* Dark mode placeholder styles */
+::placeholder {
+  @apply text-gray-400 dark:text-gray-500;
 } 

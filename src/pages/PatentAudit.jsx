@@ -64,7 +64,7 @@ const PatentAudit = () => {
                 id="concerns"
                 name="concerns"
                 rows={3}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white bg-white dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-pink-950 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white bg-white dark:bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-pink-950 dark:focus:ring-pink-500 sm:text-sm sm:leading-6"
                 placeholder="Like… I used ChatGPT and I'm scared it makes no sense."
                 value={concerns}
                 onChange={(e) => setConcerns(e.target.value)}
@@ -86,7 +86,7 @@ const PatentAudit = () => {
                   value="ai"
                   checked={feedbackType === 'ai'}
                   onChange={(e) => setFeedbackType(e.target.value)}
-                  className="h-4 w-4 border-gray-300 text-pink-950 focus:ring-pink-950"
+                  className="h-4 w-4 border-gray-300 dark:border-gray-600 text-pink-950 dark:text-pink-500 focus:ring-pink-950 dark:focus:ring-pink-500"
                 />
                 <label htmlFor="ai-roast" className="ml-3 block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                   AI roast
