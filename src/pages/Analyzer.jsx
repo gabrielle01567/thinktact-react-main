@@ -4,6 +4,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import axios from 'axios'; // Import axios
 import CollapsibleSection from '../components/CollapsibleSection'; // Import from the dedicated file
+import { track } from '@vercel/analytics';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -64,11 +65,21 @@ const Analyzer = () => {
       return;
     }
 
+    // Track the analysis attempt
+    track('analyze_argument', {
+      argumentLength: argumentText.length,
+      hasError: false
+    });
+
     // Get API Key from environment variable
     const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
 
     if (!apiKey) {
       setError('API key is missing. Make sure it is set in your .env file and the server was restarted.');
+      track('analyze_error', {
+        errorType: 'missing_api_key',
+        argumentLength: argumentText.length
+      });
       setIsLoading(false);
       return;
     }
@@ -113,6 +124,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
     const MISTRAL_API_ENDPOINT = 'https://api.mistral.ai/v1/chat/completions'; // Example endpoint
 
     try {
+      const startTime = Date.now();
       const response = await axios.post(
         MISTRAL_API_ENDPOINT,
         {
@@ -128,6 +140,12 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
           },
         }
       );
+
+      // Track successful analysis
+      track('analysis_success', {
+        argumentLength: argumentText.length,
+        responseTime: Date.now() - startTime
+      });
 
       // --- Process the Response ---
       // This part is CRUCIAL and highly dependent on Mistral's response format.
@@ -155,6 +173,13 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
     } catch (err) {
       console.error('API Call Error:', err);
       setError(`Failed to analyze argument. ${err.response?.data?.message || err.message}`);
+      
+      // Track analysis error
+      track('analysis_error', {
+        errorType: err.response?.data?.message || err.message,
+        argumentLength: argumentText.length
+      });
+      
       setIsLoading(false);
     }
   };
