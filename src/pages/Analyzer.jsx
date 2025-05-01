@@ -62,13 +62,17 @@ const Analyzer = () => {
   const handleAnalyze = async () => {
     if (!argumentText.trim()) {
       setError('Please enter an argument to analyze.');
+      track('analyzer_empty_input');
       return;
     }
 
-    // Track the analysis attempt
+    // Track the analysis attempt with more details
     track('analyze_argument', {
       argumentLength: argumentText.length,
-      hasError: false
+      hasError: false,
+      timestamp: new Date().toISOString(),
+      wordCount: argumentText.trim().split(/\s+/).length,
+      firstFewWords: argumentText.substring(0, 50) // First 50 characters for context
     });
 
     // Get API Key from environment variable
@@ -78,7 +82,8 @@ const Analyzer = () => {
       setError('API key is missing. Make sure it is set in your .env file and the server was restarted.');
       track('analyze_error', {
         errorType: 'missing_api_key',
-        argumentLength: argumentText.length
+        argumentLength: argumentText.length,
+        timestamp: new Date().toISOString()
       });
       setIsLoading(false);
       return;
@@ -141,10 +146,13 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         }
       );
 
-      // Track successful analysis
+      // Track successful analysis with detailed results
       track('analysis_success', {
         argumentLength: argumentText.length,
-        responseTime: Date.now() - startTime
+        responseTime: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+        wordCount: argumentText.trim().split(/\s+/).length,
+        hasResults: !!response.data?.choices?.[0]?.message?.content
       });
 
       // --- Process the Response ---
@@ -174,10 +182,13 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       console.error('API Call Error:', err);
       setError(`Failed to analyze argument. ${err.response?.data?.message || err.message}`);
       
-      // Track analysis error
+      // Track analysis error with more details
       track('analysis_error', {
         errorType: err.response?.data?.message || err.message,
-        argumentLength: argumentText.length
+        argumentLength: argumentText.length,
+        timestamp: new Date().toISOString(),
+        wordCount: argumentText.trim().split(/\s+/).length,
+        statusCode: err.response?.status
       });
       
       setIsLoading(false);
@@ -370,6 +381,14 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
   // Call test function when component mounts
   useEffect(() => {
     testApiKey();
+  }, []);
+
+  // Add tracking for when users view the analyzer page
+  useEffect(() => {
+    track('page_view', {
+      page: 'analyzer',
+      timestamp: new Date().toISOString()
+    });
   }, []);
 
   return (
