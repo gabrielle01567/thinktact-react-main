@@ -51,7 +51,7 @@ const Navbar = () => {
               Analyzer
             </Link>
             <Link to="/patent-audit" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/patent-audit')}`}>
-              Roast My Draft
+              Patent Buddy
             </Link>
             <Link to="/about" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/about')}`}>
               About
@@ -93,7 +93,7 @@ const Navbar = () => {
             Analyzer
           </Link>
           <Link to="/patent-audit" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/patent-audit')}`}>
-            Roast My Draft
+            Patent Buddy
           </Link>
           <Link to="/about" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/about')}`}>
             About
