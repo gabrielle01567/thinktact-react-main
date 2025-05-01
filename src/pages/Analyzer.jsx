@@ -353,44 +353,50 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Argument Analyzer</h1>
+    <div className="container mx-auto px-6 py-12 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center">Argument Analyzer</h1>
       
-      <div className="mb-6">
+      <div className="mb-8">
+        <label htmlFor="argument" className="block text-lg font-medium mb-3">
+          Enter your argument below
+        </label>
         <textarea
-          className="w-full h-32 p-4 border rounded-lg"
+          id="argument"
+          className="w-full h-40 p-6 border rounded-xl shadow-sm focus:ring-2 focus:ring-pink-700 focus:border-pink-700 transition-all"
           value={argumentText}
           onChange={(e) => setArgumentText(e.target.value)}
-          placeholder="Enter your argument here..."
+          placeholder="Type or paste your argument here..."
         />
       </div>
 
-      <button
-        className="btn btn-primary"
-        onClick={handleAnalyze}
-        disabled={isLoading}
-      >
-        {isLoading ? 'Analyzing...' : 'Analyze Argument'}
-      </button>
+      <div className="flex justify-center mb-12">
+        <button
+          className="btn btn-primary px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          onClick={handleAnalyze}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Analyzing...' : 'Analyze Argument'}
+        </button>
+      </div>
 
       {error && (
-        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
-          {error}
+        <div className="mt-8 p-6 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
+          <p className="font-medium text-lg mb-2">Error</p>
+          <p>{error}</p>
         </div>
       )}
 
       {/* --- Results Area --- */}
-      {/* Only show results container if loading or if there are results/errors */}
       {(isLoading || error) && (
-        <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-200">
           {isLoading && (
-            <div className="flex justify-center items-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-900"></div>
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900"></div>
             </div>
           )}
           {error && (
-            <div className="text-red-500 bg-red-50 p-4 rounded-lg">
-              <p className="font-medium">Error</p>
+            <div className="text-red-500 bg-red-50 p-6 rounded-xl">
+              <p className="font-medium text-lg mb-2">Error</p>
               <p>{error}</p>
             </div>
           )}
