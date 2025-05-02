@@ -26,7 +26,7 @@ const Footer = () => {
           
           <div>
             <h3 className="text-xs font-semibold text-gray-700 uppercase mb-2">Connect</h3>
-            <p className="text-sm text-gray-600 mb-2">contact@thinktactai.com</p>
+            <p className="text-sm text-gray-600 mb-2">admin@thinktact.ai</p>
             <div className="flex space-x-3">
               <a href="#" className="text-gray-500 hover:text-pink-900">
                 <span className="sr-only">Twitter</span>
