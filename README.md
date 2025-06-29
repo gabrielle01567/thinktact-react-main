@@ -4,6 +4,10 @@
   <img src="src/assets/images/logo.png" alt="ThinkTactAI Logo" width="120" />
 </p>
 
+##  Live Application
+
+**Try ThinkTactAI now:** [https://thinktact-react-main.vercel.app](https://thinktact-react-main.vercel.app)
+
 ## AI-Powered Argument Analysis
 
 ThinkTactAI is a web application that harnesses the power of AI to analyze arguments, identify logical structures, and uncover hidden assumptions. It helps users understand the strength of arguments by breaking them down into their component parts and highlighting any logical flaws.
@@ -16,14 +20,15 @@ ThinkTactAI is a web application that harnesses the power of AI to analyze argum
 - **Assumption Uncovering**: Reveals hidden assumptions that underpin arguments
 - **Improved Versions**: Suggests ways to strengthen your arguments
 - **Visual Representation**: See the logical structure of arguments in an intuitive format
+- **Security-First**: Built with XSS protection, input validation, and rate limiting
 
 ## Technology Stack
 
-- React
-- Tailwind CSS
-- Vite
-- Mistral AI API
-- Vercel Deployment
+- **Frontend**: React 19, Tailwind CSS, Vite
+- **AI**: Mistral AI API
+- **Security**: DOMPurify, Input Validation, Rate Limiting
+- **Deployment**: Vercel
+- **Analytics**: Vercel Analytics
 
 ## Getting Started
 
@@ -61,19 +66,36 @@ ThinkTactAI is a web application that harnesses the power of AI to analyze argum
 
 This project is set up for automatic deployment on Vercel. When changes are pushed to the main branch, Vercel will automatically deploy them.
 
-### Manual Deployment Steps
+### Quick Deploy
 
-1. Push changes to GitHub:
+```bash
+# Use the automated deployment script
+./push-to-github.sh
+```
+
+### Manual Deployment
+
+1. Build and push changes:
    ```bash
-   ./push-to-github.sh
+   npm run build
+   git add .
+   git commit -m "Your commit message"
+   git push origin main
    ```
-   This script will build the application, commit changes, and push to GitHub.
 
 2. Vercel automatically deploys when changes are pushed to GitHub.
 
+## Security Features
+
+- **XSS Protection**: HTML sanitization with DOMPurify
+- **Input Validation**: Comprehensive validation and sanitization
+- **Rate Limiting**: API call rate limiting to prevent abuse
+- **Security Headers**: CSP, X-Frame-Options, and other security headers
+- **Error Handling**: Secure error messages without information disclosure
+
 ## Usage
 
-1. Navigate to the Analyzer page
+1. Navigate to the [Analyzer page](https://thinktact-react-main.vercel.app/analyzer)
 2. Enter your argument in the text area
 3. Click "Analyze"
 4. View the detailed breakdown of your argument
