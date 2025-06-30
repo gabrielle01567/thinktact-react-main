@@ -24,8 +24,19 @@ export default function Admin() {
     isAdmin: false
   });
 
-  // Check if current user is admin
-  const isAdmin = user?.email === 'alex.hawke54@gmail.com';
+  // Super user creation form state
+  const [showCreateSuperUser, setShowCreateSuperUser] = useState(false);
+  const [createSuperUserForm, setCreateSuperUserForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  // Check if current user is admin or super user
+  const isAdmin = user?.isAdmin || user?.isSuperUser;
+  const isSuperUser = user?.isSuperUser;
 
   useEffect(() => {
     if (isAdmin) {
@@ -189,6 +200,53 @@ export default function Admin() {
     }
   };
 
+  const createSuperUser = async () => {
+    // Validate form
+    if (!createSuperUserForm.firstName || !createSuperUserForm.lastName || !createSuperUserForm.email || !createSuperUserForm.password) {
+      setMessage('All fields are required');
+      return;
+    }
+
+    if (createSuperUserForm.password !== createSuperUserForm.confirmPassword) {
+      setMessage('Passwords do not match');
+      return;
+    }
+
+    if (createSuperUserForm.password.length < 6) {
+      setMessage('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/create-super-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createSuperUserForm,
+          currentUserEmail: user.email
+        })
+      });
+
+      const data = await response.json();
+      if (data.message) {
+        setMessage(data.message);
+        setShowCreateSuperUser(false);
+        setCreateSuperUserForm({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
+        fetchUsers(); // Refresh the list
+      } else {
+        setMessage(data.error || 'Failed to create super user');
+      }
+    } catch (error) {
+      setMessage('Error creating super user');
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -216,13 +274,30 @@ export default function Admin() {
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                <button
-                  onClick={() => setShowCreateUser(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Create User
-                </button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {isSuperUser ? 'Super User Dashboard' : 'Admin Dashboard'}
+                  </h1>
+                  {isSuperUser && (
+                    <p className="text-sm text-purple-600 mt-1">👑 Super User - Full System Access</p>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  {isSuperUser && (
+                    <button
+                      onClick={() => setShowCreateSuperUser(true)}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Create Super User
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowCreateUser(true)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Create User
+                  </button>
+                </div>
               </div>
               
               {message && (
@@ -360,7 +435,10 @@ export default function Admin() {
                     <p><strong>Last Login:</strong> {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : 'Never'}</p>
                     <p><strong>Verified:</strong> {selectedUser.verified ? 'Yes' : 'No'}</p>
                     <p><strong>Blocked:</strong> {selectedUser.blocked ? 'Yes' : 'No'}</p>
-                    <p><strong>Admin:</strong> {selectedUser.isAdmin ? 'Yes' : 'No'}</p>
+                    <p><strong>Role:</strong> 
+                      {selectedUser.isSuperUser ? '👑 Super User' : 
+                       selectedUser.isAdmin ? '🔧 Admin' : '👤 User'}
+                    </p>
                     <p><strong>Security Question:</strong> {selectedUser.securityQuestion}</p>
                     <p><strong>Security Answer:</strong> {selectedUser.securityAnswer}</p>
                   </div>
@@ -504,6 +582,93 @@ export default function Admin() {
                       className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                     >
                       Create User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Create Super User Modal */}
+          {showCreateSuperUser && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+                <div className="mt-3">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">👑 Create Super User</h3>
+                  <p className="text-sm text-purple-600 mb-4">Super users have full system access and can create other super users.</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        value={createSuperUserForm.firstName}
+                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, firstName: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
+                        placeholder="First Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        value={createSuperUserForm.lastName}
+                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, lastName: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
+                        placeholder="Last Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={createSuperUserForm.email}
+                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, email: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
+                        placeholder="Email"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                      <input
+                        type="password"
+                        value={createSuperUserForm.password}
+                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, password: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
+                        placeholder="Password (min 6 characters)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                      <input
+                        type="password"
+                        value={createSuperUserForm.confirmPassword}
+                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, confirmPassword: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
+                        placeholder="Confirm Password"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2 mt-6">
+                    <button
+                      onClick={() => {
+                        setShowCreateSuperUser(false);
+                        setCreateSuperUserForm({
+                          firstName: '',
+                          lastName: '',
+                          email: '',
+                          password: '',
+                          confirmPassword: ''
+                        });
+                      }}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={createSuperUser}
+                      className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    >
+                      Create Super User
                     </button>
                   </div>
                 </div>

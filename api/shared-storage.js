@@ -128,6 +128,7 @@ export const createAdminUser = async () => {
       securityAnswer: 'blue',
       verified: true,
       isAdmin: true,
+      isSuperUser: true, // Super user has admin privileges plus more
       blocked: false,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString()
@@ -135,18 +136,94 @@ export const createAdminUser = async () => {
     
     // Save admin user
     await saveUser(blobName, adminUserData);
-    console.log('✅ Admin user created successfully');
+    console.log('✅ Super User created successfully');
     console.log('📧 Email: alex.hawke54@gmail.com');
     console.log('🔑 Password: admin123');
+    console.log('👑 Role: Super User (above Admin)');
     console.log('Blob name:', blobName);
     
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       console.log('Total users in storage:', devStorage.size);
     }
   } else {
-    console.log('✅ Admin user already exists');
+    console.log('✅ Super User already exists');
     console.log('📧 Email: alex.hawke54@gmail.com');
     console.log('🔑 Password: admin123');
+    console.log('👑 Role: Super User (above Admin)');
+  }
+};
+
+// Create super user function
+export const createSuperUser = async (email, password, firstName, lastName) => {
+  console.log('Creating super user for:', email);
+  
+  const existingUser = await findUserByEmail(email);
+  
+  if (existingUser) {
+    console.log('User already exists, updating to super user...');
+    const bcrypt = await import('bcryptjs');
+    const SALT_ROUNDS = 12;
+    
+    // Generate blob name for user
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
+    // Hash the password
+    const hashedPassword = await bcrypt.default.hash(password, SALT_ROUNDS);
+    
+    // Update user to super user
+    const superUserData = {
+      ...existingUser,
+      passwordHash: hashedPassword,
+      firstName: firstName || existingUser.firstName,
+      lastName: lastName || existingUser.lastName,
+      isAdmin: true,
+      isSuperUser: true,
+      verified: true,
+      lastLogin: new Date().toISOString()
+    };
+    
+    // Save super user
+    await saveUser(blobName, superUserData);
+    console.log('✅ User upgraded to Super User successfully');
+    console.log('📧 Email:', email);
+    console.log('👑 Role: Super User (above Admin)');
+    return true;
+  } else {
+    console.log('Creating new super user...');
+    const bcrypt = await import('bcryptjs');
+    const SALT_ROUNDS = 12;
+    
+    // Generate blob name for user
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
+    // Hash the password
+    const hashedPassword = await bcrypt.default.hash(password, SALT_ROUNDS);
+    
+    // Create super user data
+    const superUserData = {
+      id: `super-user-${Date.now()}`,
+      firstName: firstName || 'Super',
+      lastName: lastName || 'User',
+      email: email,
+      passwordHash: hashedPassword,
+      securityQuestion: 'What is your favorite color?',
+      securityAnswer: 'blue',
+      verified: true,
+      isAdmin: true,
+      isSuperUser: true,
+      blocked: false,
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString()
+    };
+    
+    // Save super user
+    await saveUser(blobName, superUserData);
+    console.log('✅ Super User created successfully');
+    console.log('📧 Email:', email);
+    console.log('👑 Role: Super User (above Admin)');
+    return true;
   }
 };
 
