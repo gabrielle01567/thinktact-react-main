@@ -55,7 +55,7 @@ export default async function handler(req, res) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         
         await resend.emails.send({
-          from: 'ThinkTactAI <noreply@thinktactai.com>',
+          from: 'ThinkTactAI <noreply@thinktact.ai>',
           to: [newEmail],
           subject: 'Verify your new email address',
           html: `
