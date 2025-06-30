@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser, devStorage } from '../shared-storage.js';
+import { findUserByEmail, saveUser, devStorage, getAllUsers } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -16,12 +16,31 @@ export default async function handler(req, res) {
     let userToUpdate = null;
     let userKey = null;
     
-    // Search through all users to find the one with matching verification token
-    for (const [key, user] of devStorage.entries()) {
-      if (user.verificationToken === token) {
-        userToUpdate = user;
-        userKey = key;
-        break;
+    // Check if we're in development mode
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      // Development mode - search through devStorage
+      for (const [key, user] of devStorage.entries()) {
+        if (user.verificationToken === token) {
+          userToUpdate = user;
+          userKey = key;
+          break;
+        }
+      }
+    } else {
+      // Production mode - search through all users in blob storage
+      try {
+        const users = await getAllUsers();
+        for (const user of users) {
+          if (user.verificationToken === token) {
+            userToUpdate = user;
+            // Find the blob name for this user
+            const USERS_BLOB_PREFIX = 'users/';
+            userKey = `${USERS_BLOB_PREFIX}${btoa(user.email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+            break;
+          }
+        }
+      } catch (error) {
+        console.error('Error searching users in production:', error);
       }
     }
     
@@ -37,7 +56,7 @@ export default async function handler(req, res) {
     };
 
     // Store updated user data
-    saveUser(userKey, updatedUserData);
+    await saveUser(userKey, updatedUserData);
 
     res.status(200).json({
       success: true,

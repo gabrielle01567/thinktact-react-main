@@ -148,6 +148,26 @@ export default function Admin() {
     }
   };
 
+  const verifyUser = async (email) => {
+    try {
+      const response = await fetch('/api/admin/verify-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage('User verified successfully');
+        fetchUsers(); // Refresh the list
+      } else {
+        setMessage(data.error || 'Failed to verify user');
+      }
+    } catch (error) {
+      setMessage('Error verifying user');
+    }
+  };
+
   const createUser = async () => {
     // Validate form
     if (!createUserForm.firstName || !createUserForm.lastName || !createUserForm.email || !createUserForm.password) {
@@ -362,6 +382,14 @@ export default function Admin() {
                             >
                               View Details
                             </button>
+                            {!user.verified && (
+                              <button
+                                onClick={() => verifyUser(user.email)}
+                                className="text-green-600 hover:text-green-900"
+                              >
+                                Verify
+                              </button>
+                            )}
                             <button
                               onClick={() => toggleUserStatus(user.id, !user.blocked)}
                               className={`${user.blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}`}

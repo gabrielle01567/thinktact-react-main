@@ -98,6 +98,10 @@ export default async function handler(req, res) {
       }
     } else {
       console.log('⚠️ RESEND_API_KEY not set - skipping verification email');
+      // In development mode, provide the verification link directly
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        console.log(`🔗 Development verification link: http://localhost:3000/verify?token=${verificationToken}`);
+      }
     }
 
     // Return success without sensitive data
