@@ -8,7 +8,12 @@ export default async function handler(req, res) {
   try {
     const { token } = req.query;
 
+    console.log('🔍 Verification request received');
+    console.log('🔍 Token from query:', token);
+    console.log('🔍 All query params:', req.query);
+
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(400).json({ error: 'Verification token is required' });
     }
 
@@ -22,6 +27,7 @@ export default async function handler(req, res) {
       console.log(`📊 Searching through ${users.length} users for verification token`);
       
       for (const user of users) {
+        console.log(`🔍 Checking user ${user.email}, verification token: ${user.verificationToken}`);
         if (user.verificationToken === token) {
           userToUpdate = user;
           console.log('✅ Found user with matching verification token:', user.email);
@@ -50,9 +56,9 @@ export default async function handler(req, res) {
 
     // Generate blob name for user
     const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(userToUpdate.email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(userToUpdate.email.toLowerCase()).replace(/[^a-zA-Z0-9]/g, '')}.json`;
 
-    // Store updated user data
+    // Save user with normalized email
     await saveUser(blobName, updatedUserData);
 
     console.log('✅ Email verification successful for:', userToUpdate.email);
