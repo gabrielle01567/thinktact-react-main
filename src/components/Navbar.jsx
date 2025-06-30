@@ -1,12 +1,20 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const isActive = (path) => {
     return location.pathname === path ? 'bg-pink-950 text-white' : 'text-gray-600 hover:text-pink-900 hover:bg-gray-50';
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -44,9 +52,11 @@ const Navbar = () => {
             <Link to="/" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/')}`}>
               Home
             </Link>
-            <Link to="/dashboard" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/dashboard')}`}>
-              Dashboard
-            </Link>
+            {isAuthenticated && (
+              <Link to="/dashboard" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/dashboard')}`}>
+                Dashboard
+              </Link>
+            )}
             <Link to="/analyzer" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/analyzer')}`}>
               Analyzer
             </Link>
@@ -65,6 +75,35 @@ const Navbar = () => {
             <Link to="/founder" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/founder')}`}>
               Founder
             </Link>
+            
+            {/* Authentication buttons */}
+            <div className="ml-4 flex items-center space-x-2">
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700">
+                    <div className="h-6 w-6 rounded-full bg-pink-950 flex items-center justify-center">
+                      <span className="text-xs font-medium text-white">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <span className="hidden lg:block">{user?.name || 'User'}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Link 
+                  to="/login" 
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-pink-950 text-white hover:bg-pink-900 transition-colors duration-150"
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
           </div>
           <div className="md:hidden flex items-center">
             <button 
@@ -86,9 +125,11 @@ const Navbar = () => {
           <Link to="/" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/')}`}>
             Home
           </Link>
-          <Link to="/dashboard" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/dashboard')}`}>
-            Dashboard
-          </Link>
+          {isAuthenticated && (
+            <Link to="/dashboard" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/dashboard')}`}>
+              Dashboard
+            </Link>
+          )}
           <Link to="/analyzer" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/analyzer')}`}>
             Analyzer
           </Link>
@@ -107,6 +148,38 @@ const Navbar = () => {
           <Link to="/founder" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/founder')}`}>
             Founder
           </Link>
+          
+          {/* Mobile authentication */}
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            {isAuthenticated ? (
+              <div className="space-y-2">
+                <div className="flex items-center px-3 py-2">
+                  <div className="h-8 w-8 rounded-full bg-pink-950 flex items-center justify-center mr-3">
+                    <span className="text-sm font-medium text-white">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login" 
+                className="block px-3 py-2 rounded-md text-base font-medium bg-pink-950 text-white hover:bg-pink-900"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </nav>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import StatCard from '../components/dashboard/StatCard';
 import ArgumentFlow from '../components/dashboard/ArgumentFlow';
 import LogicDonutChart from '../components/dashboard/LogicDonutChart';
 import LogicBreakdownTable from '../components/dashboard/LogicBreakdownTable';
 import SafeTextFormatter from '../components/SafeTextFormatter';
+import { useAuth } from '../contexts/AuthContext';
 
 // Sample data fallback for when no analysis is available
 const sampleAnalysis = {
@@ -50,8 +51,15 @@ const sampleAnalysis = {
 
 const Dashboard = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [analysis, setAnalysis] = useState(null);
   
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   useEffect(() => {
     // Get analysis data from location state (passed from Analyzer)
     if (location.state?.analysisResults) {
@@ -202,6 +210,32 @@ const Dashboard = () => {
             </Link>
           </div>
         </nav>
+        
+        {/* User Info and Logout */}
+        <div className="px-4 py-4 border-t border-gray-200">
+          <div className="flex items-center mb-3">
+            <div className="flex-shrink-0">
+              <div className="h-8 w-8 rounded-full bg-pink-950 flex items-center justify-center">
+                <span className="text-sm font-medium text-white">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-700">{user?.name || 'User'}</p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-md transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}

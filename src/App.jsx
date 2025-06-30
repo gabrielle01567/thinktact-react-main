@@ -11,27 +11,44 @@ import Research from './pages/Research';
 import ClarityInfrastructure from './pages/ClarityInfrastructure';
 import PatentAudit from './pages/PatentAudit';
 import PatentAuditThanks from './pages/PatentAuditThanks';
+import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './contexts/AuthContext';
 import React from 'react';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="analyzer" element={<Analyzer />} />
-          <Route path="about" element={<About />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="founder" element={<Founder />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="research" element={<Research />} />
-          <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
-          <Route path="patent-audit" element={<PatentAudit />} />
-          <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
-          <Route path="*" element={<ErrorPage />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="analyzer" element={<Analyzer />} />
+            <Route path="about" element={<About />} />
+            <Route path="blog" element={<Blog />} />
+            <Route path="founder" element={<Founder />} />
+            <Route path="research" element={<Research />} />
+            <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
+            <Route path="patent-audit" element={<PatentAudit />} />
+            <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
+            <Route path="*" element={<ErrorPage />} />
+          </Route>
+          
+          {/* Login route (outside Layout) */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected Dashboard route */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

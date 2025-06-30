@@ -5,6 +5,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import axios from 'axios'; // Import axios
 import CollapsibleSection from '../components/CollapsibleSection'; // Import from the dedicated file
 import { track } from '@vercel/analytics';
+import { useAuth } from '../contexts/AuthContext';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -26,6 +27,7 @@ const initialAnalysisState = {
 
 const Analyzer = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [argumentText, setArgumentText] = useState('');
   const [analysisResults, setAnalysisResults] = useState(initialAnalysisState);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +64,18 @@ const Analyzer = () => {
     if (!argumentText.trim()) {
       setError('Please enter an argument to analyze.');
       track('analyzer_empty_input');
+      return;
+    }
+
+    // Check if user is authenticated before proceeding
+    if (!isAuthenticated) {
+      // Redirect to login with the current page as the intended destination
+      navigate('/login', { 
+        state: { 
+          from: { pathname: '/analyzer' },
+          message: 'Please sign in to view your analysis results'
+        } 
+      });
       return;
     }
 
