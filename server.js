@@ -30,6 +30,7 @@ import verifyEmailChangeHandler from './api/auth/verify-email-change.js';
 import resendVerificationHandler from './api/auth/resend-verification.js';
 import testEmailHandler from './api/test-email.js';
 import testUsersHandler from './api/test-users.js';
+import migrateUsersHandler from './api/migrate-users.js';
 import usersHandler from './api/admin/users.js';
 import resetPasswordAdminHandler from './api/admin/reset-password.js';
 import toggleStatusHandler from './api/admin/toggle-status.js';
@@ -82,6 +83,10 @@ app.get('/api/test-email', async (req, res) => {
 
 app.get('/api/test-users', async (req, res) => {
   await testUsersHandler(req, res);
+});
+
+app.post('/api/migrate-users', async (req, res) => {
+  await migrateUsersHandler(req, res);
 });
 
 // Admin API Routes

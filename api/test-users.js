@@ -25,7 +25,10 @@ export default async function handler(req, res) {
       }))
     });
   } catch (error) {
-    console.error('Test users error:', error);
-    res.status(500).json({ error: 'Failed to get users' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch users',
+      details: error.message 
+    });
   }
 } 
