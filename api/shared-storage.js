@@ -74,7 +74,8 @@ export const saveUser = async (blobName, userData) => {
     const jsonData = JSON.stringify(userData);
     await put(blobName, jsonData, {
       access: 'public',
-      addRandomSuffix: false
+      addRandomSuffix: false,
+      allowOverwrite: true
     });
   } catch (error) {
     console.error('Error saving user to blob:', error);
