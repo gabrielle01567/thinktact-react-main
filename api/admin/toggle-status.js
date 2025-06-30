@@ -1,4 +1,4 @@
-import { findUserById, saveUser } from '../shared-storage.js';
+import { toggleUserStatus } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,21 +12,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID and blocked status are required.' });
     }
 
-    // Find user by ID
-    const { user: userToUpdate, key: userKey } = findUserById(userId);
-    
-    if (!userToUpdate) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Update user data
-    const updatedUserData = {
-      ...userToUpdate,
-      blocked: blocked
-    };
-
-    // Store updated user data
-    saveUser(userKey, updatedUserData);
+    // Use the toggleUserStatus function from shared-storage
+    const updatedUser = await toggleUserStatus(userId, blocked);
 
     res.status(200).json({
       success: true,
@@ -34,6 +21,10 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Admin toggle status error:', error);
-    res.status(500).json({ error: 'Failed to update user status' });
+    if (error.message === 'User not found') {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to update user status' });
+    }
   }
 } 

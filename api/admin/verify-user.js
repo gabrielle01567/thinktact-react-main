@@ -25,10 +25,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User is already verified' });
     }
 
-    // Generate blob name for user
-    const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-
     // Update user data to mark as verified
     const updatedUserData = {
       ...user,

@@ -12,20 +12,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required.' });
     }
 
-    // Find and delete user by ID
-    const { user: userToDelete, key: userKey } = findUserById(userId);
+    // Find user by ID
+    const { user: userToDelete } = await findUserById(userId);
     
     if (!userToDelete) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Delete user from storage
-    deleteUser(userKey);
+    // Delete user from storage using their email
+    const success = await deleteUser(userToDelete.email);
 
-    res.status(200).json({
-      success: true,
-      message: 'User deleted successfully'
-    });
+    if (success) {
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully'
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to delete user from storage' });
+    }
   } catch (error) {
     console.error('Admin delete user error:', error);
     res.status(500).json({ error: 'Failed to delete user' });

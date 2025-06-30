@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { findUserById, saveUser } from '../shared-storage.js';
+import { findUserById, saveUser, resetUserPassword } from '../shared-storage.js';
 
 const SALT_ROUNDS = 12;
 
@@ -19,24 +19,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // Find user by ID
-    const { user: userToUpdate, key: userKey } = findUserById(userId);
-    
-    if (!userToUpdate) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    
-    // Update user data
-    const updatedUserData = {
-      ...userToUpdate,
-      passwordHash: hashedPassword
-    };
-
-    // Store updated user data
-    saveUser(userKey, updatedUserData);
+    // Use the resetUserPassword function from shared-storage
+    const updatedUser = await resetUserPassword(userId, newPassword);
 
     res.status(200).json({
       success: true,
@@ -44,6 +28,10 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Admin password reset error:', error);
-    res.status(500).json({ error: 'Failed to reset password' });
+    if (error.message === 'User not found') {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to reset password' });
+    }
   }
 } 
