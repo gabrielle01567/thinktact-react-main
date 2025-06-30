@@ -1,0 +1,126 @@
+import express from 'express';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { createServer as createViteServer } from 'vite';
+import { createAdminUser } from './api/shared-storage.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Create admin user on server start
+createAdminUser().catch(console.error);
+
+// Import API routes
+import registerHandler from './api/auth/register.js';
+import loginHandler from './api/auth/login.js';
+import blobHandler from './api/blob/[filename].js';
+import requestResetHandler from './api/auth/request-reset.js';
+import resetPasswordHandler from './api/auth/reset-password.js';
+import verifyHandler from './api/auth/verify.js';
+import changeEmailHandler from './api/auth/change-email.js';
+import verifyEmailChangeHandler from './api/auth/verify-email-change.js';
+import resendVerificationHandler from './api/auth/resend-verification.js';
+import testEmailHandler from './api/test-email.js';
+import usersHandler from './api/admin/users.js';
+import resetPasswordAdminHandler from './api/admin/reset-password.js';
+import toggleStatusHandler from './api/admin/toggle-status.js';
+import deleteUserHandler from './api/admin/delete-user.js';
+import toggleAdminHandler from './api/admin/toggle-admin.js';
+import createUserHandler from './api/admin/create-user.js';
+
+// API Routes
+app.post('/api/auth/register', async (req, res) => {
+  await registerHandler(req, res);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  await loginHandler(req, res);
+});
+
+app.get('/api/blob/:filename', async (req, res) => {
+  req.query.filename = req.params.filename;
+  await blobHandler(req, res);
+});
+
+app.post('/api/auth/request-reset', async (req, res) => {
+  await requestResetHandler(req, res);
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  await resetPasswordHandler(req, res);
+});
+
+app.get('/api/auth/verify', async (req, res) => {
+  await verifyHandler(req, res);
+});
+
+app.post('/api/auth/change-email', async (req, res) => {
+  await changeEmailHandler(req, res);
+});
+
+app.post('/api/auth/verify-email-change', async (req, res) => {
+  await verifyEmailChangeHandler(req, res);
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+  await resendVerificationHandler(req, res);
+});
+
+app.get('/api/test-email', async (req, res) => {
+  await testEmailHandler(req, res);
+});
+
+// Admin API Routes
+app.get('/api/admin/users', async (req, res) => {
+  await usersHandler(req, res);
+});
+
+app.post('/api/admin/reset-password', async (req, res) => {
+  await resetPasswordAdminHandler(req, res);
+});
+
+app.post('/api/admin/toggle-status', async (req, res) => {
+  await toggleStatusHandler(req, res);
+});
+
+app.post('/api/admin/toggle-admin', async (req, res) => {
+  await toggleAdminHandler(req, res);
+});
+
+app.delete('/api/admin/delete-user', async (req, res) => {
+  await deleteUserHandler(req, res);
+});
+
+app.post('/api/admin/create-user', async (req, res) => {
+  await createUserHandler(req, res);
+});
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(join(__dirname, 'dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(join(__dirname, 'dist', 'index.html'));
+  });
+} else {
+  // Development: Create Vite server
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: 'spa'
+  });
+
+  app.use(vite.middlewares);
+}
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📱 API available at http://localhost:${PORT}/api`);
+}); 

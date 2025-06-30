@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -35,33 +36,53 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // For demo purposes, accept any email/password combination
-      // In production, this would validate against your backend
-      if (email && password) {
-        const userData = {
-          id: Date.now(),
-          email: email,
-          name: email.split('@')[0], // Use email prefix as name
-          createdAt: new Date().toISOString()
-        };
-        
+      // Try API authentication
+      const result = await authService.loginUser(email, password);
+      
+      if (result.success && result.user) {
         // Generate a simple token (in production, this would come from your backend)
-        const token = btoa(JSON.stringify(userData) + Date.now());
+        const token = btoa(JSON.stringify(result.user) + Date.now());
         
         // Save to localStorage
         localStorage.setItem('thinktact_token', token);
-        localStorage.setItem('thinktact_user', JSON.stringify(userData));
+        localStorage.setItem('thinktact_user', JSON.stringify(result.user));
         
-        setUser(userData);
+        setUser(result.user);
         setIsAuthenticated(true);
         
         return { success: true };
       } else {
-        return { success: false, error: 'Email and password are required' };
+        // Check if the error is about email verification
+        if (result.error && result.error.includes('verify your email')) {
+          return { 
+            success: false, 
+            error: 'Please verify your email before logging in.',
+            needsVerification: true,
+            email: email 
+          };
+        }
+        // Return the error from the API
+        return result;
       }
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: 'Login failed' };
+      return { success: false, error: 'Login failed. Please try again.' };
+    }
+  };
+
+  const register = async (email, password, userData) => {
+    try {
+      const result = await authService.registerUser(email, password, userData);
+      
+      if (result.success) {
+        // Return success without auto-login - user will be redirected to verification page
+        return { success: true };
+      } else {
+        return result;
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, error: 'Registration failed' };
     }
   };
 
@@ -72,11 +93,18 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem('thinktact_user', JSON.stringify(updatedUserData));
+  };
+
   const value = {
     isAuthenticated,
     user,
     login,
+    register,
     logout,
+    updateUser,
     loading
   };
 

@@ -57,6 +57,11 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
+            {isAuthenticated && user?.email === 'alex.hawke54@gmail.com' && (
+              <Link to="/admin" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/admin')}`}>
+                Admin
+              </Link>
+            )}
             <Link to="/analyzer" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/analyzer')}`}>
               Analyzer
             </Link>
@@ -80,14 +85,14 @@ const Navbar = () => {
             <div className="ml-4 flex items-center space-x-2">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700">
+                  <Link to="/profile" className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:text-pink-950 hover:bg-gray-50 rounded-md transition-colors duration-150">
                     <div className="h-6 w-6 rounded-full bg-pink-950 flex items-center justify-center">
                       <span className="text-xs font-medium text-white">
-                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                        {user?.firstName?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>
-                    <span className="hidden lg:block">{user?.name || 'User'}</span>
-                  </div>
+                    <span className="hidden lg:block">{user?.firstName || user?.name || 'User'}</span>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50 transition-colors duration-150"
@@ -130,6 +135,11 @@ const Navbar = () => {
               Dashboard
             </Link>
           )}
+          {isAuthenticated && user?.email === 'alex.hawke54@gmail.com' && (
+            <Link to="/admin" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/admin')}`}>
+              Admin
+            </Link>
+          )}
           <Link to="/analyzer" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/analyzer')}`}>
             Analyzer
           </Link>
@@ -153,17 +163,17 @@ const Navbar = () => {
           <div className="pt-4 pb-3 border-t border-gray-200">
             {isAuthenticated ? (
               <div className="space-y-2">
-                <div className="flex items-center px-3 py-2">
+                <Link to="/profile" className="flex items-center px-3 py-2 hover:bg-gray-50 rounded-md">
                   <div className="h-8 w-8 rounded-full bg-pink-950 flex items-center justify-center mr-3">
                     <span className="text-sm font-medium text-white">
-                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      {user?.firstName?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">{user?.name || 'User'}</p>
+                    <p className="text-sm font-medium text-gray-700">{user?.firstName || user?.name || 'User'}</p>
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
-                </div>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-red-600 hover:bg-gray-50"

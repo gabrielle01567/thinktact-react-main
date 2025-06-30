@@ -12,18 +12,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server.js",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && vercel --prod"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
+    "@vercel/blob": "^1.1.1",
     "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
     "chart.js": "^4.4.8",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^6.30.0"
+    "react-router-dom": "^6.30.0",
+    "resend": "^4.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -31,10 +36,12 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
     "autoprefixer": "^10.4.16",
+    "cors": "^2.8.5",
     "daisyui": "^3.9.2",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "express": "^5.1.0",
     "globals": "^15.15.0",
     "postcss": "^8.4.31",
     "puppeteer": "^24.5.0",

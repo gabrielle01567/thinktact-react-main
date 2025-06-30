@@ -12,9 +12,16 @@ import ClarityInfrastructure from './pages/ClarityInfrastructure';
 import PatentAudit from './pages/PatentAudit';
 import PatentAuditThanks from './pages/PatentAuditThanks';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import React from 'react';
+import VerifyEmail from './pages/VerifyEmail';
+import Verify from './pages/Verify';
+import Admin from './pages/Admin';
+import Profile from './pages/Profile';
+import VerifyEmailChange from './pages/VerifyEmailChange';
 
 function App() {
   return (
@@ -34,8 +41,10 @@ function App() {
             <Route path="*" element={<ErrorPage />} />
           </Route>
           
-          {/* Login route (outside Layout) */}
+          {/* Authentication routes (outside Layout) */}
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Protected Dashboard route */}
           <Route 
@@ -46,6 +55,22 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          {/* Protected Profile route */}
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="/verify-email-change" element={<VerifyEmailChange />} />
+
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </Router>
     </AuthProvider>
