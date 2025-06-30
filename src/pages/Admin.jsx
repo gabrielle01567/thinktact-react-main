@@ -44,6 +44,10 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const [showResetEmailModal, setShowResetEmailModal] = useState(false);
+  const [resetEmailTarget, setResetEmailTarget] = useState(null);
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
@@ -325,6 +329,31 @@ export default function Admin() {
     }
   };
 
+  const sendPasswordResetEmail = async (user) => {
+    setIsSendingResetEmail(true);
+    setMessage('');
+    setError('');
+    try {
+      const response = await fetch('/api/admin/request-reset-for-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage('Password reset email sent to ' + user.email);
+        setShowResetEmailModal(false);
+        setResetEmailTarget(null);
+      } else {
+        setError(data.error || 'Failed to send password reset email.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -570,6 +599,15 @@ export default function Admin() {
                                 className="text-red-600 hover:text-red-900"
                               >
                                 Delete
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowResetEmailModal(true);
+                                  setResetEmailTarget(user);
+                                }}
+                                className="text-orange-600 hover:text-orange-900 ml-2"
+                              >
+                                Reset Password
                               </button>
                             </div>
                           </td>
@@ -925,6 +963,35 @@ export default function Admin() {
               )}
             </div>
           </div>
+
+          {/* Admin-triggered Password Reset Modal */}
+          {showResetEmailModal && resetEmailTarget && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div className="mt-3">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Send Password Reset Email
+                  </h3>
+                  <p className="mb-4">Are you sure you want to send a password reset email to <span className="font-semibold">{resetEmailTarget.email}</span>?</p>
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => { setShowResetEmailModal(false); setResetEmailTarget(null); }}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => sendPasswordResetEmail(resetEmailTarget)}
+                      disabled={isSendingResetEmail}
+                      className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+                    >
+                      {isSendingResetEmail ? 'Sending...' : 'Send Reset Email'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

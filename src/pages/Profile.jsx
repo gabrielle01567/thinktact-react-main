@@ -15,6 +15,9 @@ const Profile = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [securityAnswerInput, setSecurityAnswerInput] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -99,6 +102,40 @@ const Profile = () => {
     }
   };
 
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setIsResetting(true);
+    setError('');
+    setMessage('');
+
+    // Check security answer (case-insensitive)
+    if ((user?.securityAnswer || '').trim().toLowerCase() !== securityAnswerInput.trim().toLowerCase()) {
+      setError('Incorrect answer to security question.');
+      setIsResetting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage('Password reset email sent. Please check your inbox.');
+        setShowResetModal(false);
+        setSecurityAnswerInput('');
+      } else {
+        setError(data.error || 'Failed to send password reset email.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -168,12 +205,20 @@ const Profile = () => {
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => setShowEmailChange(!showEmailChange)}
-                      className="px-4 py-2 text-sm font-medium text-pink-950 bg-white border border-pink-950 rounded-md hover:bg-pink-50 transition-colors duration-150"
-                    >
-                      Change Email
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => setShowEmailChange(!showEmailChange)}
+                        className="px-4 py-2 text-sm font-medium text-pink-950 bg-white border border-pink-950 rounded-md hover:bg-pink-50 transition-colors duration-150"
+                      >
+                        Change Email
+                      </button>
+                      <button
+                        onClick={() => setShowResetModal(true)}
+                        className="px-4 py-2 text-sm font-medium text-blue-900 bg-white border border-blue-900 rounded-md hover:bg-blue-50 transition-colors duration-150"
+                      >
+                        Reset Password
+                      </button>
+                    </div>
                   </div>
 
                   {/* Email Change Form */}
@@ -347,6 +392,43 @@ const Profile = () => {
                   className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                 >
                   Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Password Reset Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <form onSubmit={handlePasswordReset}>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Reset Password</h3>
+              <p className="mb-2">To reset your password, please answer your security question:</p>
+              <p className="font-semibold mb-4">{user?.securityQuestion}</p>
+              <input
+                type="text"
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+                placeholder="Your answer"
+                value={securityAnswerInput}
+                onChange={e => setSecurityAnswerInput(e.target.value)}
+                required
+              />
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowResetModal(false); setSecurityAnswerInput(''); setError(''); }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResetting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  {isResetting ? 'Sending...' : 'Send Reset Email'}
                 </button>
               </div>
             </form>
