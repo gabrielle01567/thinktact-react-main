@@ -6,13 +6,15 @@ let devStorage = new Map();
 // Helper functions for user management
 export const findUserByEmail = async (email) => {
   const USERS_BLOB_PREFIX = 'users/';
-  const normalizedEmail = email.toLowerCase();
+  const normalizedEmail = email.toLowerCase().trim();
   const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+  
+  console.log(`🔍 Looking for user with email: "${email}" -> normalized: "${normalizedEmail}", blobName: ${blobName}`);
   
   // Check if we're in development mode (no BLOB_READ_WRITE_TOKEN)
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     const user = devStorage.get(blobName);
-    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found:`, !!user);
+    console.log(`🔍 Development mode - found: ${!!user}`);
     return user;
   }
   
@@ -22,13 +24,13 @@ export const findUserByEmail = async (email) => {
     if (blob) {
       const response = await fetch(blob.url);
       const user = await response.json();
-      console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: true`);
+      console.log(`🔍 Production mode - found: true`);
       return user;
     }
-    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: false`);
+    console.log(`🔍 Production mode - found: false`);
     return null;
   } catch (error) {
-    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: false (error: ${error.message})`);
+    console.log(`🔍 Production mode - found: false (error: ${error.message})`);
     return null;
   }
 };
@@ -61,30 +63,47 @@ export const findUserById = async (userId) => {
   }
 };
 
-export const saveUser = async (blobName, userData) => {
-  console.log(`Saving user with blobName: ${blobName}`);
+export const saveUser = async (userData) => {
+  // Always normalize email for consistent storage
+  const normalizedEmail = userData.email.toLowerCase().trim();
+  const USERS_BLOB_PREFIX = 'users/';
+  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+  
+  // Ensure email is normalized in user data
+  const normalizedUserData = {
+    ...userData,
+    email: normalizedEmail
+  };
+  
+  console.log(`💾 Saving user: "${normalizedEmail}" with blobName: ${blobName}`);
   
   // Check if we're in development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    devStorage.set(blobName, userData);
+    devStorage.set(blobName, normalizedUserData);
+    console.log(`💾 Development mode - saved successfully`);
     return;
   }
   
   // Production mode - save to Vercel Blob
   try {
-    const jsonData = JSON.stringify(userData);
+    const jsonData = JSON.stringify(normalizedUserData);
     await put(blobName, jsonData, {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true
     });
+    console.log(`💾 Production mode - saved successfully`);
   } catch (error) {
     console.error('Error saving user to blob:', error);
     throw error;
   }
 };
 
-export const deleteUser = async (blobName) => {
+export const deleteUser = async (email) => {
+  const normalizedEmail = email.toLowerCase().trim();
+  const USERS_BLOB_PREFIX = 'users/';
+  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+  
   // Check if we're in development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     devStorage.delete(blobName);
@@ -112,10 +131,6 @@ export const createAdminUser = async () => {
     const bcrypt = await import('bcryptjs');
     const SALT_ROUNDS = 12;
     
-    // Generate blob name for admin user
-    const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(adminEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    
     // Hash the default password
     const hashedPassword = await bcrypt.default.hash('admin123', SALT_ROUNDS);
     
@@ -137,12 +152,11 @@ export const createAdminUser = async () => {
     };
     
     // Save admin user
-    await saveUser(blobName, adminUserData);
+    await saveUser(adminUserData);
     console.log('✅ Super User created successfully');
     console.log('📧 Email: alex.hawke54@gmail.com');
     console.log('🔑 Password: admin123');
     console.log('👑 Role: Super User (above Admin)');
-    console.log('Blob name:', blobName);
     
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       console.log('Total users in storage:', devStorage.size);
@@ -166,10 +180,6 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     const bcrypt = await import('bcryptjs');
     const SALT_ROUNDS = 12;
     
-    // Generate blob name for user
-    const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    
     // Hash the password
     const hashedPassword = await bcrypt.default.hash(password, SALT_ROUNDS);
     
@@ -186,7 +196,7 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     };
     
     // Save super user
-    await saveUser(blobName, superUserData);
+    await saveUser(superUserData);
     console.log('✅ User upgraded to Super User successfully');
     console.log('📧 Email:', email);
     console.log('👑 Role: Super User (above Admin)');
@@ -195,10 +205,6 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     console.log('Creating new super user...');
     const bcrypt = await import('bcryptjs');
     const SALT_ROUNDS = 12;
-    
-    // Generate blob name for user
-    const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
     
     // Hash the password
     const hashedPassword = await bcrypt.default.hash(password, SALT_ROUNDS);
@@ -221,7 +227,7 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     };
     
     // Save super user
-    await saveUser(blobName, superUserData);
+    await saveUser(superUserData);
     console.log('✅ Super User created successfully');
     console.log('📧 Email:', email);
     console.log('👑 Role: Super User (above Admin)');
@@ -234,7 +240,8 @@ export const toggleAdminStatus = async (userId, isAdmin) => {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     for (const [key, user] of devStorage.entries()) {
       if (user.id === userId) {
-        devStorage.set(key, { ...user, isAdmin });
+        const updatedUser = { ...user, isAdmin };
+        devStorage.set(key, updatedUser);
         return true;
       }
     }
@@ -246,7 +253,7 @@ export const toggleAdminStatus = async (userId, isAdmin) => {
     const { user, key } = await findUserById(userId);
     if (user && key) {
       const updatedUser = { ...user, isAdmin };
-      await saveUser(key, updatedUser);
+      await saveUser(updatedUser);
       return true;
     }
     return false;
@@ -263,18 +270,27 @@ export const getAllUsers = async () => {
     return Array.from(devStorage.values());
   }
   
-  // Production mode - list all users from blob
+  // Production mode - get all users from Vercel Blob
   try {
     const { blobs } = await list({ prefix: 'users/' });
     const users = [];
+    
     for (const blob of blobs) {
-      const response = await fetch(blob.url);
-      const user = await response.json();
-      users.push(user);
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        users.push(user);
+      } catch (error) {
+        console.error(`Error fetching user from ${blob.pathname}:`, error);
+      }
     }
+    
     return users;
   } catch (error) {
     console.error('Error getting all users:', error);
     return [];
   }
-}; 
+};
+
+// Export devStorage for development debugging
+export { devStorage }; 

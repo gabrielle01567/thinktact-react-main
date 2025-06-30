@@ -1,7 +1,4 @@
-import bcrypt from 'bcryptjs';
-import { findUserByEmail, saveUser, devStorage } from '../shared-storage.js';
-
-const SALT_ROUNDS = 12;
+import { getAllUsers, saveUser } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,52 +12,66 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Token and new password are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
+    console.log('Password reset attempt with token:', token);
 
     // Find user by reset token
     let userToUpdate = null;
-    let userKey = null;
     
-    // Search through all users to find the one with matching reset token
-    for (const [key, user] of devStorage.entries()) {
-      if (user.resetToken === token) {
-        userToUpdate = user;
-        userKey = key;
-        break;
+    try {
+      const users = await getAllUsers();
+      console.log(`🔍 Checking ${users.length} users for reset token`);
+      
+      for (const user of users) {
+        if (user.resetToken === token) {
+          // Check if token is expired
+          if (user.resetTokenExpiry && new Date() > new Date(user.resetTokenExpiry)) {
+            console.log('❌ Reset token expired for user:', user.email);
+            return res.status(400).json({ error: 'Reset token has expired' });
+          }
+          
+          userToUpdate = user;
+          console.log(`✅ Found user with valid reset token: ${user.email}`);
+          break;
+        }
       }
+    } catch (error) {
+      console.error('❌ Error getting users:', error);
+      return res.status(500).json({ error: 'Failed to reset password' });
     }
-    
+
     if (!userToUpdate) {
-      return res.status(404).json({ error: 'Invalid or expired reset token' });
+      console.log('❌ No user found with reset token:', token);
+      return res.status(400).json({ error: 'Invalid reset token' });
     }
 
-    // Check if token is expired
-    if (new Date() > new Date(userToUpdate.resetTokenExpiry)) {
-      return res.status(400).json({ error: 'Reset token has expired' });
-    }
+    // Hash new password
+    const bcrypt = await import('bcryptjs');
+    const SALT_ROUNDS = 12;
+    const newPasswordHash = await bcrypt.default.hash(newPassword, SALT_ROUNDS);
 
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    
-    // Update user data
+    console.log('💾 Updating password for user:', userToUpdate.email);
+
+    // Update user password and clear reset token
     const updatedUserData = {
       ...userToUpdate,
-      passwordHash: hashedPassword,
-      resetToken: undefined,
-      resetTokenExpiry: undefined
+      passwordHash: newPasswordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
+      lastLogin: new Date().toISOString()
     };
 
-    // Store updated user data
-    saveUser(userKey, updatedUserData);
+    // Save updated user
+    await saveUser(updatedUserData);
+
+    console.log('✅ Password reset successful for user:', userToUpdate.email);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset successfully'
+      message: 'Password reset successfully! You can now log in with your new password.'
     });
+
   } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(500).json({ error: 'Failed to reset password' });
+    console.error('❌ Password reset error:', error);
+    res.status(500).json({ error: 'Password reset failed' });
   }
 } 

@@ -1,4 +1,5 @@
 import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { Resend } from 'resend';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,22 +7,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, securityAnswer } = req.body;
+    const { email } = req.body;
 
-    if (!email || !securityAnswer) {
-      return res.status(400).json({ error: 'Email and security answer are required' });
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Find user by email
-    const normalizedEmail = email.toLowerCase();
-    const userData = await findUserByEmail(normalizedEmail);
-    if (!userData) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    console.log('Password reset request for email:', email);
 
-    // Verify security answer
-    if (userData.securityAnswer.toLowerCase() !== securityAnswer.toLowerCase()) {
-      return res.status(401).json({ error: 'Incorrect security answer' });
+    // Find user by email (normalized)
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+      console.log('User not found for password reset:', email);
+      return res.status(404).json({ error: 'No account found with this email address' });
     }
 
     // Generate reset token
@@ -29,50 +28,59 @@ export default async function handler(req, res) {
     const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     // Update user with reset token
-    const updatedUserData = {
-      ...userData,
+    const updatedUser = {
+      ...user,
       resetToken,
       resetTokenExpiry: resetTokenExpiry.toISOString()
     };
 
-    // Generate blob name for user
-    const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    
-    // Save updated user data
-    saveUser(blobName, updatedUserData);
+    await saveUser(updatedUser);
 
-    // Send reset email if Resend API key is set
+    // Send reset email
     if (process.env.RESEND_API_KEY) {
       try {
-        const { Resend } = await import('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
         
+        const resetUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        
         await resend.emails.send({
-          from: 'ThinkTactAI <noreply@thinktact.ai>',
+          from: 'ThinkTact AI <noreply@thinktact.ai>',
           to: [email],
-          subject: 'Password Reset Request',
+          subject: 'Reset your ThinkTact AI password',
           html: `
-            <h2>Password Reset Request</h2>
-            <p>Hi ${userData.firstName},</p>
-            <p>You requested a password reset for your ThinkTactAI account. Click the link below to reset your password:</p>
-            <p><a href="${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}">Reset Password</a></p>
-            <p>This link will expire in 24 hours. If you didn't request this reset, you can safely ignore this email.</p>
-            <p>Best regards,<br>The ThinkTactAI Team</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Password Reset Request</h2>
+              <p>Hi ${user.firstName},</p>
+              <p>We received a request to reset your password for your ThinkTact AI account. Click the button below to reset your password:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+              </div>
+              <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+              <p>This link will expire in 24 hours.</p>
+              <p>If you didn't request a password reset, you can safely ignore this email.</p>
+              <p>Best regards,<br>The ThinkTact AI Team</p>
+            </div>
           `
         });
+        
+        console.log(`📧 Password reset email sent to: ${email}`);
       } catch (emailError) {
-        console.error('Failed to send reset email:', emailError);
-        // Don't fail the request if email fails
+        console.error('Error sending password reset email:', emailError);
+        return res.status(500).json({ error: 'Failed to send reset email' });
       }
+    } else {
+      console.log('⚠️ RESEND_API_KEY not set - email service not configured');
+      return res.status(500).json({ error: 'Email service not configured' });
     }
 
     res.status(200).json({
       success: true,
       message: 'Password reset email sent successfully'
     });
+
   } catch (error) {
-    console.error('Request reset error:', error);
+    console.error('Password reset request error:', error);
     res.status(500).json({ error: 'Failed to process reset request' });
   }
 } 

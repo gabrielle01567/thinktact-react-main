@@ -1,4 +1,5 @@
 import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { Resend } from 'resend';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,98 +13,73 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Find user by email
-    const user = findUserByEmail(email);
-    
+    console.log('Resend verification request for email:', email);
+
+    // Find user by email (normalized)
+    const user = await findUserByEmail(email);
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      console.log('User not found for resend verification:', email);
+      return res.status(404).json({ error: 'No account found with this email address' });
     }
 
     if (user.verified) {
+      console.log('User already verified:', email);
       return res.status(400).json({ error: 'User is already verified' });
     }
 
     // Generate new verification token
-    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const newVerificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     // Update user with new verification token
     const updatedUser = {
       ...user,
-      verificationToken
+      verificationToken: newVerificationToken
     };
 
-    // Save updated user
-    const blobName = `users/${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    saveUser(blobName, updatedUser);
+    await saveUser(updatedUser);
 
-    // Send verification email using Resend
+    // Send verification email
     if (process.env.RESEND_API_KEY) {
       try {
-        const { Resend } = await import('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
         
+        const verificationUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/verify?token=${newVerificationToken}`;
+        
         await resend.emails.send({
-          from: 'ThinkTactAI <noreply@thinktact.ai>',
+          from: 'ThinkTact AI <noreply@thinktact.ai>',
           to: [email],
-          subject: 'Verify your ThinkTactAI account',
+          subject: 'Verify your ThinkTact AI account',
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #9d1755; text-align: center;">Welcome to ThinkTactAI!</h2>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Verify your ThinkTact AI account</h2>
               <p>Hi ${user.firstName},</p>
-              <p>Thank you for registering with ThinkTactAI. Please verify your email address by clicking the button below:</p>
+              <p>You requested a new verification email for your ThinkTact AI account. Please verify your email address by clicking the button below:</p>
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.VERCEL_URL || 'http://localhost:3000'}/verify?token=${verificationToken}" 
-                   style="background-color: #9d1755; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                  Verify Email Address
-                </a>
+                <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
               </div>
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #666;">
-                ${process.env.VERCEL_URL || 'http://localhost:3000'}/verify?token=${verificationToken}
-              </p>
-              <p>If you didn't create this account, you can safely ignore this email.</p>
-              <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 14px;">
-                Best regards,<br>
-                The ThinkTactAI Team
-              </p>
+              <p style="word-break: break-all; color: #666;">${verificationUrl}</p>
+              <p>This link will expire in 24 hours.</p>
+              <p>Best regards,<br>The ThinkTact AI Team</p>
             </div>
           `
         });
-
-        console.log(`✅ Verification email sent to: ${email}`);
         
-        res.status(200).json({
-          success: true,
-          message: 'Verification email sent successfully'
-        });
-
+        console.log(`📧 Verification email resent to: ${email}`);
       } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-        
-        // Provide more specific error messages
-        let errorMessage = 'Failed to send verification email';
-        
-        if (emailError.message) {
-          if (emailError.message.includes('Unauthorized')) {
-            errorMessage = 'Email service configuration error. Please contact support.';
-          } else if (emailError.message.includes('Invalid')) {
-            errorMessage = 'Invalid email address format.';
-          } else if (emailError.message.includes('Rate limit')) {
-            errorMessage = 'Too many email requests. Please try again later.';
-          } else {
-            errorMessage = `Email service error: ${emailError.message}`;
-          }
-        }
-        
-        res.status(500).json({ error: errorMessage });
+        console.error('Error sending verification email:', emailError);
+        return res.status(500).json({ error: 'Failed to send verification email' });
       }
     } else {
       console.log('⚠️ RESEND_API_KEY not set - email service not configured');
-      res.status(500).json({ 
-        error: 'Email service not configured. Please contact support to set up email verification.' 
-      });
+      return res.status(500).json({ error: 'Email service not configured' });
     }
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent successfully'
+    });
 
   } catch (error) {
     console.error('Resend verification error:', error);
