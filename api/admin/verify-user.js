@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     };
 
     // Store updated user data
-    await saveUser(blobName, updatedUserData);
+    await saveUser(updatedUserData);
 
     res.status(200).json({
       success: true,

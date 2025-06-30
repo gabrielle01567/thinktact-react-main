@@ -38,6 +38,7 @@ import deleteUserHandler from './api/admin/delete-user.js';
 import toggleAdminHandler from './api/admin/toggle-admin.js';
 import createUserHandler from './api/admin/create-user.js';
 import createSuperUserHandler from './api/admin/create-super-user.js';
+import verifyUserHandler from './api/admin/verify-user.js';
 
 // API Routes
 app.post('/api/auth/register', async (req, res) => {
@@ -116,6 +117,10 @@ app.post('/api/admin/create-user', async (req, res) => {
 
 app.post('/api/admin/create-super-user', async (req, res) => {
   await createSuperUserHandler(req, res);
+});
+
+app.post('/api/admin/verify-user', async (req, res) => {
+  await verifyUserHandler(req, res);
 });
 
 // Serve static files in production
