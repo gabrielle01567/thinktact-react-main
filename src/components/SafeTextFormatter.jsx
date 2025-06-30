@@ -22,7 +22,7 @@ const SafeTextFormatter = ({ text, className = "", emphasisColor = "" }) => {
   const conclusionIndicators = ['therefore', 'thus', 'so', 'hence', 'consequently', 'as a result'];
   
   // Split text into sentences
-  const sentences = sanitizedText.split(/(?<=\.\s|\?\s|\!\s)/);
+  const sentences = sanitizedText.split(/(?<=\.\s|\?\s|!\s)/);
   
   return (
     <>
