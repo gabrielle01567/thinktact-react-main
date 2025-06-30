@@ -1,30 +1,35 @@
+import { getBlobName } from '../shared-storage.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const email = 'alex.hawke54@gmail.com';
-    const normalizedEmail = email.toLowerCase().trim();
-    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
-    const blobName = `users/${safeEmail}.json`;
+    const testEmail = 'alex.hawke54@gmail.com';
+    const normalizedEmail = testEmail.toLowerCase().trim();
     
-    // Also test the old method
-    const encodedEmail = btoa(normalizedEmail);
+    // Get normalized blob name
+    const normalizedBlobName = getBlobName(normalizedEmail);
+    
+    // For reference, show what the old format would have been
+    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
     const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
     
     res.status(200).json({
       success: true,
-      email: email,
+      email: testEmail,
       normalizedEmail: normalizedEmail,
-      safeEmail: safeEmail,
-      blobName: blobName,
+      normalizedBlobName: normalizedBlobName,
       oldBlobName: oldBlobName,
-      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development'
+      note: 'System now uses normalized blob name format consistently'
     });
 
   } catch (error) {
-    console.error('Error testing blob names:', error);
-    res.status(500).json({ error: 'Failed to test blob names', details: error.message });
+    console.error('Test blob names error:', error);
+    res.status(500).json({
+      error: 'Test failed',
+      details: error.message
+    });
   }
 } 

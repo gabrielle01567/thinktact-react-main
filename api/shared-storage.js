@@ -1,10 +1,10 @@
 // Development storage (in-memory Map)
 let devStorage = new Map();
 
-// Simple blob name generation - just use the email as filename
+// Normalized blob name generation - single source of truth
 const getBlobName = (email) => {
   const normalizedEmail = email.toLowerCase().trim();
-  // Simple encoding: replace special chars with underscores
+  // Consistent encoding: replace special chars with underscores
   const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
   return `users/${safeEmail}.json`;
 };
@@ -23,43 +23,33 @@ export const findUserByEmail = async (email) => {
   try {
     const { head, list } = await import('@vercel/blob');
     
-    // Try new blob name format first
-    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
-    const newBlobName = `users/${safeEmail}.json`;
+    // Use consistent blob name format
+    const blobName = getBlobName(normalizedEmail);
     
-    console.log(`🔍 Trying new blob name: "${newBlobName}"`);
-    let { blob } = await head(newBlobName);
+    console.log(`🔍 Looking for user with blob name: "${blobName}"`);
+    const result = await head(blobName);
     
-    if (blob) {
-      const response = await fetch(blob.url);
+    if (result.blob) {
+      const response = await fetch(result.blob.url);
       const user = await response.json();
-      console.log(`🔍 Found user with new blob name`);
+      console.log(`🔍 Found user with normalized blob name`);
       return user;
     }
     
-    // Try old blob name format as fallback
-    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
-    const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    
-    console.log(`🔍 Trying old blob name: "${oldBlobName}"`);
-    const oldResult = await head(oldBlobName);
-    
-    if (oldResult.blob) {
-      const response = await fetch(oldResult.blob.url);
-      const user = await response.json();
-      console.log(`🔍 Found user with old blob name`);
-      return user;
-    }
-    
-    // As a last resort, search through all users
-    console.log(`🔍 Searching through all users as fallback`);
+    // As a last resort, search through all users (for migration purposes)
+    console.log(`🔍 User not found with normalized blob name, searching all users...`);
     const { blobs } = await list({ prefix: 'users/' });
     for (const blob of blobs) {
-      const response = await fetch(blob.url);
-      const user = await response.json();
-      if (user.email === normalizedEmail) {
-        console.log(`🔍 Found user in all users search`);
-        return user;
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.email === normalizedEmail) {
+          console.log(`🔍 Found user in all users search, will migrate to normalized format`);
+          // Return the user but don't migrate here (let saveUser handle migration)
+          return user;
+        }
+      } catch (error) {
+        console.error(`Error reading blob ${blob.pathname}:`, error);
       }
     }
     
@@ -118,36 +108,48 @@ export const saveUser = async (userData) => {
   
   // Production mode - save to Vercel Blob
   try {
-    const { put, head, del } = await import('@vercel/blob');
+    const { put, head, del, list } = await import('@vercel/blob');
     
-    // First, try to find existing blob with old format
-    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
-    const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    // Get the normalized blob name
+    const normalizedBlobName = getBlobName(normalizedEmail);
     
-    // Check if old blob exists
-    try {
-      const oldResult = await head(oldBlobName);
-      if (oldResult.blob) {
-        // Delete old blob and save with new format
-        await del(oldBlobName);
-        console.log(`🔄 Migrated user from old blob format: ${oldBlobName}`);
+    // Check if user exists in any format and migrate if needed
+    const { blobs } = await list({ prefix: 'users/' });
+    let foundOldBlob = null;
+    
+    for (const blob of blobs) {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.email === normalizedEmail && blob.pathname !== normalizedBlobName) {
+          foundOldBlob = blob;
+          console.log(`🔄 Found user in old blob format: ${blob.pathname}, will migrate to: ${normalizedBlobName}`);
+          break;
+        }
+      } catch (error) {
+        console.error(`Error reading blob ${blob.pathname}:`, error);
       }
-    } catch (error) {
-      // Old blob doesn't exist, continue with new format
     }
     
-    // Save with new blob name format
-    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
-    const newBlobName = `users/${safeEmail}.json`;
+    // Delete old blob if found
+    if (foundOldBlob) {
+      try {
+        await del(foundOldBlob.pathname);
+        console.log(`🗑️ Deleted old blob: ${foundOldBlob.pathname}`);
+      } catch (error) {
+        console.error(`Error deleting old blob ${foundOldBlob.pathname}:`, error);
+      }
+    }
     
+    // Save with normalized blob name format
     const jsonData = JSON.stringify(normalizedUserData);
-    await put(newBlobName, jsonData, {
+    await put(normalizedBlobName, jsonData, {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true
     });
     
-    console.log(`💾 Saved user with blob name: ${newBlobName}`);
+    console.log(`💾 Saved user with normalized blob name: ${normalizedBlobName}`);
   } catch (error) {
     console.error('Error saving user to blob:', error);
     throw error;
@@ -166,45 +168,27 @@ export const deleteUser = async (email) => {
   
   // Production mode
   try {
-    const { del, head } = await import('@vercel/blob');
+    const { del, head, list } = await import('@vercel/blob');
     let deleted = false;
     
-    // Try new blob name format first
-    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
-    const newBlobName = `users/${safeEmail}.json`;
+    // Use normalized blob name format
+    const normalizedBlobName = getBlobName(normalizedEmail);
     
-    console.log(`🗑️ Trying to delete with new blob name: "${newBlobName}"`);
+    console.log(`🗑️ Trying to delete with normalized blob name: "${normalizedBlobName}"`);
     try {
-      const result = await head(newBlobName);
+      const result = await head(normalizedBlobName);
       if (result.blob) {
-        await del(newBlobName);
-        console.log(`✅ Deleted user with new blob name: ${newBlobName}`);
+        await del(normalizedBlobName);
+        console.log(`✅ Deleted user with normalized blob name: ${normalizedBlobName}`);
         deleted = true;
       }
     } catch (error) {
-      console.log(`❌ New blob name not found: ${newBlobName}`);
-    }
-    
-    // Try old blob name format as fallback
-    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
-    const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
-    
-    console.log(`🗑️ Trying to delete with old blob name: "${oldBlobName}"`);
-    try {
-      const result = await head(oldBlobName);
-      if (result.blob) {
-        await del(oldBlobName);
-        console.log(`✅ Deleted user with old blob name: ${oldBlobName}`);
-        deleted = true;
-      }
-    } catch (error) {
-      console.log(`❌ Old blob name not found: ${oldBlobName}`);
+      console.log(`❌ Normalized blob name not found: ${normalizedBlobName}`);
     }
     
     // As a last resort, search through all users and delete by email match
     if (!deleted) {
       console.log(`🔍 Searching through all users to find and delete by email match`);
-      const { list } = await import('@vercel/blob');
       const { blobs } = await list({ prefix: 'users/' });
       
       for (const blob of blobs) {
