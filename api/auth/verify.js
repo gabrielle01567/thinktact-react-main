@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser, devStorage, getAllUsers } from '../shared-storage.js';
+import { findUserByEmail, saveUser, getAllUsers } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -12,39 +12,29 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Verification token is required' });
     }
 
+    console.log('🔍 Searching for user with verification token:', token);
+
     // Find user by verification token
     let userToUpdate = null;
-    let userKey = null;
     
-    // Check if we're in development mode
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      // Development mode - search through devStorage
-      for (const [key, user] of devStorage.entries()) {
+    try {
+      const users = await getAllUsers();
+      console.log(`📊 Searching through ${users.length} users for verification token`);
+      
+      for (const user of users) {
         if (user.verificationToken === token) {
           userToUpdate = user;
-          userKey = key;
+          console.log('✅ Found user with matching verification token:', user.email);
           break;
         }
       }
-    } else {
-      // Production mode - search through all users in blob storage
-      try {
-        const users = await getAllUsers();
-        for (const user of users) {
-          if (user.verificationToken === token) {
-            userToUpdate = user;
-            // Find the blob name for this user
-            const USERS_BLOB_PREFIX = 'users/';
-            userKey = `${USERS_BLOB_PREFIX}${btoa(user.email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-            break;
-          }
-        }
-      } catch (error) {
-        console.error('Error searching users in production:', error);
-      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+      return res.status(500).json({ error: 'Failed to search for user' });
     }
     
     if (!userToUpdate) {
+      console.log('❌ No user found with verification token:', token);
       return res.status(404).json({ error: 'Invalid verification token' });
     }
 
@@ -52,11 +42,20 @@ export default async function handler(req, res) {
     const updatedUserData = {
       ...userToUpdate,
       verified: true,
-      verificationToken: undefined
+      verificationToken: null, // Remove the verification token
+      updatedAt: new Date().toISOString()
     };
 
+    console.log('💾 Saving verified user:', userToUpdate.email);
+
+    // Generate blob name for user
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(userToUpdate.email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+
     // Store updated user data
-    await saveUser(userKey, updatedUserData);
+    await saveUser(blobName, updatedUserData);
+
+    console.log('✅ Email verification successful for:', userToUpdate.email);
 
     res.status(200).json({
       success: true,
