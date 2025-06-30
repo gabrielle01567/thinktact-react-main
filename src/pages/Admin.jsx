@@ -26,7 +26,7 @@ export default function Admin() {
 
   // Super user creation form state
   const [showCreateSuperUser, setShowCreateSuperUser] = useState(false);
-  const [createSuperUserForm, setCreateSuperUserForm] = useState({
+  const [superUserForm, setSuperUserForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
@@ -41,13 +41,6 @@ export default function Admin() {
   const [migrationResult, setMigrationResult] = useState(null);
   const [testUsersResult, setTestUsersResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Hardcoded Admin User Info
-  const hardcodedAdmin = {
-    email: 'admin@thinktact.ai',
-    password: 'admin123',
-    role: 'Super User (Hardcoded)'
-  };
 
   useEffect(() => {
     if (isAdmin) {
@@ -233,17 +226,17 @@ export default function Admin() {
 
   const createSuperUser = async () => {
     // Validate form
-    if (!createSuperUserForm.firstName || !createSuperUserForm.lastName || !createSuperUserForm.email || !createSuperUserForm.password) {
+    if (!superUserForm.firstName || !superUserForm.lastName || !superUserForm.email || !superUserForm.password) {
       setMessage('All fields are required');
       return;
     }
 
-    if (createSuperUserForm.password !== createSuperUserForm.confirmPassword) {
+    if (superUserForm.password !== superUserForm.confirmPassword) {
       setMessage('Passwords do not match');
       return;
     }
 
-    if (createSuperUserForm.password.length < 6) {
+    if (superUserForm.password.length < 6) {
       setMessage('Password must be at least 6 characters');
       return;
     }
@@ -253,7 +246,7 @@ export default function Admin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...createSuperUserForm,
+          ...superUserForm,
           currentUserEmail: user.email
         })
       });
@@ -262,7 +255,7 @@ export default function Admin() {
       if (data.message) {
         setMessage(data.message);
         setShowCreateSuperUser(false);
-        setCreateSuperUserForm({
+        setSuperUserForm({
           firstName: '',
           lastName: '',
           email: '',
@@ -362,28 +355,6 @@ export default function Admin() {
                     Create User
                   </button>
                 </div>
-              </div>
-              
-              {/* Hardcoded Admin User Info */}
-              <div className="mb-6 p-4 bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg">
-                <h2 className="text-lg font-semibold text-purple-800 mb-2">🔑 Hardcoded Admin Access</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">Email:</span>
-                    <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">{hardcodedAdmin.email}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Password:</span>
-                    <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">{hardcodedAdmin.password}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Role:</span>
-                    <span className="ml-2 text-purple-600 font-semibold">{hardcodedAdmin.role}</span>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  💡 This hardcoded admin bypasses all storage and email verification issues. Use these credentials to access the system immediately.
-                </p>
               </div>
               
               {message && (
@@ -695,8 +666,8 @@ export default function Admin() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                       <input
                         type="text"
-                        value={createSuperUserForm.firstName}
-                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, firstName: e.target.value})}
+                        value={superUserForm.firstName}
+                        onChange={(e) => setSuperUserForm({...superUserForm, firstName: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
                         placeholder="First Name"
                       />
@@ -705,8 +676,8 @@ export default function Admin() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                       <input
                         type="text"
-                        value={createSuperUserForm.lastName}
-                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, lastName: e.target.value})}
+                        value={superUserForm.lastName}
+                        onChange={(e) => setSuperUserForm({...superUserForm, lastName: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
                         placeholder="Last Name"
                       />
@@ -715,8 +686,8 @@ export default function Admin() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                       <input
                         type="email"
-                        value={createSuperUserForm.email}
-                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, email: e.target.value})}
+                        value={superUserForm.email}
+                        onChange={(e) => setSuperUserForm({...superUserForm, email: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
                         placeholder="Email"
                       />
@@ -725,8 +696,8 @@ export default function Admin() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                       <input
                         type="password"
-                        value={createSuperUserForm.password}
-                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, password: e.target.value})}
+                        value={superUserForm.password}
+                        onChange={(e) => setSuperUserForm({...superUserForm, password: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
                         placeholder="Password (min 6 characters)"
                       />
@@ -735,8 +706,8 @@ export default function Admin() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
                       <input
                         type="password"
-                        value={createSuperUserForm.confirmPassword}
-                        onChange={(e) => setCreateSuperUserForm({...createSuperUserForm, confirmPassword: e.target.value})}
+                        value={superUserForm.confirmPassword}
+                        onChange={(e) => setSuperUserForm({...superUserForm, confirmPassword: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded bg-gray-200 text-black"
                         placeholder="Confirm Password"
                       />
@@ -746,7 +717,7 @@ export default function Admin() {
                     <button
                       onClick={() => {
                         setShowCreateSuperUser(false);
-                        setCreateSuperUserForm({
+                        setSuperUserForm({
                           firstName: '',
                           lastName: '',
                           email: '',

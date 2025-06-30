@@ -1,25 +1,31 @@
-import { put, del, list, head } from '@vercel/blob';
-
-// Shared storage that works in both development and production
+// Development storage (in-memory Map)
 let devStorage = new Map();
 
 // Helper functions for user management
 export const findUserByEmail = async (email) => {
-  const USERS_BLOB_PREFIX = 'users/';
   const normalizedEmail = email.toLowerCase().trim();
-  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
   
-  console.log(`🔍 Looking for user with email: "${email}" -> normalized: "${normalizedEmail}", blobName: ${blobName}`);
+  console.log(`🔍 Looking for user with email: "${email}" -> normalized: "${normalizedEmail}"`);
   
-  // Check if we're in development mode (no BLOB_READ_WRITE_TOKEN)
+  // Development mode - use local Map storage
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    const user = devStorage.get(blobName);
-    console.log(`🔍 Development mode - found: ${!!user}`);
-    return user;
+    // Search through all users in dev storage
+    for (const [key, user] of devStorage.entries()) {
+      if (user.email === normalizedEmail) {
+        console.log(`🔍 Development mode - found: true`);
+        return user;
+      }
+    }
+    console.log(`🔍 Development mode - found: false`);
+    return null;
   }
   
   // Production mode - use Vercel Blob
   try {
+    const { put, del, list, head } = await import('@vercel/blob');
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
     const { blob } = await head(blobName);
     if (blob) {
       const response = await fetch(blob.url);
@@ -36,7 +42,7 @@ export const findUserByEmail = async (email) => {
 };
 
 export const findUserById = async (userId) => {
-  // Check if we're in development mode
+  // Development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     for (const [key, user] of devStorage.entries()) {
       if (user.id === userId) {
@@ -46,8 +52,9 @@ export const findUserById = async (userId) => {
     return { user: null, key: null };
   }
   
-  // Production mode - list all users and find by ID
+  // Production mode
   try {
+    const { list } = await import('@vercel/blob');
     const { blobs } = await list({ prefix: 'users/' });
     for (const blob of blobs) {
       const response = await fetch(blob.url);
@@ -66,8 +73,6 @@ export const findUserById = async (userId) => {
 export const saveUser = async (userData) => {
   // Always normalize email for consistent storage
   const normalizedEmail = userData.email.toLowerCase().trim();
-  const USERS_BLOB_PREFIX = 'users/';
-  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
   
   // Ensure email is normalized in user data
   const normalizedUserData = {
@@ -75,17 +80,22 @@ export const saveUser = async (userData) => {
     email: normalizedEmail
   };
   
-  console.log(`💾 Saving user: "${normalizedEmail}" with blobName: ${blobName}`);
+  console.log(`💾 Saving user: "${normalizedEmail}"`);
   
-  // Check if we're in development mode
+  // Development mode - use local Map storage
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    devStorage.set(blobName, normalizedUserData);
-    console.log(`💾 Development mode - saved successfully`);
+    // Use email as key for easy lookup
+    devStorage.set(normalizedEmail, normalizedUserData);
+    console.log(`💾 Development mode - saved successfully. Total users: ${devStorage.size}`);
     return;
   }
   
   // Production mode - save to Vercel Blob
   try {
+    const { put } = await import('@vercel/blob');
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
     const jsonData = JSON.stringify(normalizedUserData);
     await put(blobName, jsonData, {
       access: 'public',
@@ -101,17 +111,18 @@ export const saveUser = async (userData) => {
 
 export const deleteUser = async (email) => {
   const normalizedEmail = email.toLowerCase().trim();
-  const USERS_BLOB_PREFIX = 'users/';
-  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
   
-  // Check if we're in development mode
+  // Development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    devStorage.delete(blobName);
+    devStorage.delete(normalizedEmail);
     return;
   }
   
-  // Production mode - delete from Vercel Blob
+  // Production mode
   try {
+    const { del } = await import('@vercel/blob');
+    const USERS_BLOB_PREFIX = 'users/';
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
     await del(blobName);
   } catch (error) {
     console.error('Error deleting user from blob:', error);
@@ -145,7 +156,7 @@ export const createAdminUser = async () => {
       securityAnswer: 'blue',
       verified: true,
       isAdmin: true,
-      isSuperUser: true, // Super user has admin privileges plus more
+      isSuperUser: true,
       blocked: false,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString()
@@ -153,19 +164,17 @@ export const createAdminUser = async () => {
     
     // Save admin user
     await saveUser(adminUserData);
-    console.log('✅ Super User created successfully');
+    console.log('✅ Admin user created successfully');
     console.log('📧 Email: alex.hawke54@gmail.com');
     console.log('🔑 Password: admin123');
-    console.log('👑 Role: Super User (above Admin)');
     
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      console.log('Total users in storage:', devStorage.size);
+      console.log('Total users in dev storage:', devStorage.size);
     }
   } else {
-    console.log('✅ Super User already exists');
+    console.log('✅ Admin user already exists');
     console.log('📧 Email: alex.hawke54@gmail.com');
     console.log('🔑 Password: admin123');
-    console.log('👑 Role: Super User (above Admin)');
   }
 };
 
@@ -198,11 +207,9 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     // Save super user
     await saveUser(superUserData);
     console.log('✅ User upgraded to Super User successfully');
-    console.log('📧 Email:', email);
-    console.log('👑 Role: Super User (above Admin)');
-    return true;
+    return { success: true, message: 'User upgraded to Super User' };
   } else {
-    console.log('Creating new super user...');
+    console.log('User does not exist, creating new super user...');
     const bcrypt = await import('bcryptjs');
     const SALT_ROUNDS = 12;
     
@@ -214,7 +221,7 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
       id: `super-user-${Date.now()}`,
       firstName: firstName || 'Super',
       lastName: lastName || 'User',
-      email: email,
+      email: email.toLowerCase().trim(),
       passwordHash: hashedPassword,
       securityQuestion: 'What is your favorite color?',
       securityAnswer: 'blue',
@@ -229,49 +236,40 @@ export const createSuperUser = async (email, password, firstName, lastName) => {
     // Save super user
     await saveUser(superUserData);
     console.log('✅ Super User created successfully');
-    console.log('📧 Email:', email);
-    console.log('👑 Role: Super User (above Admin)');
-    return true;
+    return { success: true, message: 'Super User created successfully' };
   }
 };
 
+// Toggle admin status
 export const toggleAdminStatus = async (userId, isAdmin) => {
-  // Check if we're in development mode
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    for (const [key, user] of devStorage.entries()) {
-      if (user.id === userId) {
-        const updatedUser = { ...user, isAdmin };
-        devStorage.set(key, updatedUser);
-        return true;
-      }
-    }
-    return false;
+  const { user } = await findUserById(userId);
+  
+  if (!user) {
+    throw new Error('User not found');
   }
   
-  // Production mode - find and update user
-  try {
-    const { user, key } = await findUserById(userId);
-    if (user && key) {
-      const updatedUser = { ...user, isAdmin };
-      await saveUser(updatedUser);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Error toggling admin status:', error);
-    return false;
-  }
+  const updatedUser = {
+    ...user,
+    isAdmin: isAdmin,
+    lastLogin: new Date().toISOString()
+  };
+  
+  await saveUser(updatedUser);
+  return updatedUser;
 };
 
-// Get all users (for admin panel)
+// Get all users
 export const getAllUsers = async () => {
-  // Check if we're in development mode
+  // Development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return Array.from(devStorage.values());
+    const users = Array.from(devStorage.values());
+    console.log(`📊 Development mode - returning ${users.length} users`);
+    return users;
   }
   
-  // Production mode - get all users from Vercel Blob
+  // Production mode
   try {
+    const { list } = await import('@vercel/blob');
     const { blobs } = await list({ prefix: 'users/' });
     const users = [];
     
@@ -285,11 +283,52 @@ export const getAllUsers = async () => {
       }
     }
     
+    console.log(`📊 Production mode - returning ${users.length} users`);
     return users;
   } catch (error) {
     console.error('Error getting all users:', error);
     return [];
   }
+};
+
+// Toggle user status (blocked/unblocked)
+export const toggleUserStatus = async (userId, blocked) => {
+  const { user } = await findUserById(userId);
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+  
+  const updatedUser = {
+    ...user,
+    blocked: blocked,
+    lastLogin: new Date().toISOString()
+  };
+  
+  await saveUser(updatedUser);
+  return updatedUser;
+};
+
+// Reset user password
+export const resetUserPassword = async (userId, newPassword) => {
+  const { user } = await findUserById(userId);
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+  
+  const bcrypt = await import('bcryptjs');
+  const SALT_ROUNDS = 12;
+  const hashedPassword = await bcrypt.default.hash(newPassword, SALT_ROUNDS);
+  
+  const updatedUser = {
+    ...user,
+    passwordHash: hashedPassword,
+    lastLogin: new Date().toISOString()
+  };
+  
+  await saveUser(updatedUser);
+  return updatedUser;
 };
 
 // Export devStorage for development debugging

@@ -12,6 +12,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
+    console.log('Verifying user with email:', email);
+
     // Find user by email
     const user = await findUserByEmail(email);
     
@@ -48,8 +50,9 @@ export default async function handler(req, res) {
         verified: updatedUserData.verified
       }
     });
+
   } catch (error) {
-    console.error('Manual verification error:', error);
+    console.error('Error verifying user:', error);
     res.status(500).json({ error: 'Failed to verify user' });
   }
 } 
