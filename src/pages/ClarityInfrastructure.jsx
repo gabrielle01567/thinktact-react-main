@@ -25,9 +25,6 @@ const ClarityInfrastructure = () => {
               >
                 Download PDF
               </a>
-              <a href="https://github.com/gabrielle01567/thinktact-manifesto" className="rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200">
-                View on GitHub
-              </a>
             </div>
           </div>
 
