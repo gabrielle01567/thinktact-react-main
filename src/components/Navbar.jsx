@@ -57,7 +57,7 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
-            {isAuthenticated && user?.email === 'alex.hawke54@gmail.com' && (
+            {isAuthenticated && (user?.isAdmin || user?.isSuperUser || user?.email === 'alex.hawke54@gmail.com' || user?.email === 'admin@thinktact.ai') && (
               <Link to="/admin" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/admin')}`}>
                 Admin
               </Link>
@@ -135,7 +135,7 @@ const Navbar = () => {
               Dashboard
             </Link>
           )}
-          {isAuthenticated && user?.email === 'alex.hawke54@gmail.com' && (
+          {isAuthenticated && (user?.isAdmin || user?.isSuperUser || user?.email === 'alex.hawke54@gmail.com' || user?.email === 'admin@thinktact.ai') && (
             <Link to="/admin" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/admin')}`}>
               Admin
             </Link>

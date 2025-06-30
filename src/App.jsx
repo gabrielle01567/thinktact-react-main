@@ -70,7 +70,14 @@ function App() {
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
 
-          <Route path="/admin" element={<Admin />} />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </Router>
     </AuthProvider>
