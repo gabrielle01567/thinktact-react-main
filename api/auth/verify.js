@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     console.log('🔍 Verification request received');
     console.log('🔍 Token from query:', token);
     console.log('🔍 All query params:', req.query);
+    console.log('🔍 Environment check - BLOB_READ_WRITE_TOKEN exists:', !!process.env.BLOB_READ_WRITE_TOKEN);
 
     if (!token) {
       console.log('❌ No token provided');
@@ -25,9 +26,14 @@ export default async function handler(req, res) {
     try {
       const users = await getAllUsers();
       console.log(`🔍 Checking ${users.length} users for verification token`);
+      console.log('🔍 All users found:', users.map(u => ({ email: u.email, verified: u.verified, hasToken: !!u.verificationToken })));
       
       for (const user of users) {
-        console.log(`🔍 Checking user ${user.email} - token: ${user.verificationToken}`);
+        console.log(`🔍 Checking user ${user.email}:`);
+        console.log(`   - Token: "${user.verificationToken}"`);
+        console.log(`   - Token matches: ${user.verificationToken === token}`);
+        console.log(`   - Verified: ${user.verified}`);
+        
         if (user.verificationToken === token) {
           userToUpdate = user;
           console.log(`✅ Found user with matching token: ${user.email}`);
@@ -41,6 +47,7 @@ export default async function handler(req, res) {
 
     if (!userToUpdate) {
       console.log('❌ No user found with verification token:', token);
+      console.log('❌ Available tokens:', users?.map(u => u.verificationToken).filter(t => t));
       return res.status(400).json({ error: 'Invalid verification token' });
     }
 
