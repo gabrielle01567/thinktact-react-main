@@ -42,6 +42,13 @@ export default function Admin() {
   const [testUsersResult, setTestUsersResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Hardcoded Admin User Info
+  const hardcodedAdmin = {
+    email: 'admin@thinktact.ai',
+    password: 'admin123',
+    role: 'Super User (Hardcoded)'
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
@@ -355,6 +362,28 @@ export default function Admin() {
                     Create User
                   </button>
                 </div>
+              </div>
+              
+              {/* Hardcoded Admin User Info */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 rounded-lg">
+                <h2 className="text-lg font-semibold text-purple-800 mb-2">🔑 Hardcoded Admin Access</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-700">Email:</span>
+                    <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">{hardcodedAdmin.email}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Password:</span>
+                    <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">{hardcodedAdmin.password}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Role:</span>
+                    <span className="ml-2 text-purple-600 font-semibold">{hardcodedAdmin.role}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 This hardcoded admin bypasses all storage and email verification issues. Use these credentials to access the system immediately.
+                </p>
               </div>
               
               {message && (

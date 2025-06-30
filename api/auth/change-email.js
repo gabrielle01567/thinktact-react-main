@@ -1,4 +1,4 @@
-import { devStorage, findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, saveUser } from '../shared-storage.js';
 
 const USERS_BLOB_PREFIX = 'users/';
 

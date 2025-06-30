@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { devStorage } from '../shared-storage.js';
+import { findUserByEmail, saveUser } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     }
 
     // Check if user already exists
-    const existingUser = devStorage.get(email);
+    const existingUser = findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ success: false, error: 'User with this email already exists' });
     }
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     };
 
     // Store user
-    devStorage.set(email, newUser);
+    saveUser(newUser);
 
     console.log(`✅ Admin created user: ${email}`);
     console.log(`📧 Email: ${email}`);
