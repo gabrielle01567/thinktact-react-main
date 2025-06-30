@@ -99,13 +99,14 @@ export const saveUser = async (userData) => {
   }
 };
 
+// Delete user by email
 export const deleteUser = async (email) => {
   const normalizedEmail = email.toLowerCase().trim();
   
   // Development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     devStorage.delete(normalizedEmail);
-    return;
+    return true;
   }
   
   // Production mode
@@ -113,9 +114,10 @@ export const deleteUser = async (email) => {
     const { del } = await import('@vercel/blob');
     const blobName = getBlobName(normalizedEmail);
     await del(blobName);
+    return true;
   } catch (error) {
-    console.error('Error deleting user from blob:', error);
-    throw error;
+    console.error('Error deleting user:', error);
+    return false;
   }
 };
 
