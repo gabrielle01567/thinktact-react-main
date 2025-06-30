@@ -13,11 +13,7 @@ export default function Verify() {
       setMessage('Invalid verification link.');
       return;
     }
-    fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    })
+    fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
