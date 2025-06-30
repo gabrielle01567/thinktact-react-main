@@ -28,6 +28,20 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // Security-focused rules
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
+      // Custom rule to warn about dangerouslySetInnerHTML
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'React',
+          property: 'dangerouslySetInnerHTML',
+          message: 'Use SafeTextFormatter component instead of dangerouslySetInnerHTML to prevent XSS attacks.'
+        }
+      ]
     },
   },
 ]

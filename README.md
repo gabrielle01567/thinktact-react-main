@@ -101,14 +101,6 @@ This project is set up for automatic deployment on Vercel. When changes are push
 4. View the detailed breakdown of your argument
 5. Explore the dashboard to understand the logical structure
 
-## Screenshots
-
-### Dashboard
-![Dashboard](screenshots/dashboard.png)
-
-### Analyzer
-![Analyzer](screenshots/analyzer.png)
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

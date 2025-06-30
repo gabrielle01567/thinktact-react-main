@@ -4,6 +4,7 @@ import StatCard from '../components/dashboard/StatCard';
 import ArgumentFlow from '../components/dashboard/ArgumentFlow';
 import LogicDonutChart from '../components/dashboard/LogicDonutChart';
 import LogicBreakdownTable from '../components/dashboard/LogicBreakdownTable';
+import SafeTextFormatter from '../components/SafeTextFormatter';
 
 // Sample data fallback for when no analysis is available
 const sampleAnalysis = {
@@ -252,57 +253,20 @@ const Dashboard = () => {
                   {/* Original Argument */}
                   <div className="p-4 bg-gray-50 rounded-md">
                     <div className="text-sm text-gray-500 mb-1 font-medium">Original</div>
-                    {analysis.originalArgument.split(/(?<=\.\s|\?\s|\!\s)/).map((sentence, index) => {
-                      // Identify premise and conclusion indicators
-                      const premiseIndicators = ['because', 'since', 'for', 'as', 'given that'];
-                      const conclusionIndicators = ['therefore', 'thus', 'so', 'hence', 'consequently', 'as a result'];
-                      
-                      let formattedSentence = sentence;
-                      
-                      // Italicize premise indicators
-                      premiseIndicators.forEach(indicator => {
-                        const regex = new RegExp(`\\b${indicator}\\b`, 'gi');
-                        formattedSentence = formattedSentence.replace(regex, `<em>${indicator}</em>`);
-                      });
-                      
-                      // Italicize conclusion indicators
-                      conclusionIndicators.forEach(indicator => {
-                        const regex = new RegExp(`\\b${indicator}\\b`, 'gi');
-                        formattedSentence = formattedSentence.replace(regex, `<em>${indicator}</em>`);
-                      });
-                      
-                      return (
-                        <p key={index} className="mb-2" dangerouslySetInnerHTML={{ __html: formattedSentence }}></p>
-                      );
-                    })}
+                    <SafeTextFormatter 
+                      text={analysis.originalArgument}
+                      className=""
+                    />
                   </div>
                   
                   {/* Improved Argument */}
                   <div className="p-4 bg-green-50 rounded-md border border-green-200">
                     <div className="text-sm text-green-700 mb-1 font-medium">Improved Version</div>
-                    {analysis.improvedArgument.split(/(?<=\.\s|\?\s|\!\s)/).map((sentence, index) => {
-                      // Similar formatting as the original
-                      const premiseIndicators = ['because', 'since', 'for', 'as', 'given that'];
-                      const conclusionIndicators = ['therefore', 'thus', 'so', 'hence', 'consequently', 'as a result'];
-                      
-                      let formattedSentence = sentence;
-                      
-                      // Italicize premise indicators
-                      premiseIndicators.forEach(indicator => {
-                        const regex = new RegExp(`\\b${indicator}\\b`, 'gi');
-                        formattedSentence = formattedSentence.replace(regex, `<em class="text-green-800">${indicator}</em>`);
-                      });
-                      
-                      // Italicize conclusion indicators
-                      conclusionIndicators.forEach(indicator => {
-                        const regex = new RegExp(`\\b${indicator}\\b`, 'gi');
-                        formattedSentence = formattedSentence.replace(regex, `<em class="text-green-800">${indicator}</em>`);
-                      });
-                      
-                      return (
-                        <p key={index} className="mb-2 text-green-900" dangerouslySetInnerHTML={{ __html: formattedSentence }}></p>
-                      );
-                    })}
+                    <SafeTextFormatter 
+                      text={analysis.improvedArgument}
+                      className="text-green-900"
+                      emphasisColor="italic text-green-800"
+                    />
                   </div>
                 </div>
               </div>
