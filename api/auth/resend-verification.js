@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser, devStorage } from '../shared-storage.js';
+import { findUserByEmail, saveUser } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
