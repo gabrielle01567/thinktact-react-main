@@ -166,10 +166,71 @@ export const deleteUser = async (email) => {
   
   // Production mode
   try {
-    const { del } = await import('@vercel/blob');
-    const blobName = getBlobName(normalizedEmail);
-    await del(blobName);
-    return true;
+    const { del, head } = await import('@vercel/blob');
+    let deleted = false;
+    
+    // Try new blob name format first
+    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
+    const newBlobName = `users/${safeEmail}.json`;
+    
+    console.log(`🗑️ Trying to delete with new blob name: "${newBlobName}"`);
+    try {
+      const result = await head(newBlobName);
+      if (result.blob) {
+        await del(newBlobName);
+        console.log(`✅ Deleted user with new blob name: ${newBlobName}`);
+        deleted = true;
+      }
+    } catch (error) {
+      console.log(`❌ New blob name not found: ${newBlobName}`);
+    }
+    
+    // Try old blob name format as fallback
+    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
+    const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
+    console.log(`🗑️ Trying to delete with old blob name: "${oldBlobName}"`);
+    try {
+      const result = await head(oldBlobName);
+      if (result.blob) {
+        await del(oldBlobName);
+        console.log(`✅ Deleted user with old blob name: ${oldBlobName}`);
+        deleted = true;
+      }
+    } catch (error) {
+      console.log(`❌ Old blob name not found: ${oldBlobName}`);
+    }
+    
+    // As a last resort, search through all users and delete by email match
+    if (!deleted) {
+      console.log(`🔍 Searching through all users to find and delete by email match`);
+      const { list } = await import('@vercel/blob');
+      const { blobs } = await list({ prefix: 'users/' });
+      
+      for (const blob of blobs) {
+        try {
+          const response = await fetch(blob.url);
+          const user = await response.json();
+          if (user.email === normalizedEmail) {
+            await del(blob.pathname);
+            console.log(`✅ Deleted user found in all users search: ${blob.pathname}`);
+            deleted = true;
+            break;
+          }
+        } catch (error) {
+          console.error(`Error checking blob ${blob.pathname}:`, error);
+        }
+      }
+    }
+    
+    if (deleted) {
+      console.log(`✅ User deletion completed successfully for: ${normalizedEmail}`);
+      return true;
+    } else {
+      console.log(`❌ User not found for deletion: ${normalizedEmail}`);
+      return false;
+    }
+    
   } catch (error) {
     console.error('Error deleting user:', error);
     return false;

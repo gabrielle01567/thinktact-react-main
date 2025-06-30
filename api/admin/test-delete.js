@@ -1,4 +1,4 @@
-import { getAllUsers, findUserById, deleteUser } from '../shared-storage.js';
+import { getAllUsers, findUserByEmail, deleteUser } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -23,34 +23,46 @@ export default async function handler(req, res) {
       console.log('---');
     });
 
-    // Test findUserById for each user
-    for (const user of users) {
-      console.log(`🔍 Testing findUserById for user: ${user.email}`);
-      const result = await findUserById(user.id);
-      console.log(`  Found: ${result.user ? 'YES' : 'NO'}`);
-      if (result.user) {
-        console.log(`  User email: ${result.user.email}`);
-        console.log(`  Key: ${result.key}`);
-      }
-      console.log('---');
+    // Test findUserByEmail for ajhawke.consulting@gmail.com
+    console.log('🔍 Testing findUserByEmail for ajhawke.consulting@gmail.com...');
+    const testUser = await findUserByEmail('ajhawke.consulting@gmail.com');
+    console.log('Test user found:', testUser ? 'YES' : 'NO');
+    
+    if (testUser) {
+      console.log('Test user details:', {
+        id: testUser.id,
+        email: testUser.email,
+        firstName: testUser.firstName,
+        lastName: testUser.lastName
+      });
+      
+      // Test deletion
+      console.log('🗑️ Testing deletion of ajhawke.consulting@gmail.com...');
+      const deleteResult = await deleteUser('ajhawke.consulting@gmail.com');
+      console.log('Delete result:', deleteResult);
+      
+      // Verify deletion
+      console.log('🔍 Verifying deletion...');
+      const userAfterDelete = await findUserByEmail('ajhawke.consulting@gmail.com');
+      console.log('User found after deletion:', userAfterDelete ? 'YES' : 'NO');
+      
+      // Get updated user list
+      const usersAfterDelete = await getAllUsers();
+      console.log('📋 Total users after deletion:', usersAfterDelete.length);
     }
 
     res.status(200).json({
       success: true,
-      message: 'Delete test completed - check server logs',
-      userCount: users.length,
-      users: users.map(u => ({
-        id: u.id,
-        email: u.email,
-        firstName: u.firstName,
-        lastName: u.lastName,
-        verified: u.verified,
-        isAdmin: u.isAdmin
-      }))
+      message: 'Delete test completed - check server logs for details',
+      totalUsers: users.length,
+      testUserFound: !!testUser
     });
 
   } catch (error) {
     console.error('Test delete error:', error);
-    res.status(500).json({ error: 'Test failed', details: error.message });
+    res.status(500).json({
+      error: 'Test failed',
+      details: error.message
+    });
   }
 } 
