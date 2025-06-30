@@ -13,7 +13,8 @@ export default async function handler(req, res) {
     }
 
     // Find user by email
-    const userData = findUserByEmail(email);
+    const normalizedEmail = email.toLowerCase();
+    const userData = await findUserByEmail(normalizedEmail);
     if (!userData) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
 
     // Generate blob name for user
     const USERS_BLOB_PREFIX = 'users/';
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
     
     // Save updated user data
     saveUser(blobName, updatedUserData);

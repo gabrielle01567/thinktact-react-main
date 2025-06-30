@@ -22,7 +22,8 @@ export default async function handler(req, res) {
     }
 
     // Generate blob name for user
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    const normalizedEmail = email.toLowerCase();
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
 
     // Check if user already exists
     const existingUser = await findUserByEmail(email);
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
       id: Math.random().toString(36).substring(2, 15),
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
       passwordHash: hashedPassword,
       securityQuestion,
       securityAnswer,

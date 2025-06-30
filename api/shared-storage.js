@@ -6,12 +6,13 @@ let devStorage = new Map();
 // Helper functions for user management
 export const findUserByEmail = async (email) => {
   const USERS_BLOB_PREFIX = 'users/';
-  const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+  const normalizedEmail = email.toLowerCase();
+  const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
   
   // Check if we're in development mode (no BLOB_READ_WRITE_TOKEN)
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     const user = devStorage.get(blobName);
-    console.log(`Looking for user with email: ${email}, blobName: ${blobName}, found:`, !!user);
+    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found:`, !!user);
     return user;
   }
   
@@ -21,13 +22,13 @@ export const findUserByEmail = async (email) => {
     if (blob) {
       const response = await fetch(blob.url);
       const user = await response.json();
-      console.log(`Looking for user with email: ${email}, blobName: ${blobName}, found: true`);
+      console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: true`);
       return user;
     }
-    console.log(`Looking for user with email: ${email}, blobName: ${blobName}, found: false`);
+    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: false`);
     return null;
   } catch (error) {
-    console.log(`Looking for user with email: ${email}, blobName: ${blobName}, found: false (error: ${error.message})`);
+    console.log(`Looking for user with email: ${normalizedEmail}, blobName: ${blobName}, found: false (error: ${error.message})`);
     return null;
   }
 };

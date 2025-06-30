@@ -18,11 +18,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Generate blob name for user
-    const blobName = `${USERS_BLOB_PREFIX}${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    const normalizedEmail = email.toLowerCase();
+    const blobName = `${USERS_BLOB_PREFIX}${btoa(normalizedEmail).replace(/[^a-zA-Z0-9]/g, '')}.json`;
 
     // Get user from storage (development or production)
-    const userData = await findUserByEmail(email);
+    const userData = await findUserByEmail(normalizedEmail);
     if (!userData) {
       console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
