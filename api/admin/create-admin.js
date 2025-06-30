@@ -1,5 +1,4 @@
 import { findUserByEmail, saveUser } from '../shared-storage.js';
-import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,54 +6,62 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password, firstName, lastName } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    // Check if admin user already exists
+    const existingAdmin = await findUserByEmail('alex.hawke54@gmail.com');
+    
+    if (existingAdmin) {
+      return res.status(409).json({ 
+        error: 'Admin user already exists',
+        user: {
+          email: existingAdmin.email,
+          firstName: existingAdmin.firstName,
+          lastName: existingAdmin.lastName,
+          isAdmin: existingAdmin.isAdmin,
+          verified: existingAdmin.verified
+        }
+      });
     }
 
-    // Check if user already exists
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
+    // Create admin user
+    const bcrypt = await import('bcryptjs');
+    const SALT_ROUNDS = 12;
+    const passwordHash = await bcrypt.default.hash('admin123', SALT_ROUNDS);
 
-    // Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create admin user with verification bypassed
-    const adminUser = {
-      id: Date.now().toString(),
-      email: email,
-      password: hashedPassword,
-      firstName: firstName || 'Admin',
-      lastName: lastName || 'User',
-      role: 'admin',
-      verified: true, // Bypass email verification
+    const adminUserData = {
+      id: `admin_${Date.now()}`,
+      firstName: 'Alex',
+      lastName: 'Hawke',
+      email: 'alex.hawke54@gmail.com',
+      passwordHash: passwordHash,
+      verified: true,
+      isAdmin: true,
+      isSuperUser: true,
+      blocked: false,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isActive: true
+      lastLogin: null,
+      verificationToken: null,
+      resetToken: null,
+      resetTokenExpiry: null,
+      securityQuestion: 'Admin user',
+      securityAnswer: 'admin'
     };
 
-    // Save user to blob storage
-    await saveUser(adminUser);
-
-    console.log('✅ Admin user created successfully in production');
-    console.log(`📧 Email: ${email}`);
-    console.log(`🔑 Password: ${password}`);
-    console.log(`✅ Verified: ${adminUser.verified}`);
+    // Save admin user
+    await saveUser(adminUserData);
 
     res.status(200).json({
       success: true,
       message: 'Admin user created successfully',
       user: {
-        id: adminUser.id,
-        email: adminUser.email,
-        firstName: adminUser.firstName,
-        lastName: adminUser.lastName,
-        role: adminUser.role,
-        verified: adminUser.verified
+        email: adminUserData.email,
+        firstName: adminUserData.firstName,
+        lastName: adminUserData.lastName,
+        isAdmin: adminUserData.isAdmin,
+        verified: adminUserData.verified
+      },
+      credentials: {
+        email: 'alex.hawke54@gmail.com',
+        password: 'admin123'
       }
     });
 

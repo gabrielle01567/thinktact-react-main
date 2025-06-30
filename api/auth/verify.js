@@ -1,4 +1,4 @@
-import { getAllUsers, saveUser } from '../shared-storage.js';
+import { findUserByVerificationToken, saveUser } from '../shared-storage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -21,33 +21,10 @@ export default async function handler(req, res) {
     console.log('🔍 Searching for user with verification token:', token);
 
     // Find user by verification token
-    let userToUpdate = null;
-    
-    try {
-      const users = await getAllUsers();
-      console.log(`🔍 Checking ${users.length} users for verification token`);
-      console.log('🔍 All users found:', users.map(u => ({ email: u.email, verified: u.verified, hasToken: !!u.verificationToken })));
-      
-      for (const user of users) {
-        console.log(`🔍 Checking user ${user.email}:`);
-        console.log(`   - Token: "${user.verificationToken}"`);
-        console.log(`   - Token matches: ${user.verificationToken === token}`);
-        console.log(`   - Verified: ${user.verified}`);
-        
-        if (user.verificationToken === token) {
-          userToUpdate = user;
-          console.log(`✅ Found user with matching token: ${user.email}`);
-          break;
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error getting users:', error);
-      return res.status(500).json({ error: 'Failed to verify user' });
-    }
+    const userToUpdate = await findUserByVerificationToken(token);
 
     if (!userToUpdate) {
       console.log('❌ No user found with verification token:', token);
-      console.log('❌ Available tokens:', users?.map(u => u.verificationToken).filter(t => t));
       return res.status(400).json({ error: 'Invalid verification token' });
     }
 
@@ -68,7 +45,7 @@ export default async function handler(req, res) {
 
     console.log('💾 Saving verified user:', userToUpdate.email);
 
-    // Save user with normalized email
+    // Save user
     await saveUser(updatedUserData);
 
     console.log('✅ User verified successfully:', userToUpdate.email);

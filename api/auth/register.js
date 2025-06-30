@@ -27,14 +27,13 @@ export default async function handler(req, res) {
 
     // Generate verification token
     const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    console.log('🔑 Generated verification token:', verificationToken);
 
     // Create user data
     const userData = {
       id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      email: email.toLowerCase().trim(), // Normalize email
+      email: email.toLowerCase().trim(),
       passwordHash,
       securityQuestion: securityQuestion.trim(),
       securityAnswer: securityAnswer.trim(),
@@ -47,12 +46,8 @@ export default async function handler(req, res) {
       lastLogin: null
     };
 
-    console.log('💾 Saving user with verification token:', verificationToken);
-    console.log('💾 User email:', userData.email);
-
     // Save user
     await saveUser(userData);
-    console.log('✅ User saved successfully with verification token');
 
     // Send verification email
     if (process.env.RESEND_API_KEY) {
@@ -60,7 +55,6 @@ export default async function handler(req, res) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         
         const verificationUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/verify?token=${verificationToken}`;
-        console.log('📧 Verification URL:', verificationUrl);
         
         await resend.emails.send({
           from: 'ThinkTact AI <noreply@thinktact.ai>',
@@ -81,14 +75,10 @@ export default async function handler(req, res) {
             </div>
           `
         });
-        
-        console.log(`📧 Verification email sent to: ${email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         // Don't fail registration if email fails
       }
-    } else {
-      console.log('⚠️ RESEND_API_KEY not set - skipping verification email');
     }
 
     res.status(201).json({

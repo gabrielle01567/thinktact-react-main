@@ -6,33 +6,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🔍 Testing users endpoint');
-    console.log('🔍 Environment check - BLOB_READ_WRITE_TOKEN exists:', !!process.env.BLOB_READ_WRITE_TOKEN);
-    
     const users = await getAllUsers();
-    
-    console.log(`🔍 Found ${users.length} users in storage`);
-    
-    const userInfo = users.map(user => ({
-      email: user.email,
-      verified: user.verified,
-      hasToken: !!user.verificationToken,
-      token: user.verificationToken ? user.verificationToken.substring(0, 10) + '...' : null,
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin
-    }));
-    
-    console.log('🔍 User details:', userInfo);
     
     res.status(200).json({
       success: true,
-      count: users.length,
-      users: userInfo,
-      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development'
+      totalUsers: users.length,
+      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development',
+      users: users.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        verified: user.verified,
+        isAdmin: user.isAdmin,
+        isSuperUser: user.isSuperUser,
+        blocked: user.blocked,
+        hasPasswordHash: !!user.passwordHash,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      }))
     });
 
   } catch (error) {
-    console.error('❌ Error testing users:', error);
-    res.status(500).json({ error: 'Failed to test users' });
+    console.error('Error testing users:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 } 

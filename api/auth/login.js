@@ -12,8 +12,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    console.log('Login attempt for email:', email);
-
     // Find user by email
     const user = await findUserByEmail(email);
 
@@ -36,7 +34,6 @@ export default async function handler(req, res) {
     const isValidPassword = await bcrypt.default.compare(password, user.passwordHash);
 
     if (!isValidPassword) {
-      console.log('Invalid password for user:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -47,8 +44,6 @@ export default async function handler(req, res) {
     };
 
     await saveUser(updatedUser);
-
-    console.log('Login successful for user:', email);
 
     // Return user data (without password hash)
     const { passwordHash, ...userData } = updatedUser;
