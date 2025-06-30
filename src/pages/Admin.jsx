@@ -41,6 +41,8 @@ export default function Admin() {
   const [migrationResult, setMigrationResult] = useState(null);
   const [testUsersResult, setTestUsersResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     if (isAdmin) {
@@ -363,6 +365,93 @@ export default function Admin() {
                 </div>
               )}
 
+              {/* User Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">{users.length}</span>
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-blue-900">Total Users</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">
+                          {users.filter(u => u.verified && !u.blocked).length}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-green-900">Active Users</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">
+                          {users.filter(u => u.blocked).length}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-red-900">Blocked Users</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">
+                          {users.filter(u => u.isAdmin || u.isSuperUser).length}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-purple-900">Admins</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search and Filter */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by name, email, or ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="sm:w-48">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="all">All Users</option>
+                    <option value="active">Active Only</option>
+                    <option value="blocked">Blocked Only</option>
+                    <option value="unverified">Unverified Only</option>
+                    <option value="admins">Admins Only</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -371,78 +460,102 @@ export default function Admin() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                                </span>
+                    {users
+                      .filter(user => {
+                        // Filter by search term
+                        const term = searchTerm.toLowerCase();
+                        const matches =
+                          user.firstName?.toLowerCase().includes(term) ||
+                          user.lastName?.toLowerCase().includes(term) ||
+                          user.email?.toLowerCase().includes(term) ||
+                          user.id?.toLowerCase().includes(term);
+                        if (!matches) return false;
+                        // Filter by status
+                        if (statusFilter === 'active') return user.verified && !user.blocked;
+                        if (statusFilter === 'blocked') return user.blocked;
+                        if (statusFilter === 'unverified') return !user.verified && !user.blocked;
+                        if (statusFilter === 'admins') return user.isAdmin || user.isSuperUser;
+                        return true;
+                      })
+                      .map((user) => (
+                        <tr key={user.id} className={user.blocked ? 'bg-red-50' : ''}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                  user.blocked ? 'bg-red-200' : 'bg-gray-300'
+                                }`}>
+                                  <span className="text-sm font-medium text-gray-700">
+                                    {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.firstName} {user.lastName}
+                                  {user.blocked && <span className="ml-2 text-xs text-red-600">🚫 BLOCKED</span>}
+                                </div>
+                                <div className="text-sm text-gray-500">ID: {user.id}</div>
                               </div>
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.firstName} {user.lastName}
-                              </div>
-                              <div className="text-sm text-gray-500">ID: {user.id}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            user.blocked ? 'bg-red-100 text-red-800' : 
-                            user.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {user.blocked ? 'Blocked' : user.verified ? 'Verified' : 'Unverified'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setShowUserDetails(true);
-                              }}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              View Details
-                            </button>
-                            {!user.verified && (
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.blocked ? 'bg-red-100 text-red-800' : 
+                              user.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {user.blocked ? '🚫 Blocked' : user.verified ? '✅ Verified' : '⏳ Unverified'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
                               <button
-                                onClick={() => verifyUser(user.email)}
-                                className="text-green-600 hover:text-green-900"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setShowUserDetails(true);
+                                }}
+                                className="text-indigo-600 hover:text-indigo-900"
                               >
-                                Verify
+                                View Details
                               </button>
-                            )}
-                            <button
-                              onClick={() => toggleUserStatus(user.id, !user.blocked)}
-                              className={`${user.blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}`}
-                            >
-                              {user.blocked ? 'Unblock' : 'Block'}
-                            </button>
-                            <button
-                              onClick={() => deleteUser(user.id)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {!user.verified && (
+                                <button
+                                  onClick={() => verifyUser(user.email)}
+                                  className="text-green-600 hover:text-green-900"
+                                >
+                                  Verify
+                                </button>
+                              )}
+                              <button
+                                onClick={() => toggleUserStatus(user.id, !user.blocked)}
+                                className={`${user.blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}`}
+                              >
+                                {user.blocked ? '✅ Unblock' : '🚫 Block'}
+                              </button>
+                              <button
+                                onClick={() => deleteUser(user.id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
