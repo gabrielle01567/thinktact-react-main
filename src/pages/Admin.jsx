@@ -174,6 +174,25 @@ export default function Admin() {
     }
   };
 
+  const sendPasswordReset = async (email) => {
+    try {
+      const response = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMessage(`Password reset link sent to ${email}`);
+      } else {
+        setMessage(data.error || 'Failed to send password reset link');
+      }
+    } catch (error) {
+      setMessage('Error sending password reset link');
+    }
+  };
+
   const createUser = async () => {
     // Validate form
     if (!createUserForm.firstName || !createUserForm.lastName || !createUserForm.email || !createUserForm.password) {
@@ -630,12 +649,22 @@ export default function Admin() {
                     >
                       Close
                     </button>
-                    <button
-                      onClick={() => elevateToAdmin(selectedUser.id, !selectedUser.isAdmin)}
-                      className={`px-4 py-2 rounded ${selectedUser.isAdmin ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-green-600 text-white hover:bg-green-700'}`}
-                    >
-                      {selectedUser.isAdmin ? 'Demote from Admin' : 'Elevate to Admin'}
-                    </button>
+                    <div className="flex space-x-2">
+                      {selectedUser.isAdmin && (
+                        <button
+                          onClick={() => sendPasswordReset(selectedUser.email)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Reset Password
+                        </button>
+                      )}
+                      <button
+                        onClick={() => elevateToAdmin(selectedUser.id, !selectedUser.isAdmin)}
+                        className={`px-4 py-2 rounded ${selectedUser.isAdmin ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                      >
+                        {selectedUser.isAdmin ? 'Demote from Admin' : 'Elevate to Admin'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

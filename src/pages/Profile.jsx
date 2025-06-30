@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 const Profile = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -12,6 +12,9 @@ const Profile = () => {
   const [showEmailChange, setShowEmailChange] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -50,6 +53,49 @@ const Profile = () => {
       setError('Network error. Please try again.');
     } finally {
       setIsChangingEmail(false);
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    
+    if (deleteConfirmation !== 'DELETE') {
+      setError('Please type DELETE in all caps to confirm account deletion.');
+      return;
+    }
+
+    setIsDeleting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/auth/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Account deleted successfully. You will receive a confirmation email shortly.');
+        logout();
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
+      } else {
+        setError(data.error || 'Failed to delete account');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setDeleteConfirmation('');
     }
   };
 
@@ -232,11 +278,81 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Danger Zone */}
+                <div>
+                  <h3 className="text-lg font-medium text-red-900 mb-4">Danger Zone</h3>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-red-900">Delete Account</h4>
+                        <p className="text-sm text-red-700 mt-1">
+                          This action cannot be undone. All your data will be permanently deleted.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-150"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-red-900 mb-4">Delete Account</h3>
+            <p className="text-sm text-gray-700 mb-4">
+              This action will permanently delete your account and all associated data. 
+              This cannot be undone.
+            </p>
+            <form onSubmit={handleDeleteAccount} className="space-y-4">
+              <div>
+                <label htmlFor="deleteConfirmation" className="block text-sm font-medium text-gray-700 mb-1">
+                  Type DELETE to confirm
+                </label>
+                <input
+                  type="text"
+                  id="deleteConfirmation"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="DELETE"
+                  required
+                />
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="submit"
+                  disabled={isDeleting || deleteConfirmation !== 'DELETE'}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Account'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmation('');
+                    setError('');
+                  }}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };

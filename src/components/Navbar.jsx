@@ -23,28 +23,33 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center space-x-3">
-              <svg 
-                className="h-9 w-9 text-pink-950" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                {/* Brain circuit design */}
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                <path d="M12 6v12" />
-                <path d="M6 12h12" />
-                <path d="M8.5 8.5l7 7" />
-                <path d="M15.5 8.5l-7 7" />
-                {/* AI circuit nodes */}
-                <circle cx="12" cy="12" r="2" fill="currentColor" />
-                <circle cx="8.5" cy="8.5" r="1" fill="currentColor" />
-                <circle cx="15.5" cy="8.5" r="1" fill="currentColor" />
-                <circle cx="8.5" cy="15.5" r="1" fill="currentColor" />
-                <circle cx="15.5" cy="15.5" r="1" fill="currentColor" />
-              </svg>
+              <div className="flex flex-col items-center">
+                <svg 
+                  className="h-9 w-9 text-pink-950" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  {/* Brain circuit design */}
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                  <path d="M12 6v12" />
+                  <path d="M6 12h12" />
+                  <path d="M8.5 8.5l7 7" />
+                  <path d="M15.5 8.5l-7 7" />
+                  {/* AI circuit nodes */}
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                  <circle cx="8.5" cy="8.5" r="1" fill="currentColor" />
+                  <circle cx="15.5" cy="8.5" r="1" fill="currentColor" />
+                  <circle cx="8.5" cy="15.5" r="1" fill="currentColor" />
+                  <circle cx="15.5" cy="15.5" r="1" fill="currentColor" />
+                </svg>
+                {isAuthenticated && user?.isAdmin && (
+                  <span className="text-xs text-pink-950 font-medium mt-1">Admin</span>
+                )}
+              </div>
               <span className="font-semibold text-lg text-pink-950">ThinkTactAI</span>
             </Link>
           </div>

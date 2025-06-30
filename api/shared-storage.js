@@ -118,15 +118,36 @@ export const saveUser = async (userData) => {
   
   // Production mode - save to Vercel Blob
   try {
-    const { put } = await import('@vercel/blob');
-    const blobName = getBlobName(normalizedEmail);
+    const { put, head, del } = await import('@vercel/blob');
+    
+    // First, try to find existing blob with old format
+    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
+    const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
+    
+    // Check if old blob exists
+    try {
+      const oldResult = await head(oldBlobName);
+      if (oldResult.blob) {
+        // Delete old blob and save with new format
+        await del(oldBlobName);
+        console.log(`🔄 Migrated user from old blob format: ${oldBlobName}`);
+      }
+    } catch (error) {
+      // Old blob doesn't exist, continue with new format
+    }
+    
+    // Save with new blob name format
+    const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
+    const newBlobName = `users/${safeEmail}.json`;
     
     const jsonData = JSON.stringify(normalizedUserData);
-    await put(blobName, jsonData, {
+    await put(newBlobName, jsonData, {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true
     });
+    
+    console.log(`💾 Saved user with blob name: ${newBlobName}`);
   } catch (error) {
     console.error('Error saving user to blob:', error);
     throw error;
