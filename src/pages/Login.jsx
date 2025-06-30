@@ -21,6 +21,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [showResetLink, setShowResetLink] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +36,8 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setShowResetLink(false);
+    setResetSent(false);
 
     // Registration validation
     if (isRegisterMode) {
@@ -71,6 +75,7 @@ const Login = () => {
           return;
         } else {
           setError(result.error || 'Registration failed');
+          if (result.canReset) setShowResetLink(true);
         }
       } else {
         result = await login(email, password);
@@ -95,6 +100,29 @@ const Login = () => {
       }
     } catch {
       setError('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendReset = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setResetSent(true);
+        setShowResetLink(false);
+      } else {
+        setError(data.error || 'Failed to send reset link');
+      }
+    } catch (err) {
+      setError('Failed to send reset link');
     } finally {
       setIsLoading(false);
     }
@@ -326,6 +354,19 @@ const Login = () => {
                     </h3>
                     <div className="mt-2 text-sm text-red-700">
                       <p>{error}</p>
+                      {isRegisterMode && showResetLink && !resetSent && (
+                        <button
+                          type="button"
+                          onClick={handleSendReset}
+                          className="mt-2 text-blue-700 underline hover:text-blue-900"
+                          disabled={isLoading}
+                        >
+                          Send password reset link to this email
+                        </button>
+                      )}
+                      {isRegisterMode && resetSent && (
+                        <p className="mt-2 text-green-700">Password reset link sent! Please check your email.</p>
+                      )}
                     </div>
                   </div>
                 </div>

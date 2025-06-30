@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     // Check if user already exists
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ error: 'User already exists' });
+      return res.status(409).json({ error: 'Email already in use', canReset: true });
     }
 
     // Hash password
