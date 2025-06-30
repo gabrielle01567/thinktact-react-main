@@ -21,7 +21,7 @@ export const findUserByEmail = async (email) => {
   
   // Production mode - use Vercel Blob
   try {
-    const { head } = await import('@vercel/blob');
+    const { head, list } = await import('@vercel/blob');
     
     // Try new blob name format first
     const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
@@ -38,7 +38,7 @@ export const findUserByEmail = async (email) => {
     }
     
     // Try old blob name format as fallback
-    const encodedEmail = btoa(normalizedEmail);
+    const encodedEmail = Buffer.from(normalizedEmail).toString('base64');
     const oldBlobName = `users/${encodedEmail.replace(/[^a-zA-Z0-9]/g, '')}.json`;
     
     console.log(`🔍 Trying old blob name: "${oldBlobName}"`);
@@ -51,7 +51,19 @@ export const findUserByEmail = async (email) => {
       return user;
     }
     
-    console.log(`🔍 User not found with either blob name`);
+    // As a last resort, search through all users
+    console.log(`🔍 Searching through all users as fallback`);
+    const { blobs } = await list({ prefix: 'users/' });
+    for (const blob of blobs) {
+      const response = await fetch(blob.url);
+      const user = await response.json();
+      if (user.email === normalizedEmail) {
+        console.log(`🔍 Found user in all users search`);
+        return user;
+      }
+    }
+    
+    console.log(`🔍 User not found with any method`);
     return null;
   } catch (error) {
     console.error('Error finding user by email:', error);
