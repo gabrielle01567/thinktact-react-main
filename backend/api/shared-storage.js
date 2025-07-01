@@ -377,4 +377,31 @@ export const resetUserPassword = async (userId, newPassword) => {
     console.error('Error resetting user password:', error);
     return { success: false, error: error.message };
   }
+};
+
+// Toggle user status function
+export const toggleUserStatus = async (email) => {
+  try {
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    const updatedUser = {
+      ...user,
+      isActive: !user.isActive, // Toggle the active status
+      lastStatusChange: new Date().toISOString()
+    };
+    
+    await saveUser(updatedUser);
+    
+    return { 
+      success: true, 
+      user: { ...updatedUser, password: undefined },
+      newStatus: updatedUser.isActive
+    };
+  } catch (error) {
+    console.error('Error toggling user status:', error);
+    return { success: false, error: error.message };
+  }
 }; 
