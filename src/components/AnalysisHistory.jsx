@@ -88,7 +88,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
   if (error) {
     return (
       <div className="px-4 py-3">
-        <div className="text-red-500 text-sm">{error}</div>
+        <div className="text-gray-500 text-sm">Analysis history temporarily unavailable</div>
         <button 
           onClick={loadHistory}
           className="mt-2 text-xs text-pink-900 hover:text-pink-700 underline"

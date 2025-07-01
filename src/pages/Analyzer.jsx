@@ -289,6 +289,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       } catch (error) {
         console.error('Failed to save analysis to history:', error);
         console.error('Error details:', error.response?.data || error.message);
+        // Show a non-intrusive message to the user
+        console.warn('Analysis history saving is temporarily unavailable. Your analysis results are still displayed above.');
         // Don't show error to user as this is not critical
       }
       
