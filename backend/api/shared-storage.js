@@ -71,11 +71,13 @@ export const createUser = async (userData) => {
       createdAt: new Date().toISOString()
     };
     
-    await saveUser(user);
+    const saveResult = await saveUser(user);
+    console.log(`User creation completed successfully for: ${email}`);
     return { 
       success: true, 
       user: { ...user, password: undefined },
-      verificationToken // Return token for email sending (null if already verified)
+      verificationToken, // Return token for email sending (null if already verified)
+      blobUrl: saveResult.url
     };
   } catch (error) {
     console.error('Error creating user:', error);
@@ -190,16 +192,19 @@ export const saveUser = async (userData) => {
     const blobName = getUserBlobName(userData.email);
     const jsonData = JSON.stringify(userData);
     
-    await put(blobName, jsonData, {
+    console.log(`Attempting to save user to blob: ${blobName}`);
+    
+    const result = await put(blobName, jsonData, {
       access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true
     });
     
-    console.log(`User saved: ${userData.email}`);
+    console.log(`User saved successfully: ${userData.email} -> ${result.url}`);
+    return result;
   } catch (error) {
     console.error('Error saving user:', error);
-    throw error;
+    throw error; // Re-throw the error so the calling function knows it failed
   }
 };
 

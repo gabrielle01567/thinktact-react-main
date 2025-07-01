@@ -9,10 +9,16 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["api", "backend", "thinktact", "analysis"],
+  "keywords": [
+    "api",
+    "backend",
+    "thinktact",
+    "analysis"
+  ],
   "author": "Gabrielle T. S",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.2",
     "@vercel/blob": "^0.25.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -26,4 +32,4 @@
   "engines": {
     "node": ">=18.0.0"
   }
-} 
+}

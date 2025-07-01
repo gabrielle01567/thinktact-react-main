@@ -3,7 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken } from './api/shared-storage.js';
+import { put, list } from '@vercel/blob';
+import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
@@ -26,13 +27,24 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    blobToken: !!process.env.BLOB_READ_WRITE_TOKEN,
-    jwtSecret: !!process.env.JWT_SECRET
-  });
+  try {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      supabaseUrl: !!process.env.SUPABASE_URL,
+      supabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      jwtSecret: !!process.env.JWT_SECRET,
+      resendKey: !!process.env.RESEND_API_KEY
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Root endpoint
@@ -222,6 +234,82 @@ app.get('/api/auth/verify', async (req, res) => {
   } catch (error) {
     console.error('Email verification error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Test blob store endpoints
+app.post('/api/test-blob', async (req, res) => {
+  try {
+    const testData = req.body;
+    const blobName = `test/test-${Date.now()}.json`;
+    
+    const result = await put(blobName, JSON.stringify(testData), {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
+    
+    res.json({
+      success: true,
+      message: 'Test file saved to blob store',
+      blobUrl: result.url,
+      blobName: blobName
+    });
+  } catch (error) {
+    console.error('Test blob save error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      message: 'Blob store connection failed'
+    });
+  }
+});
+
+app.get('/api/test-blob', async (req, res) => {
+  try {
+    const { blobs } = await list({ prefix: 'test/' });
+    
+    res.json({
+      success: true,
+      message: 'Test files in blob store',
+      count: blobs.length,
+      blobs: blobs.map(blob => ({
+        name: blob.pathname,
+        size: blob.size,
+        url: blob.url
+      }))
+    });
+  } catch (error) {
+    console.error('Test blob list error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      message: 'Blob store connection failed'
+    });
+  }
+});
+
+app.get('/api/list-blobs', async (req, res) => {
+  try {
+    const { blobs } = await list({ prefix: '' });
+    
+    res.json({
+      success: true,
+      message: 'All blobs in store',
+      count: blobs.length,
+      blobs: blobs.map(blob => ({
+        name: blob.pathname,
+        size: blob.size,
+        url: blob.url
+      }))
+    });
+  } catch (error) {
+    console.error('List blobs error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      message: 'Blob store connection failed'
+    });
   }
 });
 
