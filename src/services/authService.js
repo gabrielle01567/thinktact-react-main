@@ -1,12 +1,13 @@
 class AuthService {
   constructor() {
-    this.baseUrl = '/api'; // This will be your Vercel API route
+    // Use environment variable for backend URL, fallback to relative path for Vercel
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api');
   }
 
   // Register a new user
   async registerUser(email, password, extra = {}) {
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${this.baseUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -26,7 +27,7 @@ class AuthService {
   // Login user
   async loginUser(email, password) {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -46,7 +47,7 @@ class AuthService {
   async getUserByEmail(email) {
     try {
       const blobName = `users/${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-      const response = await fetch(`/api/blob/${encodeURIComponent(blobName)}`);
+      const response = await fetch(`${this.baseUrl}/blob/${encodeURIComponent(blobName)}`);
       if (!response.ok) return null;
       return await response.json();
     } catch (error) {
@@ -58,7 +59,7 @@ class AuthService {
   // Request password reset
   async requestPasswordReset(email, securityAnswer) {
     try {
-      const response = await fetch('/api/auth/request-reset', {
+      const response = await fetch(`${this.baseUrl}/auth/request-reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, securityAnswer })
@@ -76,7 +77,7 @@ class AuthService {
     try {
       console.log('🔍 AuthService: Sending reset request with token:', token ? token.substring(0, 10) + '...' : 'null');
       
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch(`${this.baseUrl}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword })
