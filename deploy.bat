@@ -1,47 +1,50 @@
 @echo off
-REM ThinkTact React Production Deployment Script for Windows
-REM This script helps deploy the app to Vercel
+REM Git-based deployment script for ThinkTact (Windows)
+REM This script commits and pushes changes to GitHub, which triggers Vercel deployment
 
-echo 🚀 Starting ThinkTact React Production Deployment...
+echo 🚀 ThinkTact Git-based Deployment
+echo ==================================
 
-REM Check if Vercel CLI is installed
-vercel --version >nul 2>&1
+REM Check if there are changes to commit
+git status --porcelain >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Vercel CLI is not installed. Installing now...
-    npm install -g vercel
-)
-
-REM Check if user is logged in to Vercel
-vercel whoami >nul 2>&1
-if %errorlevel% neq 0 (
-    echo 🔐 Please log in to Vercel...
-    vercel login
-)
-
-REM Build the project
-echo 📦 Building the project...
-npm run build
-
-if %errorlevel% neq 0 (
-    echo ❌ Build failed. Please fix the errors and try again.
+    echo ✅ No changes to commit
+    echo 📝 Current status:
+    git status
     pause
-    exit /b 1
+    exit /b 0
 )
 
-echo ✅ Build completed successfully!
+REM Show what will be committed
+echo 📋 Changes to be committed:
+git status --porcelain
 
-REM Deploy to Vercel
-echo 🚀 Deploying to Vercel...
-vercel --prod
+REM Add all changes
+echo 📦 Adding all changes...
+git add .
 
-echo ✅ Deployment completed!
-echo.
-echo 📋 Next steps:
-echo 1. Set up environment variables in Vercel dashboard:
-echo    - BLOB_READ_WRITE_TOKEN
-echo    - RESEND_API_KEY
-echo 2. Test the production deployment
-echo 3. Update your domain settings if needed
-echo.
-echo 🔗 Check PRODUCTION_SETUP.md for detailed instructions
+REM Get commit message from user or use default
+if "%1"=="" (
+    echo 💬 Enter commit message (or press Enter for default):
+    set /p commit_message=
+    if "!commit_message!"=="" (
+        for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
+        set "commit_message=Update: !dt:~0,4!-!dt:~4,2!-!dt:~6,2! !dt:~8,2!:!dt:~10,2!:!dt:~12,2!"
+    )
+) else (
+    set "commit_message=%1"
+)
+
+REM Commit changes
+echo 💾 Committing changes: !commit_message!
+git commit -m "!commit_message!"
+
+REM Push to GitHub
+echo 🚀 Pushing to GitHub...
+git push origin main
+
+echo ✅ Deployment initiated!
+echo 🌐 Vercel will automatically deploy from GitHub
+echo 📊 Check deployment status at: https://vercel.com/gabrielle-shands-projects/thinktact-react-main
+echo 🔗 Production URL: https://thinktact-react-main.vercel.app
 pause 

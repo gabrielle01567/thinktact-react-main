@@ -1,44 +1,47 @@
 #!/bin/bash
 
-# ThinkTact React Production Deployment Script
-# This script helps deploy the app to Vercel
+# Git-based deployment script for ThinkTact
+# This script commits and pushes changes to GitHub, which triggers Vercel deployment
 
-echo "🚀 Starting ThinkTact React Production Deployment..."
+echo "🚀 ThinkTact Git-based Deployment"
+echo "=================================="
 
-# Check if Vercel CLI is installed
-if ! command -v vercel &> /dev/null; then
-    echo "❌ Vercel CLI is not installed. Installing now..."
-    npm install -g vercel
+# Check if there are changes to commit
+if [[ -z $(git status --porcelain) ]]; then
+    echo "✅ No changes to commit"
+    echo "📝 Current status:"
+    git status
+    exit 0
 fi
 
-# Check if user is logged in to Vercel
-if ! vercel whoami &> /dev/null; then
-    echo "🔐 Please log in to Vercel..."
-    vercel login
+# Show what will be committed
+echo "📋 Changes to be committed:"
+git status --porcelain
+
+# Add all changes
+echo "📦 Adding all changes..."
+git add .
+
+# Get commit message from user or use default
+if [ -z "$1" ]; then
+    echo "💬 Enter commit message (or press Enter for default):"
+    read commit_message
+    if [ -z "$commit_message" ]; then
+        commit_message="Update: $(date '+%Y-%m-%d %H:%M:%S')"
+    fi
+else
+    commit_message="$1"
 fi
 
-# Build the project
-echo "📦 Building the project..."
-npm run build
+# Commit changes
+echo "💾 Committing changes: $commit_message"
+git commit -m "$commit_message"
 
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed. Please fix the errors and try again."
-    exit 1
-fi
+# Push to GitHub
+echo "🚀 Pushing to GitHub..."
+git push origin main
 
-echo "✅ Build completed successfully!"
-
-# Deploy to Vercel
-echo "🚀 Deploying to Vercel..."
-vercel --prod
-
-echo "✅ Deployment completed!"
-echo ""
-echo "📋 Next steps:"
-echo "1. Set up environment variables in Vercel dashboard:"
-echo "   - BLOB_READ_WRITE_TOKEN"
-echo "   - RESEND_API_KEY"
-echo "2. Test the production deployment"
-echo "3. Update your domain settings if needed"
-echo ""
-echo "🔗 Check PRODUCTION_SETUP.md for detailed instructions" 
+echo "✅ Deployment initiated!"
+echo "🌐 Vercel will automatically deploy from GitHub"
+echo "📊 Check deployment status at: https://vercel.com/gabrielle-shands-projects/thinktact-react-main"
+echo "🔗 Production URL: https://thinktact-react-main.vercel.app" 
