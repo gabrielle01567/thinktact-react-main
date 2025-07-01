@@ -69,6 +69,12 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
     loadHistory();
   }, [refreshKey]);
 
+  // Also load history on component mount
+  useEffect(() => {
+    console.log('AnalysisHistory: Component mounted, loading history...');
+    loadHistory();
+  }, []);
+
   if (loading) {
     return (
       <div className="px-4 py-3">
