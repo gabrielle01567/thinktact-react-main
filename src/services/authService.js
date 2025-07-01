@@ -1,7 +1,7 @@
 class AuthService {
   constructor() {
-    // Use environment variable for backend URL, fallback to relative path for Vercel
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api');
+    // Use the thinktact-react-main-blob backend
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://thinktact-react-main-blob.vercel.app/api';
   }
 
   // Register a new user

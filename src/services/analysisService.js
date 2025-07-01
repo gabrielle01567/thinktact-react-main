@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use environment variable for backend URL, fallback to relative path for Vercel
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api');
+// Use the thinktact-react-main-blob backend
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://thinktact-react-main-blob.vercel.app/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
