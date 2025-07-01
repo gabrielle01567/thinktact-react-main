@@ -57,11 +57,7 @@ const Navbar = () => {
             <Link to="/" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/')}`}>
               Home
             </Link>
-            {isAuthenticated && (
-              <Link to="/dashboard" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/dashboard')}`}>
-                Dashboard
-              </Link>
-            )}
+
             {isAuthenticated && (user?.isAdmin || user?.isSuperUser || user?.email === 'alex.hawke54@gmail.com' || user?.email === 'admin@thinktact.ai') && (
               <Link to="/admin" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/admin')}`}>
                 Admin
