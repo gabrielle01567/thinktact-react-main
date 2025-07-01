@@ -1,4 +1,4 @@
-import { toggleAdminStatus } from '../shared-storage.js';
+import { updateUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,7 +9,10 @@ export default async function handler(req, res) {
     if (!userId || typeof isAdmin !== 'boolean') {
       return res.status(400).json({ error: 'User ID and isAdmin are required.' });
     }
-    const updatedUser = await toggleAdminStatus(userId, isAdmin);
+    
+    // Update the user's admin status
+    const updatedUser = await updateUser(userId, { is_admin: isAdmin });
+    
     if (updatedUser) {
       res.status(200).json({ 
         success: true,
@@ -20,6 +23,10 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Error toggling admin status:', error);
-    res.status(500).json({ error: 'Failed to update admin status' });
+    if (error.message === 'Database not configured') {
+      res.status(503).json({ error: 'Database not configured' });
+    } else {
+      res.status(500).json({ error: 'Failed to update admin status' });
+    }
   }
 } 

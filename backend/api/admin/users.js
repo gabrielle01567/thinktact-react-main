@@ -1,4 +1,4 @@
-import { getAllUsers } from '../shared-storage.js';
+import { getAllUsers } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get all users from storage (development or production)
+    // Get all users from Supabase
     const users = await getAllUsers();
     
     res.status(200).json({

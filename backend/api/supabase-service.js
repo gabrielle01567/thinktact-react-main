@@ -433,12 +433,38 @@ export const deleteAnalysis = async (userId, analysisId) => {
 // Admin functions
 export const getAllUsers = async () => {
   try {
-    const { data: users, error } = await supabase
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in getAllUsers');
+      return [];
+    }
+
+    // Try to select with blocked field first
+    let { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, is_verified, is_admin, created_at')
+      .select('id, email, name, is_verified, is_admin, blocked, created_at')
       .order('created_at', { ascending: false });
     
-    if (error) {
+    // If blocked column doesn't exist, try without it
+    if (error && error.message.includes('column "blocked" does not exist')) {
+      console.log('⚠️ Blocked column not found, fetching users without blocked status');
+      const { data: usersWithoutBlocked, error: error2 } = await supabase
+        .from('users')
+        .select('id, email, name, is_verified, is_admin, created_at')
+        .order('created_at', { ascending: false });
+      
+      if (error2) {
+        console.error('Error getting all users (without blocked):', error2);
+        return [];
+      }
+      
+      // Add blocked: false to all users since column doesn't exist
+      users = usersWithoutBlocked.map(user => ({
+        ...user,
+        blocked: false
+      }));
+    } else if (error) {
       console.error('Error getting all users:', error);
       return [];
     }
@@ -452,6 +478,31 @@ export const getAllUsers = async () => {
 
 export const updateUser = async (userId, updates) => {
   try {
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in updateUser');
+      throw new Error('Database not configured');
+    }
+
+    // If trying to update blocked field, check if column exists first
+    if (updates.hasOwnProperty('blocked')) {
+      try {
+        // Test if blocked column exists by trying to select it
+        const { error: testError } = await supabase
+          .from('users')
+          .select('blocked')
+          .limit(1);
+        
+        if (testError && testError.message.includes('column "blocked" does not exist')) {
+          console.log('⚠️ Blocked column not found, removing blocked field from update');
+          delete updates.blocked;
+        }
+      } catch (error) {
+        console.log('⚠️ Could not test blocked column, proceeding with update');
+      }
+    }
+
     const { data: user, error } = await supabase
       .from('users')
       .update(updates)
