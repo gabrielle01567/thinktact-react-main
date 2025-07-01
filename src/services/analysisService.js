@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use the deployed backend URL
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backend-gabrielle-shands-projects.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {

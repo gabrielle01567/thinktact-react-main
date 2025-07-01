@@ -1,7 +1,7 @@
 class AuthService {
   constructor() {
     // Use the deployed backend URL
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-7vievbgfv-gabrielle-shands-projects.vercel.app/api';
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
   }
 
   // Register a new user
