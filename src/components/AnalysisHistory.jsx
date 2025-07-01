@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAnalysisHistory, deleteAnalysis } from '../services/analysisService';
 
-const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId }) => {
+const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,7 +64,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId }) => {
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return (
@@ -93,6 +93,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId }) => {
   if (history.length === 0) {
     return (
       <div className="px-4 py-3">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analyses</h3>
         <div className="text-gray-500 text-sm text-center py-4">
           No previous analyses yet
         </div>

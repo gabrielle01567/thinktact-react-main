@@ -42,6 +42,7 @@ const Analyzer = () => {
   const [error, setError] = useState(null);
   const [processedAnalysis, setProcessedAnalysis] = useState(null);
   const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   // Sample data for the donut chart - this should eventually be dynamic
   const chartData = {
@@ -276,6 +277,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       try {
         await saveAnalysis(argumentText, processed);
         console.log('Analysis saved to history');
+        // Trigger history refresh
+        setHistoryRefreshKey(prev => prev + 1);
       } catch (error) {
         console.error('Failed to save analysis to history:', error);
         // Don't show error to user as this is not critical
@@ -572,6 +575,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
               <AnalysisHistory 
                 onSelectAnalysis={handleSelectAnalysis}
                 currentAnalysisId={currentAnalysisId}
+                refreshKey={historyRefreshKey}
               />
             </div>
           </nav>
