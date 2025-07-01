@@ -9,7 +9,7 @@ import ArgumentFlow from '../components/dashboard/ArgumentFlow';
 import LogicDonutChart from '../components/dashboard/LogicDonutChart';
 import LogicBreakdownTable from '../components/dashboard/LogicBreakdownTable';
 import SafeTextFormatter from '../components/SafeTextFormatter';
-import Navbar from '../components/Navbar';
+
 import { track } from '@vercel/analytics';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -504,9 +504,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
 
   // For authenticated users, show the full layout with sidebar
   return (
-    <>
-      <Navbar />
-      <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
         {/* Sidebar Navigation - Fixed Left */}
         <div className="hidden md:flex md:w-64 lg:w-72 bg-white shadow-md flex-col fixed h-full z-10">
           <div className="px-6 py-5 border-b border-gray-200 flex items-center">
@@ -726,10 +724,9 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
               </div>
             )}
           </main>
-        </div>
-      </div>
-    </>
-  );
-};
+                 </div>
+       </div>
+   );
+ };
 
 export default Analyzer; 
