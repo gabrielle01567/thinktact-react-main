@@ -275,10 +275,12 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       
       // Save analysis to history
       try {
-        await saveAnalysis(argumentText, processed);
-        console.log('Analysis saved to history');
+        console.log('Attempting to save analysis to history...');
+        const saveResult = await saveAnalysis(argumentText, processed);
+        console.log('Analysis saved to history successfully:', saveResult);
         // Trigger history refresh
         setHistoryRefreshKey(prev => prev + 1);
+        console.log('History refresh triggered, new key:', historyRefreshKey + 1);
       } catch (error) {
         console.error('Failed to save analysis to history:', error);
         // Don't show error to user as this is not critical

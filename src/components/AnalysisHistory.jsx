@@ -9,8 +9,10 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
   // Load analysis history
   const loadHistory = async () => {
     try {
+      console.log('AnalysisHistory: Loading history...');
       setLoading(true);
       const data = await getAnalysisHistory();
+      console.log('AnalysisHistory: Received history data:', data);
       setHistory(data);
       setError(null);
     } catch (err) {
@@ -63,6 +65,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
   };
 
   useEffect(() => {
+    console.log('AnalysisHistory: refreshKey changed to:', refreshKey);
     loadHistory();
   }, [refreshKey]);
 
