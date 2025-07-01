@@ -221,8 +221,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         argumentStructure: {
           premise: parsedResults.premiseSets?.explicit && parsedResults.premiseSets.explicit.length > 0 
             ? parsedResults.premiseSets.explicit 
-            : ["No explicit premises detected"],
-          conclusion: parsedResults.conclusion?.text || "No clear conclusion identified",
+            : ["No clear premise"],
+          conclusion: parsedResults.conclusion?.text || "No clear conclusion",
           unstatedAssumptions: parsedResults.unstatedAssumptions && parsedResults.unstatedAssumptions.length > 0
             ? parsedResults.unstatedAssumptions
             : []
@@ -496,9 +496,6 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-6 py-12 max-w-4xl bg-white">
-        <div className="text-center mb-4">
-          <p className="text-sm text-gray-500">Debug: Not authenticated</p>
-        </div>
         <h1 className="text-4xl font-bold mb-8 text-center">Argument Analyzer</h1>
         
         <div className="mb-8">
@@ -564,9 +561,6 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
   // For authenticated users, show the full layout with sidebar
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="text-center mb-4 absolute top-0 left-0 z-50 bg-yellow-100 p-2 text-xs">
-        Debug: Authenticated as {user?.email}
-      </div>
         {/* Sidebar Navigation - Fixed Left */}
         <div className="hidden md:flex md:w-64 lg:w-72 bg-white shadow-md flex-col fixed h-full z-10">
           <div className="px-6 py-5 border-b border-gray-200 flex items-center">
@@ -724,6 +718,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                     icon="🔍"
                     color="bg-purple-50"
                     textColor="text-purple-700"
+                    assumptions={processedAnalysis?.argumentStructure?.unstatedAssumptions}
                   />
                 </div>
 
@@ -765,7 +760,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                         <div className="text-sm text-gray-500 mb-1 font-medium">Original</div>
                         <SafeTextFormatter 
                           text={processedAnalysis?.originalArgument || ""}
-                          className=""
+                          className="text-black"
                         />
                       </div>
                       

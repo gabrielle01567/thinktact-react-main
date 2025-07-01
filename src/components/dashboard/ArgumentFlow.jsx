@@ -4,7 +4,7 @@ const ArgumentFlow = ({ structure = {} }) => {
   // Extract premises into an array
   const premises = Array.isArray(structure?.premise) 
     ? structure.premise 
-    : [structure?.premise || "No premises available"];
+    : [structure?.premise || "No clear premise"];
   
   // Extract unstated assumptions if available
   const unstatedAssumptions = structure?.unstatedAssumptions || [];
@@ -20,7 +20,7 @@ const ArgumentFlow = ({ structure = {} }) => {
         <div className="w-full sm:w-5/6 md:w-3/4 lg:w-2/3 mb-5">
           <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center shadow-sm">
             <div className="text-sm text-pink-600 font-semibold mb-1">CONCLUSION</div>
-            <p className="text-gray-800 break-words">{structure?.conclusion || "No conclusion available"}</p>
+            <p className="text-gray-800 break-words">{structure?.conclusion || "No clear conclusion"}</p>
           </div>
         </div>
         
