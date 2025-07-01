@@ -24,10 +24,10 @@ const CollapsibleSection = ({ title, children, isLoading }) => {
 
   // Automatically open sections when loading finishes and there's content
   useEffect(() => {
-    if (!isLoading && children && typeof children === 'string' && children !== 'Not found' && children.length > 0) {
+    if (!isLoading && children && typeof children === 'string' && children !== 'Not found' && children?.length > 0) {
       // setIsOpen(true); // Optionally auto-open populated sections
     }
-    if (!isLoading && Array.isArray(children) && children.length > 0) {
+    if (!isLoading && Array.isArray(children) && children?.length > 0) {
       // setIsOpen(true); // Optionally auto-open populated sections
     }
     // Add more conditions if children structure varies (e.g., objects for premises)
@@ -37,7 +37,7 @@ const CollapsibleSection = ({ title, children, isLoading }) => {
   const hasContent = () => {
     if (!children || children === 'Not found') return false;
     if (typeof children === 'string' && children.trim() === '') return false;
-    if (Array.isArray(children) && children.length === 0) return false;
+    if (Array.isArray(children) && children?.length === 0) return false;
     // Add checks for object types if necessary (e.g., premiseSets)
     if (typeof children === 'object' && !Array.isArray(children) && children !== null) {
       if (title === 'Premise Sets' && children.explicit?.length === 0 && children.implicit?.length === 0) return false;
@@ -84,7 +84,7 @@ const CollapsibleSection = ({ title, children, isLoading }) => {
             </ul>
           ) : typeof children === 'object' && !Array.isArray(children) && title === 'Premise Sets' ? (
             <div className="space-y-3 text-sm text-gray-700">
-              {children.explicit.length > 0 && (
+              {children.explicit?.length > 0 && (
                 <div>
                   <strong className="font-medium text-gray-800">Explicit:</strong>
                   <ul className="list-disc pl-5 mt-1 space-y-1">
@@ -92,7 +92,7 @@ const CollapsibleSection = ({ title, children, isLoading }) => {
                   </ul>
                 </div>
               )}
-              {children.implicit.length > 0 && (
+              {children.implicit?.length > 0 && (
                 <div>
                   <strong className="font-medium text-gray-800">Implicit:</strong>
                   <ul className="list-disc pl-5 mt-1 space-y-1">

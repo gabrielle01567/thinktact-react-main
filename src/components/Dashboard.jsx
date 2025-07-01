@@ -10,9 +10,9 @@ const Dashboard = ({ analysisResults, isLoading, error }) => {
       {
         label: 'Argument Components',
         data: [
-          analysisResults.necessaryAssumption ? 1 : 0,
-          analysisResults.sufficientAssumption ? 1 : 0,
-          analysisResults.logicalFlaws?.length || 0,
+          analysisResults?.necessaryAssumption ? 1 : 0,
+          analysisResults?.sufficientAssumption ? 1 : 0,
+          analysisResults?.logicalFlaws?.length || 0,
         ],
         backgroundColor: [
           'rgba(157, 23, 77, 0.8)', // pink-900
@@ -32,7 +32,7 @@ const Dashboard = ({ analysisResults, isLoading, error }) => {
   return (
     <div className="space-y-10 mt-12">
       {/* --- Structure/Chart Section --- */}
-      {(isLoading || analysisResults.necessaryAssumption || analysisResults.sufficientAssumption || analysisResults.logicalFlaws?.length > 0) && (
+      {(isLoading || analysisResults?.necessaryAssumption || analysisResults?.sufficientAssumption || analysisResults?.logicalFlaws?.length > 0) && (
         <div className="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
           <div className="px-5 py-5 sm:px-6 sm:py-6">
             <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-5">Logical Structure Overview</h3>
@@ -50,7 +50,7 @@ const Dashboard = ({ analysisResults, isLoading, error }) => {
                     <div className="text-gray-400">↓</div>
                     <div className="bg-pink-200 rounded px-3 py-1 w-full">Then: ...</div>
                     <div className="text-gray-400">↓</div>
-                    <div className="bg-pink-300 rounded px-3 py-1 w-full">Conclusion: {analysisResults.conclusion.text || '...'}</div>
+                    <div className="bg-pink-300 rounded px-3 py-1 w-full">Conclusion: {analysisResults?.conclusion?.text || '...'}</div>
                   </div>
                 </div>
 
@@ -72,7 +72,7 @@ const Dashboard = ({ analysisResults, isLoading, error }) => {
       )}
 
       {/* --- Detailed Analysis Section --- */}
-      {(isLoading || Object.values(analysisResults).some(val => val && (typeof val !== 'object' || Array.isArray(val) ? val.length > 0 : true))) && (
+      {(isLoading || Object.values(analysisResults || {}).some(val => val && (typeof val !== 'object' || Array.isArray(val) ? val?.length > 0 : true))) && (
         <div>
           <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-5">Detailed Analysis</h3>
           <div className="space-y-4">
