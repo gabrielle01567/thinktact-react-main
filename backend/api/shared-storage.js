@@ -49,7 +49,7 @@ export const createAdminUser = async () => {
 // User management functions
 export const createUser = async (userData) => {
   try {
-    const { email, password, name } = userData;
+    const { email, password, name, isVerified = false, isAdmin = false } = userData;
     
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
@@ -58,15 +58,15 @@ export const createUser = async (userData) => {
 
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userId = `user-${Date.now()}`;
-    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const verificationToken = isVerified ? null : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     
     const user = {
       id: userId,
       email,
       password: hashedPassword,
       name,
-      isVerified: false, // Mark as unverified until email is verified
-      isAdmin: false,
+      isVerified, // Use the provided value or default to false
+      isAdmin, // Use the provided value or default to false
       verificationToken,
       createdAt: new Date().toISOString()
     };
@@ -75,7 +75,7 @@ export const createUser = async (userData) => {
     return { 
       success: true, 
       user: { ...user, password: undefined },
-      verificationToken // Return token for email sending
+      verificationToken // Return token for email sending (null if already verified)
     };
   } catch (error) {
     console.error('Error creating user:', error);

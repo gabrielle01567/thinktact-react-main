@@ -56,7 +56,7 @@ app.get('/api/test', (req, res) => {
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, isVerified = false, isAdmin = false } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ 
@@ -65,11 +65,11 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    const result = await createUser({ email, password, name: name || email.split('@')[0] });
+    const result = await createUser({ email, password, name: name || email.split('@')[0], isVerified, isAdmin });
     
     if (result.success) {
-      // Send verification email
-      if (process.env.RESEND_API_KEY) {
+      // Only send verification email if user is not already verified
+      if (!isVerified && process.env.RESEND_API_KEY) {
         const emailResult = await sendVerificationEmail(email, result.verificationToken, result.user.name);
         if (emailResult.success) {
           res.json({
@@ -85,6 +85,13 @@ app.post('/api/auth/register', async (req, res) => {
             user: result.user
           });
         }
+      } else if (isVerified) {
+        // User is already verified (admin user)
+        res.json({
+          success: true,
+          message: 'Admin user created successfully and is ready to use.',
+          user: result.user
+        });
       } else {
         // No email service configured
         res.json({
