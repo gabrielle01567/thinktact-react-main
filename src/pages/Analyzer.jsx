@@ -52,9 +52,9 @@ const Analyzer = () => {
         label: 'Argument Components',
         // TODO: Replace with dynamic data based on analysisResults
         data: [
-          analysisResults.necessaryAssumption ? 1 : 0,
-          analysisResults.sufficientAssumption ? 1 : 0,
-          analysisResults.logicalFlaws.length || 0,
+          analysisResults?.necessaryAssumption ? 1 : 0,
+          analysisResults?.sufficientAssumption ? 1 : 0,
+          analysisResults?.logicalFlaws?.length || 0,
         ],
         backgroundColor: [
           'rgba(157, 23, 77, 0.8)', // pink-900
@@ -664,28 +664,28 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   <StatCard
                     title="Conclusion Type"
-                    value={processedAnalysis.conclusionType}
+                    value={processedAnalysis?.conclusionType || "Unknown"}
                     icon="📝"
                     color="bg-blue-50"
                     textColor="text-blue-700"
                   />
                   <StatCard
                     title="Logical Flaw"
-                    value={processedAnalysis.keyFlaw}
+                    value={processedAnalysis?.keyFlaw || "No flaws detected"}
                     icon="⚠️"
                     color="bg-amber-50"
                     textColor="text-amber-700"
                   />
                   <StatCard
                     title="Counter Argument"
-                    value={processedAnalysis.counterpoint}
+                    value={processedAnalysis?.counterpoint || "No counter argument"}
                     icon="🔄"
                     color="bg-indigo-50"
                     textColor="text-indigo-700"
                   />
                   <StatCard
                     title="Hidden Assumptions"
-                    value={processedAnalysis.assumptionsCount}
+                    value={processedAnalysis?.assumptionsCount || 0}
                     icon="🔍"
                     color="bg-purple-50"
                     textColor="text-purple-700"
@@ -693,17 +693,17 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                 </div>
 
                 {/* Hidden Assumptions Section */}
-                {processedAnalysis.argumentStructure.unstatedAssumptions && 
+                {processedAnalysis?.argumentStructure?.unstatedAssumptions && 
                  processedAnalysis.argumentStructure.unstatedAssumptions.length > 0 && (
                   <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                     <div className="flex items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-800">Hidden Assumptions</h3>
                       <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-                        {processedAnalysis.argumentStructure.unstatedAssumptions.length} found
+                        {processedAnalysis?.argumentStructure?.unstatedAssumptions?.length || 0} found
                       </span>
                     </div>
                     <div className="space-y-3">
-                      {processedAnalysis.argumentStructure.unstatedAssumptions.map((assumption, index) => (
+                      {processedAnalysis?.argumentStructure?.unstatedAssumptions?.map((assumption, index) => (
                         <div key={index} className="p-3 bg-purple-50 rounded-md border border-purple-200">
                           <div className="flex items-start">
                             <span className="text-purple-600 font-medium mr-2">•</span>
@@ -729,7 +729,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                       <div className="p-4 bg-gray-50 rounded-md">
                         <div className="text-sm text-gray-500 mb-1 font-medium">Original</div>
                         <SafeTextFormatter 
-                          text={processedAnalysis.originalArgument}
+                          text={processedAnalysis?.originalArgument || ""}
                           className=""
                         />
                       </div>
@@ -738,19 +738,19 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                       <div className="p-4 bg-green-50 rounded-md border border-green-200">
                         <div className="text-sm text-green-700 mb-1 font-medium">Improved Version</div>
                         <SafeTextFormatter 
-                          text={processedAnalysis.improvedArgument}
+                          text={processedAnalysis?.improvedArgument || ""}
                           className="text-green-900"
                           emphasisColor="italic text-green-800"
                         />
                       </div>
                     </div>
                   </div>
-                  <ArgumentFlow structure={processedAnalysis.argumentStructure} />
+                  <ArgumentFlow structure={processedAnalysis?.argumentStructure || {}} />
                 </div>
 
                 {/* Bottom Row - Breakdown Table */}
                 <div>
-                  <LogicBreakdownTable items={processedAnalysis.breakdownItems} />
+                  <LogicBreakdownTable items={processedAnalysis?.breakdownItems || []} />
                 </div>
               </div>
             )}
