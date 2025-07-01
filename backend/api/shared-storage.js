@@ -352,4 +352,29 @@ export const deleteUser = async (email) => {
     console.error('Error deleting user:', error);
     return { success: false, error: error.message };
   }
+};
+
+// Reset user password function
+export const resetUserPassword = async (userId, newPassword) => {
+  try {
+    const user = await findUserById(userId);
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const updatedUser = {
+      ...user,
+      password: hashedPassword,
+      resetToken: null, // Clear reset token after password change
+      lastPasswordChange: new Date().toISOString()
+    };
+    
+    await saveUser(updatedUser);
+    
+    return { success: true, user: { ...updatedUser, password: undefined } };
+  } catch (error) {
+    console.error('Error resetting user password:', error);
+    return { success: false, error: error.message };
+  }
 }; 
