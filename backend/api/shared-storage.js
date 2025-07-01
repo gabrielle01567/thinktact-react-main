@@ -1,35 +1,44 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-// Simple in-memory storage (for development - in production you'd use a database)
-const users = new Map();
-const analysisHistory = new Map();
+import { put, list, del, head } from '@vercel/blob';
 
 // JWT Secret - in production, this should be a secure environment variable
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
-// Initialize with a default admin user
-const initializeDefaultAdmin = () => {
-  const adminEmail = 'admin@thinktact.ai';
-  if (!users.has(adminEmail)) {
-    const hashedPassword = bcrypt.hashSync('admin123', 10);
-    users.set(adminEmail, {
-      id: 'admin-1',
-      email: adminEmail,
-      password: hashedPassword,
-      name: 'Admin User',
-      isVerified: true,
-      isAdmin: true,
-      createdAt: new Date().toISOString()
-    });
-    console.log('Default admin user created:', adminEmail);
-  }
+// Helper function to get blob name for users
+const getUserBlobName = (email) => {
+  const normalizedEmail = email.toLowerCase().trim();
+  const safeEmail = normalizedEmail.replace(/[^a-zA-Z0-9]/g, '_');
+  return `users/${safeEmail}.json`;
 };
 
-// Create admin user function (simplified)
+// Helper function to get blob name for analysis history
+const getAnalysisBlobName = (userId) => {
+  return `analysis/${userId}.json`;
+};
+
+// Create admin user function
 export const createAdminUser = async () => {
   try {
-    initializeDefaultAdmin();
+    const adminEmail = 'admin@thinktact.ai';
+    const existingUser = await findUserByEmail(adminEmail);
+    
+    if (!existingUser) {
+      const hashedPassword = bcrypt.hashSync('admin123', 10);
+      const adminUser = {
+        id: 'admin-1',
+        email: adminEmail,
+        password: hashedPassword,
+        name: 'Admin User',
+        isVerified: true,
+        isAdmin: true,
+        createdAt: new Date().toISOString()
+      };
+      
+      await saveUser(adminUser);
+      console.log('Default admin user created:', adminEmail);
+    }
+    
     return { success: true, message: 'Admin user ready' };
   } catch (error) {
     console.error('Error creating admin user:', error);
@@ -42,7 +51,8 @@ export const createUser = async (userData) => {
   try {
     const { email, password, name } = userData;
     
-    if (users.has(email)) {
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
       return { success: false, error: 'User already exists' };
     }
 
@@ -59,7 +69,7 @@ export const createUser = async (userData) => {
       createdAt: new Date().toISOString()
     };
     
-    users.set(email, user);
+    await saveUser(user);
     return { success: true, user: { ...user, password: undefined } };
   } catch (error) {
     console.error('Error creating user:', error);
@@ -68,16 +78,62 @@ export const createUser = async (userData) => {
 };
 
 export const findUserByEmail = async (email) => {
-  return users.get(email) || null;
+  try {
+    const blobName = getUserBlobName(email);
+    const result = await head(blobName);
+    
+    if (result.blob) {
+      const response = await fetch(result.blob.url);
+      const user = await response.json();
+      return user;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error finding user by email:', error);
+    return null;
+  }
 };
 
 export const findUserById = async (id) => {
-  for (const user of users.values()) {
-    if (user.id === id) {
-      return user;
+  try {
+    const { blobs } = await list({ prefix: 'users/' });
+    
+    for (const blob of blobs) {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.id === id) {
+          return user;
+        }
+      } catch (error) {
+        console.error(`Error reading blob ${blob.pathname}:`, error);
+      }
     }
+    
+    return null;
+  } catch (error) {
+    console.error('Error finding user by ID:', error);
+    return null;
   }
-  return null;
+};
+
+export const saveUser = async (userData) => {
+  try {
+    const blobName = getUserBlobName(userData.email);
+    const jsonData = JSON.stringify(userData);
+    
+    await put(blobName, jsonData, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
+    
+    console.log(`User saved: ${userData.email}`);
+  } catch (error) {
+    console.error('Error saving user:', error);
+    throw error;
+  }
 };
 
 export const verifyPassword = async (user, password) => {
@@ -115,11 +171,20 @@ export const saveAnalysis = async (userId, analysisData) => {
       createdAt: new Date().toISOString()
     };
     
-    if (!analysisHistory.has(userId)) {
-      analysisHistory.set(userId, []);
-    }
+    // Get existing analysis history
+    const existingHistory = await getAnalysisHistory(userId);
+    existingHistory.push(analysis);
     
-    analysisHistory.get(userId).push(analysis);
+    // Save updated history
+    const blobName = getAnalysisBlobName(userId);
+    const jsonData = JSON.stringify(existingHistory);
+    
+    await put(blobName, jsonData, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
+    
     return { success: true, analysisId };
   } catch (error) {
     console.error('Error saving analysis:', error);
@@ -129,7 +194,16 @@ export const saveAnalysis = async (userId, analysisData) => {
 
 export const getAnalysisHistory = async (userId) => {
   try {
-    return analysisHistory.get(userId) || [];
+    const blobName = getAnalysisBlobName(userId);
+    const result = await head(blobName);
+    
+    if (result.blob) {
+      const response = await fetch(result.blob.url);
+      const history = await response.json();
+      return Array.isArray(history) ? history : [];
+    }
+    
+    return [];
   } catch (error) {
     console.error('Error getting analysis history:', error);
     return [];
@@ -138,9 +212,18 @@ export const getAnalysisHistory = async (userId) => {
 
 export const deleteAnalysis = async (userId, analysisId) => {
   try {
-    const userAnalyses = analysisHistory.get(userId) || [];
-    const filteredAnalyses = userAnalyses.filter(a => a.id !== analysisId);
-    analysisHistory.set(userId, filteredAnalyses);
+    const history = await getAnalysisHistory(userId);
+    const filteredHistory = history.filter(a => a.id !== analysisId);
+    
+    const blobName = getAnalysisBlobName(userId);
+    const jsonData = JSON.stringify(filteredHistory);
+    
+    await put(blobName, jsonData, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
+    
     return { success: true };
   } catch (error) {
     console.error('Error deleting analysis:', error);
@@ -151,10 +234,23 @@ export const deleteAnalysis = async (userId, analysisId) => {
 // Get all users (for admin)
 export const getAllUsers = async () => {
   try {
-    return Array.from(users.values()).map(user => ({
-      ...user,
-      password: undefined
-    }));
+    const { blobs } = await list({ prefix: 'users/' });
+    const users = [];
+    
+    for (const blob of blobs) {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        users.push({
+          ...user,
+          password: undefined
+        });
+      } catch (error) {
+        console.error(`Error reading user blob ${blob.pathname}:`, error);
+      }
+    }
+    
+    return users;
   } catch (error) {
     console.error('Error getting users:', error);
     return [];
@@ -164,14 +260,15 @@ export const getAllUsers = async () => {
 // Update user (for admin)
 export const updateUser = async (email, updates) => {
   try {
-    const user = users.get(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return { success: false, error: 'User not found' };
     }
     
-    Object.assign(user, updates);
-    users.set(email, user);
-    return { success: true, user: { ...user, password: undefined } };
+    const updatedUser = { ...user, ...updates };
+    await saveUser(updatedUser);
+    
+    return { success: true, user: { ...updatedUser, password: undefined } };
   } catch (error) {
     console.error('Error updating user:', error);
     return { success: false, error: error.message };
@@ -181,11 +278,14 @@ export const updateUser = async (email, updates) => {
 // Delete user (for admin)
 export const deleteUser = async (email) => {
   try {
-    if (!users.has(email)) {
+    const user = await findUserByEmail(email);
+    if (!user) {
       return { success: false, error: 'User not found' };
     }
     
-    users.delete(email);
+    const blobName = getUserBlobName(email);
+    await del(blobName);
+    
     return { success: true };
   } catch (error) {
     console.error('Error deleting user:', error);

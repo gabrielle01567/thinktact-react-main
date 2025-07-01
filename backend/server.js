@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 // import { createAdminUser } from './api/shared-storage.js';
@@ -8,11 +9,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://thinktact.ai', 'https://www.thinktact.ai']
+    : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 // Create admin user on server start - temporarily disabled for Railway deployment
 // createAdminUser().catch(console.error);
@@ -140,7 +148,7 @@ app.delete('/api/analysis/delete', async (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'ThinkTact Backend API is running' });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Root endpoint
@@ -157,7 +165,32 @@ app.get('/', (req, res) => {
   });
 });
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend API is working!' });
+});
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📱 API available at http://localhost:${PORT}/api`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 }); 
