@@ -1,3 +1,11 @@
+import { BlobServiceClient } from '@azure/storage-blob';
+
+export function getBlobClient() {
+  const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  if (!connStr) throw new Error('AZURE_STORAGE_CONNECTION_STRING not set');
+  return BlobServiceClient.fromConnectionString(connStr);
+}
+
 // Development storage (in-memory Map)
 let devStorage = new Map();
 
