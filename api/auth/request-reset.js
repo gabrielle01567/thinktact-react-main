@@ -56,7 +56,7 @@ export default async function handler(req, res) {
                 <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
               </div>
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+              <p style="word-break: break-all; color: #666;"><a href="${resetUrl}" style="color: #0066cc; text-decoration: underline;">ThinkTact AI Password Reset</a></p>
               <p>This link will expire in 24 hours.</p>
               <p>If you didn't request a password reset, you can safely ignore this email.</p>
               <p>Best regards,<br>The ThinkTact AI Team</p>

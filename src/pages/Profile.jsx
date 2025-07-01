@@ -18,6 +18,7 @@ const Profile = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [securityAnswerInput, setSecurityAnswerInput] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  const [modalError, setModalError] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -105,12 +106,13 @@ const Profile = () => {
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     setIsResetting(true);
+    setModalError('');
     setError('');
     setMessage('');
 
     // Check security answer (case-insensitive)
     if ((user?.securityAnswer || '').trim().toLowerCase() !== securityAnswerInput.trim().toLowerCase()) {
-      setError('Incorrect answer to security question.');
+      setModalError('Incorrect answer to security question.');
       setIsResetting(false);
       return;
     }
@@ -126,11 +128,12 @@ const Profile = () => {
         setMessage('Password reset email sent. Please check your inbox.');
         setShowResetModal(false);
         setSecurityAnswerInput('');
+        setModalError('');
       } else {
-        setError(data.error || 'Failed to send password reset email.');
+        setModalError(data.error || 'Failed to send password reset email.');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setModalError('Network error. Please try again.');
     } finally {
       setIsResetting(false);
     }
@@ -404,9 +407,16 @@ const Profile = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <form onSubmit={handlePasswordReset}>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Reset Password</h3>
-              <p className="mb-2">To reset your password, please answer your security question:</p>
-              <p className="font-semibold mb-4">{user?.securityQuestion}</p>
+              <h3 className="text-lg font-medium text-black mb-4">Reset Password</h3>
+              <p className="mb-2 text-black">To reset your password, please answer your security question:</p>
+              <p className="font-semibold mb-4 text-black">{user?.securityQuestion}</p>
+              
+              {modalError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-800 text-sm">{modalError}</p>
+                </div>
+              )}
+              
               <input
                 type="text"
                 className="w-full p-2 border border-gray-300 rounded mb-4"
@@ -418,7 +428,11 @@ const Profile = () => {
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => { setShowResetModal(false); setSecurityAnswerInput(''); setError(''); }}
+                  onClick={() => { 
+                    setShowResetModal(false); 
+                    setSecurityAnswerInput(''); 
+                    setModalError(''); 
+                  }}
                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
                 >
                   Cancel

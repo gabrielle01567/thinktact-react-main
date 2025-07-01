@@ -10,6 +10,7 @@ export default function Admin() {
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   
   // Create user form state
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -333,25 +334,37 @@ export default function Admin() {
     setIsSendingResetEmail(true);
     setMessage('');
     setError('');
-    try {
-      const response = await fetch('/api/admin/request-reset-for-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setMessage('Password reset email sent to ' + user.email);
-        setShowResetEmailModal(false);
-        setResetEmailTarget(null);
-      } else {
-        setError(data.error || 'Failed to send password reset email.');
+    
+          try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
+        const response = await fetch('/api/admin/request-reset-for-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        
+        if (response.ok) {
+          setMessage('Password reset email sent to ' + user.email);
+          setShowResetEmailModal(false);
+          setResetEmailTarget(null);
+        } else {
+          setError(data.error || 'Failed to send password reset email.');
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          setError('Request timed out. Please try again.');
+        } else {
+          setError('Network error. Please try again.');
+        }
+      } finally {
+        setIsSendingResetEmail(false);
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setIsSendingResetEmail(false);
-    }
   };
 
   if (!isAdmin) {
@@ -410,6 +423,12 @@ export default function Admin() {
               {message && (
                 <div className={`mb-4 p-4 rounded ${message.includes('successfully') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {message}
+                </div>
+              )}
+              
+              {error && (
+                <div className="mb-4 p-4 rounded bg-red-100 text-red-700">
+                  {error}
                 </div>
               )}
 
@@ -624,7 +643,7 @@ export default function Admin() {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div className="mt-3">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-black mb-4">
                     Reset Password for {selectedUser.firstName} {selectedUser.lastName}
                   </h3>
                   <input
@@ -632,7 +651,7 @@ export default function Admin() {
                     placeholder="New password (min 6 characters)"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                    className="w-full p-2 border border-gray-300 rounded mb-4 text-black"
                   />
                   <div className="flex justify-end space-x-2">
                     <button
@@ -661,7 +680,7 @@ export default function Admin() {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div className="mt-3">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">User Details</h3>
+                  <h3 className="text-lg font-medium text-black mb-4">User Details</h3>
                   <div className="space-y-2 text-sm text-black">
                     <p><strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}</p>
                     <p><strong>Email:</strong> {selectedUser.email}</p>
@@ -714,7 +733,7 @@ export default function Admin() {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
                 <div className="mt-3">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Create New User</h3>
+                  <h3 className="text-lg font-medium text-black mb-4">Create New User</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
@@ -839,7 +858,7 @@ export default function Admin() {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
                 <div className="mt-3">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">👑 Create Super User</h3>
+                  <h3 className="text-lg font-medium text-black mb-4">👑 Create Super User</h3>
                   <p className="text-sm text-purple-600 mb-4">Super users have full system access and can create other super users.</p>
                   <div className="space-y-4">
                     <div>
@@ -969,10 +988,10 @@ export default function Admin() {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div className="mt-3">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="text-lg font-medium text-black mb-4">
                     Send Password Reset Email
                   </h3>
-                  <p className="mb-4">Are you sure you want to send a password reset email to <span className="font-semibold">{resetEmailTarget.email}</span>?</p>
+                  <p className="mb-4 text-black">Are you sure you want to send a password reset email to <span className="font-semibold text-black">{resetEmailTarget.email}</span>?</p>
                   <div className="flex justify-end space-x-2">
                     <button
                       onClick={() => { setShowResetEmailModal(false); setResetEmailTarget(null); }}
@@ -983,7 +1002,7 @@ export default function Admin() {
                     <button
                       onClick={() => sendPasswordResetEmail(resetEmailTarget)}
                       disabled={isSendingResetEmail}
-                      className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+                      className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
                     >
                       {isSendingResetEmail ? 'Sending...' : 'Send Reset Email'}
                     </button>

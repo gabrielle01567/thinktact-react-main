@@ -35,7 +35,8 @@ export default async function handler(req, res) {
     if (process.env.RESEND_API_KEY) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
-        const resetUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        const baseUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
         await resend.emails.send({
           from: 'ThinkTact AI <noreply@thinktact.ai>',
           to: [email],
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
                 <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
               </div>
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+              <p style="word-break: break-all; color: #666;"><a href="${resetUrl}" style="color: #0066cc; text-decoration: underline;">ThinkTact AI Password Reset</a></p>
               <p>This link will expire in 24 hours.</p>
               <p>If you didn't request a password reset, you can safely ignore this email.</p>
               <p>Best regards,<br>The ThinkTact AI Team</p>
@@ -57,7 +58,8 @@ export default async function handler(req, res) {
           `
         });
       } catch (emailError) {
-        return res.status(500).json({ error: 'Failed to send reset email' });
+        console.error('Email sending error:', emailError);
+        return res.status(500).json({ error: 'Failed to send reset email: ' + emailError.message });
       }
     } else {
       return res.status(500).json({ error: 'Email service not configured' });
@@ -68,6 +70,7 @@ export default async function handler(req, res) {
       message: 'Password reset email sent successfully'
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to process reset request' });
+    console.error('Reset request error:', error);
+    res.status(500).json({ error: 'Failed to process reset request: ' + error.message });
   }
 } 
