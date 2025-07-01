@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     console.log('🔍 Verification request received');
     console.log('🔍 Token from query:', token);
     console.log('🔍 All query params:', req.query);
-    console.log('🔍 Environment check - BLOB_READ_WRITE_TOKEN exists:', !!process.env.BLOB_READ_WRITE_TOKEN);
+    console.log('🔍 Environment check - Using Supabase database');
 
     if (!token) {
       console.log('❌ No token provided');

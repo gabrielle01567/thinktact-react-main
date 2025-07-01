@@ -3,7 +3,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { createServer as createViteServer } from 'vite';
-import { createAdminUser } from './api/shared-storage.js';
+// Admin user creation moved to Supabase service
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,13 +15,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Create admin user on server start
-createAdminUser().catch(console.error);
+// Admin user creation handled by Supabase service
 
 // Import API routes
 import registerHandler from './api/auth/register.js';
 import loginHandler from './api/auth/login.js';
-import blobHandler from './api/blob/[filename].js';
+// Blob handler removed - using Supabase database
 import requestResetHandler from './api/auth/request-reset.js';
 import resetPasswordHandler from './api/auth/reset-password.js';
 import verifyHandler from './api/auth/verify.js';
@@ -52,10 +51,7 @@ app.post('/api/auth/login', async (req, res) => {
   await loginHandler(req, res);
 });
 
-app.get('/api/blob/:filename', async (req, res) => {
-  req.query.filename = req.params.filename;
-  await blobHandler(req, res);
-});
+// Blob endpoint removed - using Supabase database
 
 app.post('/api/auth/request-reset', async (req, res) => {
   await requestResetHandler(req, res);

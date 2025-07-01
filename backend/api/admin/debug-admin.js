@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       } : null,
       totalUsers: allUsers.length,
       allUserEmails: allUsers.map(u => u.email),
-      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development'
+      environment: 'production'
     });
 
   } catch (error) {

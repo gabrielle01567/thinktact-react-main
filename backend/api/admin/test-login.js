@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         fromFindUserByEmail: passwordValid,
         fromGetAllUsers: passwordValidFromAll
       },
-      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development'
+      environment: 'production'
     });
 
   } catch (error) {

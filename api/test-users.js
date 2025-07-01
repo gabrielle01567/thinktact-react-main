@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     res.status(200).json({
       success: true,
       totalUsers: users.length,
-      environment: process.env.BLOB_READ_WRITE_TOKEN ? 'production' : 'development',
+      environment: 'production',
       users: users.map(user => ({
         id: user.id,
         email: user.email,

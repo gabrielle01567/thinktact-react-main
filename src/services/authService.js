@@ -1,7 +1,7 @@
 class AuthService {
   constructor() {
     // Use the deployed backend URL
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-gabrielle-shands-projects.vercel.app/api';
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-7vievbgfv-gabrielle-shands-projects.vercel.app/api';
   }
 
   // Register a new user
@@ -46,8 +46,8 @@ class AuthService {
   // Get user by email (for password reset, etc.)
   async getUserByEmail(email) {
     try {
-      const blobName = `users/${btoa(email).replace(/[^a-zA-Z0-9]/g, '')}.json`;
-      const response = await fetch(`${this.baseUrl}/blob/${encodeURIComponent(blobName)}`);
+      // This endpoint should be implemented in the backend if needed
+      const response = await fetch(`${this.baseUrl}/auth/user/${encodeURIComponent(email)}`);
       if (!response.ok) return null;
       return await response.json();
     } catch (error) {

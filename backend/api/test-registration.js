@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const users = await getAllUsers();
     
     // Check if we're in development mode
-    const isDevelopment = !process.env.BLOB_READ_WRITE_TOKEN;
+    const isDevelopment = false; // Using Supabase in production
     const hasEmailService = !!process.env.RESEND_API_KEY;
     
     res.status(200).json({
