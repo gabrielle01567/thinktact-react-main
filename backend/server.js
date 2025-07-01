@@ -8,6 +8,7 @@ import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, v
 import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
+// Force redeploy to apply environment variables - 2025-07-01
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
