@@ -1,4 +1,4 @@
-const { getBlobClient } = require('./shared-storage');
+import { getBlobClient } from './shared-storage.js';
 
 // Save a new analysis to user's history
 const saveAnalysis = async (userId, analysisData) => {
@@ -126,8 +126,4 @@ const streamToString = async (readableStream) => {
   });
 };
 
-module.exports = {
-  saveAnalysis,
-  getAnalysisHistory,
-  deleteAnalysis
-}; 
+export { saveAnalysis, getAnalysisHistory, deleteAnalysis }; 
