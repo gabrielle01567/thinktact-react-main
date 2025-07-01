@@ -692,6 +692,32 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                   />
                 </div>
 
+                {/* Hidden Assumptions Section */}
+                {processedAnalysis.argumentStructure.unstatedAssumptions && 
+                 processedAnalysis.argumentStructure.unstatedAssumptions.length > 0 && (
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800">Hidden Assumptions</h3>
+                      <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                        {processedAnalysis.argumentStructure.unstatedAssumptions.length} found
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {processedAnalysis.argumentStructure.unstatedAssumptions.map((assumption, index) => (
+                        <div key={index} className="p-3 bg-purple-50 rounded-md border border-purple-200">
+                          <div className="flex items-start">
+                            <span className="text-purple-600 font-medium mr-2">•</span>
+                            <SafeTextFormatter 
+                              text={assumption}
+                              className="text-purple-900"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Middle Row - Your Argument and Argument Flow */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
