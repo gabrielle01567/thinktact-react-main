@@ -503,4 +503,59 @@ export const resetUserPassword = async (userId, newPassword) => {
   
   await saveUser(updatedUser);
   return updatedUser;
+};
+
+// Get user from frontend token (base64 encoded user data)
+export const getUserFromToken = async (token) => {
+  try {
+    // Decode the base64 token
+    const decodedToken = atob(token);
+    
+    // The token format is: JSON.stringify(user) + timestamp
+    // We need to extract just the user data part
+    // Since JSON.parse will fail if there's extra data, we'll try to find the valid JSON part
+    
+    // Try to parse the decoded token as JSON
+    // If it fails, the token might have extra data appended
+    let userData;
+    try {
+      userData = JSON.parse(decodedToken);
+    } catch (parseError) {
+      // If parsing fails, try to find the JSON part by removing trailing non-JSON data
+      // This handles the case where timestamp was appended
+      const jsonEndIndex = decodedToken.lastIndexOf('}');
+      if (jsonEndIndex > 0) {
+        const jsonPart = decodedToken.substring(0, jsonEndIndex + 1);
+        try {
+          userData = JSON.parse(jsonPart);
+        } catch (secondParseError) {
+          console.error('Failed to parse token JSON part:', secondParseError);
+          return null;
+        }
+      } else {
+        console.error('Failed to parse token:', parseError);
+        return null;
+      }
+    }
+    
+    // Validate that we have a user object with required fields
+    if (!userData || !userData.email || !userData.id) {
+      console.error('Invalid user data in token');
+      return null;
+    }
+    
+    // Verify the user still exists in our storage
+    const currentUser = await findUserByEmail(userData.email);
+    if (!currentUser) {
+      console.error('User from token no longer exists in storage');
+      return null;
+    }
+    
+    // Return the current user data (not the token data, as it might be stale)
+    return currentUser;
+    
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
 }; 

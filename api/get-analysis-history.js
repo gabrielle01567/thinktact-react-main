@@ -1,7 +1,7 @@
-const { getAnalysisHistory } = require('./analysis-history');
-const { getUserFromToken } = require('./shared-storage');
+import { getAnalysisHistory } from './analysis-history.js';
+import { getUserFromToken } from './shared-storage.js';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -28,4 +28,4 @@ module.exports = async (req, res) => {
     console.error('Error in get-analysis-history endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}; 
+} 
