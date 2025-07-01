@@ -280,6 +280,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         console.error('Failed to save analysis to history:', error);
         // Don't show error to user as this is not critical
       }
+      
+      setIsLoading(false);
 
     } catch (err) {
       console.error('API Call Error:', err);
