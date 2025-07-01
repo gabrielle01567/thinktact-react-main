@@ -13,7 +13,11 @@ export default function Verify() {
       setMessage('Invalid verification link.');
       return;
     }
-    fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`)
+
+    // Use the backend API URL
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-gabrielle-shands-projects.vercel.app/api';
+    
+    fetch(`${backendUrl}/auth/verify?token=${encodeURIComponent(token)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -24,7 +28,8 @@ export default function Verify() {
           setMessage(data.error || 'Verification failed.');
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Verification error:', error);
         setStatus('error');
         setMessage('Verification failed.');
       });
