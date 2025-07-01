@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import axios from 'axios'; // Import axios
 import CollapsibleSection from '../components/CollapsibleSection'; // Import from the dedicated file
+import StatCard from '../components/dashboard/StatCard';
+import ArgumentFlow from '../components/dashboard/ArgumentFlow';
+import LogicDonutChart from '../components/dashboard/LogicDonutChart';
+import LogicBreakdownTable from '../components/dashboard/LogicBreakdownTable';
+import SafeTextFormatter from '../components/SafeTextFormatter';
+import Navbar from '../components/Navbar';
 import { track } from '@vercel/analytics';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -27,11 +33,12 @@ const initialAnalysisState = {
 
 const Analyzer = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [argumentText, setArgumentText] = useState('');
   const [analysisResults, setAnalysisResults] = useState(initialAnalysisState);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [processedAnalysis, setProcessedAnalysis] = useState(null);
 
   // Sample data for the donut chart - this should eventually be dynamic
   const chartData = {
@@ -58,6 +65,11 @@ const Analyzer = () => {
         borderWidth: 1,
       },
     ],
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const handleAnalyze = async () => {
@@ -105,6 +117,7 @@ const Analyzer = () => {
     setIsLoading(true);
     setError(null);
     setAnalysisResults(initialAnalysisState); // Reset previous results
+    setProcessedAnalysis(null); // Reset processed analysis
 
     // --- Define the Prompt for Mistral ---
     const prompt = `Analyze the following argument and break it down into its components:
@@ -180,16 +193,73 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       // Example (very simplified, likely needs improvement):
       const parsedResults = parseMistralResponse(rawResult);
       
-      // Instead of just setting state, navigate to the dashboard with the results
+      // Set the analysis results
       setAnalysisResults(parsedResults);
       
-      // Navigate to dashboard with the analysis results
-      navigate('/dashboard', { 
-        state: { 
-          analysisResults: parsedResults,
-          originalArgument: argumentText 
-        }
-      });
+      // Process the results for display (similar to Dashboard logic)
+      const processed = {
+        conclusionType: parsedResults.conclusion?.type || "Unknown",
+        keyFlaw: parsedResults.logicalFlaws?.length > 0 ? parsedResults.logicalFlaws[0] : "No major flaws detected",
+        counterpoint: parsedResults.possibleCounter || "No counter argument provided",
+        assumptionsCount: (parsedResults.premiseSets?.implicit?.length || 0) + (parsedResults.unstatedAssumptions?.length || 0),
+        originalArgument: argumentText,
+        improvedArgument: parsedResults.improvedVersion || argumentText,
+        
+        // Argument structure - ensure premises are correctly formatted
+        argumentStructure: {
+          premise: parsedResults.premiseSets?.explicit && parsedResults.premiseSets.explicit.length > 0 
+            ? parsedResults.premiseSets.explicit 
+            : ["No explicit premises detected"],
+          conclusion: parsedResults.conclusion?.text || "No clear conclusion identified",
+          unstatedAssumptions: parsedResults.unstatedAssumptions && parsedResults.unstatedAssumptions.length > 0
+            ? parsedResults.unstatedAssumptions
+            : []
+        },
+        
+        // For donut chart - we're not using this anymore
+        components: {
+          necessaryAssumptions: parsedResults.necessaryAssumption ? 25 : 0,
+          flaws: parsedResults.logicalFlaws?.length || 0,
+          sufficientAssumptions: parsedResults.sufficientAssumption ? 25 : 0,
+          quantifiers: parsedResults.quantifiers ? 15 : 0
+        },
+        
+        // For breakdown table
+        breakdownItems: [
+          ...(parsedResults.logicalFlaws?.map(flaw => ({ 
+            type: 'Flaw', 
+            text: flaw, 
+            category: 'Logical', 
+            severity: 'High' 
+          })) || []),
+          parsedResults.necessaryAssumption && { 
+            type: 'Necessary Assumption', 
+            text: parsedResults.necessaryAssumption, 
+            category: 'Assumption', 
+            severity: 'Medium' 
+          },
+          parsedResults.sufficientAssumption && { 
+            type: 'Sufficient Assumption', 
+            text: parsedResults.sufficientAssumption, 
+            category: 'Assumption', 
+            severity: 'Medium' 
+          },
+          parsedResults.unstatedRule && { 
+            type: 'Unstated Rule', 
+            text: parsedResults.unstatedRule, 
+            category: 'Rule', 
+            severity: 'Medium' 
+          },
+          ...(parsedResults.premiseSets?.implicit?.map(premise => ({ 
+            type: 'Implicit Premise', 
+            text: premise, 
+            category: 'Premise', 
+            severity: 'Low' 
+          })) || [])
+        ].filter(Boolean) // Remove any null/undefined items
+      };
+      
+      setProcessedAnalysis(processed);
 
     } catch (err) {
       console.error('API Call Error:', err);
@@ -366,67 +436,299 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
     });
   }, []);
 
+  // For non-authenticated users, show the simple layout
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto px-6 py-12 max-w-4xl">
+        <h1 className="text-4xl font-bold mb-8 text-center">Argument Analyzer</h1>
+        
+        <div className="mb-8">
+          <label htmlFor="argument" className="block text-lg font-medium mb-3">
+            Enter your argument below
+          </label>
+          <textarea
+            id="argument"
+            className="w-full h-40 p-6 border rounded-xl shadow-sm bg-gray-200 text-black border-gray-300 focus:ring-2 focus:ring-pink-700 focus:border-pink-700 transition-all placeholder-gray-600"
+            value={argumentText}
+            onChange={(e) => setArgumentText(e.target.value)}
+            placeholder="Type or paste your argument here..."
+          />
+        </div>
+
+        <div className="flex justify-center mb-12">
+          <button
+            className="px-8 py-3 text-lg font-semibold text-white bg-pink-950 rounded-lg shadow-md hover:bg-pink-900 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-md"
+            onClick={handleAnalyze}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Analyzing...
+              </span>
+            ) : (
+              'Analyze Argument'
+            )}
+          </button>
+        </div>
+
+        {error && (
+          <div className="mt-8 p-6 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
+            <p className="font-medium text-lg mb-2">Error</p>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* --- Results Area --- */}
+        {(isLoading || error) && (
+          <div className="mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+            {isLoading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900"></div>
+              </div>
+            )}
+            {error && (
+              <div className="text-red-500 bg-red-50 p-6 rounded-xl">
+                <p className="font-medium text-lg mb-2">Error</p>
+                <p>{error}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // For authenticated users, show the full layout with sidebar
   return (
-    <div className="container mx-auto px-6 py-12 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Argument Analyzer</h1>
-      
-      <div className="mb-8">
-        <label htmlFor="argument" className="block text-lg font-medium mb-3">
-          Enter your argument below
-        </label>
-        <textarea
-          id="argument"
-          className="w-full h-40 p-6 border rounded-xl shadow-sm bg-gray-200 text-black border-gray-300 focus:ring-2 focus:ring-pink-700 focus:border-pink-700 transition-all placeholder-gray-600"
-          value={argumentText}
-          onChange={(e) => setArgumentText(e.target.value)}
-          placeholder="Type or paste your argument here..."
-        />
-      </div>
-
-      <div className="flex justify-center mb-12">
-        <button
-          className="px-8 py-3 text-lg font-semibold text-white bg-pink-950 rounded-lg shadow-md hover:bg-pink-900 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-md"
-          onClick={handleAnalyze}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <>
+      <Navbar />
+      <div className="flex min-h-screen bg-gray-100">
+        {/* Sidebar Navigation - Fixed Left */}
+        <div className="hidden md:flex md:w-64 lg:w-72 bg-white shadow-md flex-col fixed h-full z-10">
+          <div className="px-6 py-5 border-b border-gray-200 flex items-center">
+            <svg 
+              className="h-8 w-8 text-pink-950 mr-2" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              {/* Brain circuit design */}
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              <path d="M12 6v12" />
+              <path d="M6 12h12" />
+              <path d="M8.5 8.5l7 7" />
+              <path d="M15.5 8.5l-7 7" />
+              {/* AI circuit nodes */}
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+              <circle cx="8.5" cy="8.5" r="1" fill="currentColor" />
+              <circle cx="15.5" cy="8.5" r="1" fill="currentColor" />
+              <circle cx="8.5" cy="15.5" r="1" fill="currentColor" />
+              <circle cx="15.5" cy="15.5" r="1" fill="currentColor" />
+            </svg>
+            <h2 className="text-xl font-bold text-pink-950">ThinkTactAI</h2>
+          </div>
+          <nav className="mt-5 flex-1 px-4">
+            <div className="space-y-1">
+              <Link to="/dashboard" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 hover:text-pink-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
+                </svg>
+                Analysis Hub
+              </Link>
+              <Link to="/analyzer" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md bg-pink-50 text-pink-900">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                Argument Analyzer
+              </Link>
+              <Link to="/about" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 hover:text-pink-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                About ThinkTactAI
+              </Link>
+              <Link to="/blog" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 hover:text-pink-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd" />
+                  <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z" />
+                </svg>
+                Blog
+              </Link>
+              <Link to="/settings" className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 hover:text-pink-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+                Settings
+              </Link>
+            </div>
+          </nav>
+          
+          {/* User Info and Logout */}
+          <div className="px-4 py-4 border-t border-gray-200">
+            <div className="flex items-center mb-3">
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-pink-950 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 rounded-md transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Analyzing...
-            </span>
-          ) : (
-            'Analyze Argument'
-          )}
-        </button>
+              Sign out
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 md:ml-64 lg:ml-72">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 pt-10">
+            {/* Argument Input Section */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-6 text-gray-800">Argument Analyzer</h1>
+              
+              <div className="mb-6">
+                <label htmlFor="argument" className="block text-lg font-medium mb-3 text-gray-700">
+                  Enter your argument below
+                </label>
+                <textarea
+                  id="argument"
+                  className="w-full h-40 p-6 border rounded-xl shadow-sm bg-gray-200 text-black border-gray-300 focus:ring-2 focus:ring-pink-700 focus:border-pink-700 transition-all placeholder-gray-600"
+                  value={argumentText}
+                  onChange={(e) => setArgumentText(e.target.value)}
+                  placeholder="Type or paste your argument here..."
+                />
+              </div>
+
+              <div className="flex justify-center mb-8">
+                <button
+                  className="px-8 py-3 text-lg font-semibold text-white bg-pink-950 rounded-lg shadow-md hover:bg-pink-900 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-md"
+                  onClick={handleAnalyze}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing...
+                    </span>
+                  ) : (
+                    'Analyze Argument'
+                  )}
+                </button>
+              </div>
+
+              {error && (
+                <div className="mt-6 p-6 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
+                  <p className="font-medium text-lg mb-2">Error</p>
+                  <p>{error}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Analysis Results Section */}
+            {processedAnalysis && (
+              <div className="h-full grid grid-cols-1 gap-5">
+                {/* Top Row - Stat Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                  <StatCard
+                    title="Conclusion Type"
+                    value={processedAnalysis.conclusionType}
+                    icon="📝"
+                    color="bg-blue-50"
+                    textColor="text-blue-700"
+                  />
+                  <StatCard
+                    title="Logical Flaw"
+                    value={processedAnalysis.keyFlaw}
+                    icon="⚠️"
+                    color="bg-amber-50"
+                    textColor="text-amber-700"
+                  />
+                  <StatCard
+                    title="Counter Argument"
+                    value={processedAnalysis.counterpoint}
+                    icon="🔄"
+                    color="bg-indigo-50"
+                    textColor="text-indigo-700"
+                  />
+                  <StatCard
+                    title="Hidden Assumptions"
+                    value={processedAnalysis.assumptionsCount}
+                    icon="🔍"
+                    color="bg-purple-50"
+                    textColor="text-purple-700"
+                  />
+                </div>
+
+                {/* Middle Row - Your Argument and Argument Flow */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800">Your Argument</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Original Argument */}
+                      <div className="p-4 bg-gray-50 rounded-md">
+                        <div className="text-sm text-gray-500 mb-1 font-medium">Original</div>
+                        <SafeTextFormatter 
+                          text={processedAnalysis.originalArgument}
+                          className=""
+                        />
+                      </div>
+                      
+                      {/* Improved Argument */}
+                      <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                        <div className="text-sm text-green-700 mb-1 font-medium">Improved Version</div>
+                        <SafeTextFormatter 
+                          text={processedAnalysis.improvedArgument}
+                          className="text-green-900"
+                          emphasisColor="italic text-green-800"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <ArgumentFlow structure={processedAnalysis.argumentStructure} />
+                </div>
+
+                {/* Bottom Row - Breakdown Table */}
+                <div>
+                  <LogicBreakdownTable items={processedAnalysis.breakdownItems} />
+                </div>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900"></div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
-
-      {error && (
-        <div className="mt-8 p-6 bg-red-50 text-red-700 rounded-xl border border-red-200 shadow-sm">
-          <p className="font-medium text-lg mb-2">Error</p>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {/* --- Results Area --- */}
-      {(isLoading || error) && (
-        <div className="mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-200">
-          {isLoading && (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900"></div>
-            </div>
-          )}
-          {error && (
-            <div className="text-red-500 bg-red-50 p-6 rounded-xl">
-              <p className="font-medium text-lg mb-2">Error</p>
-              <p>{error}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
