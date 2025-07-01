@@ -469,16 +469,28 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Loading authentication...</p>
         </div>
       </div>
     );
   }
 
+  // Debug: Log the current state
+  console.log('Analyzer Debug:', { 
+    isAuthenticated, 
+    loading, 
+    user: user?.email,
+    hasProcessedAnalysis: !!processedAnalysis,
+    isLoading 
+  });
+
   // For non-authenticated users, show the simple layout
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-6 py-12 max-w-4xl">
+      <div className="container mx-auto px-6 py-12 max-w-4xl bg-white">
+        <div className="text-center mb-4">
+          <p className="text-sm text-gray-500">Debug: Not authenticated</p>
+        </div>
         <h1 className="text-4xl font-bold mb-8 text-center">Argument Analyzer</h1>
         
         <div className="mb-8">
@@ -544,6 +556,9 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
   // For authenticated users, show the full layout with sidebar
   return (
     <div className="flex min-h-screen bg-gray-100">
+      <div className="text-center mb-4 absolute top-0 left-0 z-50 bg-yellow-100 p-2 text-xs">
+        Debug: Authenticated as {user?.email}
+      </div>
         {/* Sidebar Navigation - Fixed Left */}
         <div className="hidden md:flex md:w-64 lg:w-72 bg-white shadow-md flex-col fixed h-full z-10">
           <div className="px-6 py-5 border-b border-gray-200 flex items-center">
