@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken } from './api/supabase-service.js';
+import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
@@ -337,6 +337,95 @@ app.get('/api/analysis/history', async (req, res) => {
   } catch (error) {
     console.error('Analysis history error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoints
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    
+    res.json({
+      success: true,
+      users: users || []
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch users' });
+  }
+});
+
+app.post('/api/admin/toggle-status', async (req, res) => {
+  try {
+    const { userId, blocked } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+
+    const updatedUser = await updateUser(userId, { blocked: blocked });
+    
+    if (updatedUser) {
+      res.json({
+        success: true,
+        message: `User ${blocked ? 'blocked' : 'unblocked'} successfully`,
+        user: updatedUser
+      });
+    } else {
+      res.status(404).json({ success: false, error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Toggle status error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update user status' });
+  }
+});
+
+app.delete('/api/admin/delete-user', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+
+    const result = await deleteUser(userId);
+    
+    if (result) {
+      res.json({
+        success: true,
+        message: 'User deleted successfully'
+      });
+    } else {
+      res.status(404).json({ success: false, error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete user' });
+  }
+});
+
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body;
+    
+    if (!userId || !newPassword) {
+      return res.status(400).json({ success: false, error: 'User ID and new password are required' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const updatedUser = await updateUser(userId, { password_hash: hashedPassword });
+    
+    if (updatedUser) {
+      res.json({
+        success: true,
+        message: 'Password reset successfully'
+      });
+    } else {
+      res.status(404).json({ success: false, error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reset password' });
   }
 });
 
