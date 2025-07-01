@@ -147,9 +147,9 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
                     Flaw
                   </span>
                 )}
-                {analysis.analysisResults.assumptionsCount > 0 && (
+                {analysis.analysisResults?.assumptionsCount > 0 && (
                   <span className="inline-block px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-                    {analysis.analysisResults.assumptionsCount} assumptions
+                    {analysis?.analysisResults?.assumptionsCount || 0} assumptions
                   </span>
                 )}
               </div>

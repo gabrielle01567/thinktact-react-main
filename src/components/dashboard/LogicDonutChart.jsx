@@ -5,16 +5,16 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const LogicDonutChart = ({ data }) => {
+const LogicDonutChart = ({ data = {} }) => {
   const chartData = {
     labels: ['Necessary Assumptions', 'Flaws', 'Sufficient Assumptions', 'Quantifiers'],
     datasets: [
       {
         data: [
-          data.necessaryAssumptions,
-          data.flaws,
-          data.sufficientAssumptions,
-          data.quantifiers
+          data?.necessaryAssumptions || 0,
+          data?.flaws || 0,
+          data?.sufficientAssumptions || 0,
+          data?.quantifiers || 0
         ],
         backgroundColor: [
           'rgba(139, 92, 246, 0.8)',  // purple for necessary assumptions

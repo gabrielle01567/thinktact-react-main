@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LogicBreakdownTable = ({ items }) => {
+const LogicBreakdownTable = ({ items = [] }) => {
   // Map for replacing terminology
   const typeMapping = {
     'Unstated Rule': 'Implied Rule',
@@ -8,7 +8,7 @@ const LogicBreakdownTable = ({ items }) => {
   };
 
   // Transform items to use new terminology
-  const processedItems = items.map(item => ({
+  const processedItems = (items || []).map(item => ({
     ...item,
     type: typeMapping[item.type] || item.type
   }));
