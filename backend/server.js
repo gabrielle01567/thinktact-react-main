@@ -3,12 +3,11 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { put, list } from '@vercel/blob';
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
-// Force redeploy to apply environment variables - 2025-07-01
+// Force redeploy to apply environment variables - 2025-07-01 - Database Reconfiguration
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -238,80 +237,29 @@ app.get('/api/auth/verify', async (req, res) => {
   }
 });
 
-// Test blob store endpoints
+// Test endpoints (removed blob dependencies)
 app.post('/api/test-blob', async (req, res) => {
-  try {
-    const testData = req.body;
-    const blobName = `test/test-${Date.now()}.json`;
-    
-    const result = await put(blobName, JSON.stringify(testData), {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true
-    });
-    
-    res.json({
-      success: true,
-      message: 'Test file saved to blob store',
-      blobUrl: result.url,
-      blobName: blobName
-    });
-  } catch (error) {
-    console.error('Test blob save error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      message: 'Blob store connection failed'
-    });
-  }
+  res.json({
+    success: true,
+    message: 'Blob endpoints removed - using Supabase database',
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/api/test-blob', async (req, res) => {
-  try {
-    const { blobs } = await list({ prefix: 'test/' });
-    
-    res.json({
-      success: true,
-      message: 'Test files in blob store',
-      count: blobs.length,
-      blobs: blobs.map(blob => ({
-        name: blob.pathname,
-        size: blob.size,
-        url: blob.url
-      }))
-    });
-  } catch (error) {
-    console.error('Test blob list error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      message: 'Blob store connection failed'
-    });
-  }
+  res.json({
+    success: true,
+    message: 'Blob endpoints removed - using Supabase database',
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/api/list-blobs', async (req, res) => {
-  try {
-    const { blobs } = await list({ prefix: '' });
-    
-    res.json({
-      success: true,
-      message: 'All blobs in store',
-      count: blobs.length,
-      blobs: blobs.map(blob => ({
-        name: blob.pathname,
-        size: blob.size,
-        url: blob.url
-      }))
-    });
-  } catch (error) {
-    console.error('List blobs error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message,
-      message: 'Blob store connection failed'
-    });
-  }
+  res.json({
+    success: true,
+    message: 'Blob endpoints removed - using Supabase database',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Analysis endpoints (simplified for now)
@@ -356,6 +304,6 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Blob token exists: ${!!process.env.BLOB_READ_WRITE_TOKEN}`);
+  console.log(`Supabase configured: ${!!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
   console.log(`JWT secret exists: ${!!process.env.JWT_SECRET}`);
 }); 
