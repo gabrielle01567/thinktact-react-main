@@ -35,7 +35,7 @@ const initialAnalysisState = {
 
 const Analyzer = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, loading } = useAuth();
   const [argumentText, setArgumentText] = useState('');
   const [analysisResults, setAnalysisResults] = useState(initialAnalysisState);
   const [isLoading, setIsLoading] = useState(false);
@@ -462,6 +462,18 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       timestamp: new Date().toISOString()
     });
   }, []);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // For non-authenticated users, show the simple layout
   if (!isAuthenticated) {
