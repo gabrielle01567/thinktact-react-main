@@ -39,6 +39,9 @@ import toggleAdminHandler from './api/admin/toggle-admin.js';
 import createUserHandler from './api/admin/create-user.js';
 import createSuperUserHandler from './api/admin/create-super-user.js';
 import verifyUserHandler from './api/admin/verify-user.js';
+import saveAnalysisHandler from './api/save-analysis.js';
+import getAnalysisHistoryHandler from './api/get-analysis-history.js';
+import deleteAnalysisHandler from './api/delete-analysis.js';
 
 // API Routes
 app.post('/api/auth/register', async (req, res) => {
@@ -121,6 +124,19 @@ app.post('/api/admin/create-super-user', async (req, res) => {
 
 app.post('/api/admin/verify-user', async (req, res) => {
   await verifyUserHandler(req, res);
+});
+
+// Analysis History API Routes
+app.post('/api/analysis/save', async (req, res) => {
+  await saveAnalysisHandler(req, res);
+});
+
+app.get('/api/analysis/history', async (req, res) => {
+  await getAnalysisHistoryHandler(req, res);
+});
+
+app.delete('/api/analysis/delete', async (req, res) => {
+  await deleteAnalysisHandler(req, res);
 });
 
 // Serve static files in production

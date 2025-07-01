@@ -9,6 +9,8 @@ import ArgumentFlow from '../components/dashboard/ArgumentFlow';
 import LogicDonutChart from '../components/dashboard/LogicDonutChart';
 import LogicBreakdownTable from '../components/dashboard/LogicBreakdownTable';
 import SafeTextFormatter from '../components/SafeTextFormatter';
+import AnalysisHistory from '../components/AnalysisHistory';
+import { saveAnalysis } from '../services/analysisService';
 
 import { track } from '@vercel/analytics';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,6 +41,7 @@ const Analyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [processedAnalysis, setProcessedAnalysis] = useState(null);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState(null);
 
   // Sample data for the donut chart - this should eventually be dynamic
   const chartData = {
@@ -70,6 +73,14 @@ const Analyzer = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  // Handle selecting a previous analysis
+  const handleSelectAnalysis = (analysis) => {
+    setArgumentText(analysis.argumentText);
+    setProcessedAnalysis(analysis.analysisResults);
+    setCurrentAnalysisId(analysis.id);
+    setError(null);
   };
 
   const handleAnalyze = async () => {
@@ -260,6 +271,15 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       };
       
       setProcessedAnalysis(processed);
+      
+      // Save analysis to history
+      try {
+        await saveAnalysis(argumentText, processed);
+        console.log('Analysis saved to history');
+      } catch (error) {
+        console.error('Failed to save analysis to history:', error);
+        // Don't show error to user as this is not critical
+      }
 
     } catch (err) {
       console.error('API Call Error:', err);
@@ -543,6 +563,14 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
               </Link>
 
 
+            </div>
+            
+            {/* Analysis History Section */}
+            <div className="mt-6 border-t border-gray-200 pt-4">
+              <AnalysisHistory 
+                onSelectAnalysis={handleSelectAnalysis}
+                currentAnalysisId={currentAnalysisId}
+              />
             </div>
           </nav>
           
