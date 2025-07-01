@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 // Initialize Supabase client with error handling
 let supabase = null;
 let supabaseInitialized = false;
+let initializationPromise = null;
 
 // Initialize Supabase client
 const initializeSupabase = async () => {
@@ -34,11 +35,14 @@ const initializeSupabase = async () => {
     const { data, error } = await supabase.from('users').select('count').limit(1);
     if (error) {
       console.error('❌ Supabase connection test failed:', error);
+      console.error('❌ Error details:', error.message);
+      console.error('❌ Error code:', error.code);
       console.warn('⚠️ Supabase not initialized - connection failed');
       return false;
     } else {
       supabaseInitialized = true;
       console.log('✅ Supabase client initialized successfully');
+      console.log('✅ Connection test data:', data);
       return true;
     }
   } catch (error) {
@@ -50,15 +54,27 @@ const initializeSupabase = async () => {
   }
 };
 
-// Initialize immediately
-initializeSupabase().catch(error => {
+// Initialize immediately and store the promise
+initializationPromise = initializeSupabase().catch(error => {
   console.error('❌ Failed to initialize Supabase:', error);
+  return false;
 });
+
+// Wait for initialization to complete
+const waitForInitialization = async () => {
+  if (initializationPromise) {
+    await initializationPromise;
+  }
+  return supabaseInitialized;
+};
 
 // User management functions
 export const createUser = async (userData) => {
   try {
-    if (!supabaseInitialized) {
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in createUser');
       return { success: false, error: 'Database not configured' };
     }
 
@@ -126,8 +142,10 @@ export const createUser = async (userData) => {
 
 export const findUserByEmail = async (email) => {
   try {
-    if (!supabaseInitialized) {
-      console.error('Supabase not initialized');
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in findUserByEmail');
       return null;
     }
 
