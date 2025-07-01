@@ -27,7 +27,9 @@ export default async function handler(req, res) {
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    console.log('🔑 Generated reset token:', resetToken.substring(0, 10) + '...');
+    console.log('🔑 Generated reset token:', resetToken);
+    console.log('🔑 Token length:', resetToken.length);
+    console.log('🔑 Token type:', typeof resetToken);
 
     // Update user with reset token
     const updatedUser = {
@@ -36,8 +38,12 @@ export default async function handler(req, res) {
       resetTokenExpiry: resetTokenExpiry.toISOString()
     };
 
+    console.log('💾 About to save user with reset token:', updatedUser.email);
+    console.log('💾 Reset token to save:', updatedUser.resetToken);
+    console.log('💾 Reset token expiry:', updatedUser.resetTokenExpiry);
+
     await saveUser(updatedUser);
-    console.log('💾 Saved user with reset token');
+    console.log('💾 Successfully saved user with reset token');
 
     // Send reset email
     if (process.env.RESEND_API_KEY) {

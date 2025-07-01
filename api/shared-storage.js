@@ -120,7 +120,10 @@ export const saveUser = async (userData) => {
   
   // Development mode - use local Map storage
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.log('🖥️ Saving user in dev mode:', normalizedEmail);
+    console.log('🖥️ Reset token being saved:', normalizedUserData.resetToken);
     devStorage.set(normalizedEmail, normalizedUserData);
+    console.log('🖥️ User saved successfully in dev mode');
     return;
   }
   
@@ -160,6 +163,9 @@ export const saveUser = async (userData) => {
     }
     
     // Save with normalized blob name format
+    console.log('☁️ Saving user in production mode:', normalizedEmail);
+    console.log('☁️ Reset token being saved:', normalizedUserData.resetToken);
+    
     const jsonData = JSON.stringify(normalizedUserData);
     await put(normalizedBlobName, jsonData, {
       access: 'public',
@@ -168,6 +174,7 @@ export const saveUser = async (userData) => {
     });
     
     console.log(`💾 Saved user with normalized blob name: ${normalizedBlobName}`);
+    console.log('☁️ User saved successfully in production mode');
   } catch (error) {
     console.error('Error saving user to blob:', error);
     throw error;
@@ -278,8 +285,27 @@ export const findUserByResetToken = async (token) => {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     console.log('🖥️ Using development mode storage');
     for (const [key, user] of devStorage.entries()) {
+      // Debug token comparison
+      console.log(`🔍 Comparing tokens for ${user.email}:`);
+      console.log(`  - Stored token: ${user.resetToken ? user.resetToken.substring(0, 10) + '...' : 'null'}`);
+      console.log(`  - Search token: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+      console.log(`  - Tokens match: ${user.resetToken === token}`);
+      
+      // Try exact match first
       if (user.resetToken === token) {
-        console.log('✅ Found user in dev storage:', user.email);
+        console.log('✅ Found user in dev storage (exact match):', user.email);
+        return user;
+      }
+      
+      // Try trimmed comparison in case of whitespace issues
+      if (user.resetToken && user.resetToken.trim() === token.trim()) {
+        console.log('✅ Found user in dev storage (trimmed match):', user.email);
+        return user;
+      }
+      
+      // Try URL decoded comparison
+      if (user.resetToken && decodeURIComponent(user.resetToken) === token) {
+        console.log('✅ Found user in dev storage (URL decoded match):', user.email);
         return user;
       }
     }
@@ -300,8 +326,28 @@ export const findUserByResetToken = async (token) => {
       try {
         const response = await fetch(blob.url);
         const user = await response.json();
+        
+        // Debug token comparison
+        console.log(`🔍 Comparing tokens for ${user.email}:`);
+        console.log(`  - Stored token: ${user.resetToken ? user.resetToken.substring(0, 10) + '...' : 'null'}`);
+        console.log(`  - Search token: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+        console.log(`  - Tokens match: ${user.resetToken === token}`);
+        
+        // Try exact match first
         if (user.resetToken === token) {
-          console.log('✅ Found user in blob storage:', user.email);
+          console.log('✅ Found user in blob storage (exact match):', user.email);
+          return user;
+        }
+        
+        // Try trimmed comparison in case of whitespace issues
+        if (user.resetToken && user.resetToken.trim() === token.trim()) {
+          console.log('✅ Found user in blob storage (trimmed match):', user.email);
+          return user;
+        }
+        
+        // Try URL decoded comparison
+        if (user.resetToken && decodeURIComponent(user.resetToken) === token) {
+          console.log('✅ Found user in blob storage (URL decoded match):', user.email);
           return user;
         }
         return null;
