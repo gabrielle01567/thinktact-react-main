@@ -65,6 +65,56 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Supabase connection test endpoint
+app.get('/test-supabase', async (req, res) => {
+  try {
+    console.log('Testing Supabase connection...');
+    
+    // Test if Supabase client can be created
+    const { createClient } = await import('@supabase/supabase-js');
+    
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'Missing Supabase environment variables',
+        supabaseUrl: !!process.env.SUPABASE_URL,
+        supabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      });
+    }
+    
+    console.log('Creating Supabase client...');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
+    console.log('Testing connection with simple query...');
+    const { data, error } = await supabase.from('users').select('count').limit(1);
+    
+    if (error) {
+      console.error('Supabase connection error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Supabase connection failed',
+        details: error.message,
+        code: error.code
+      });
+    }
+    
+    console.log('Supabase connection successful!');
+    res.json({
+      success: true,
+      message: 'Supabase connection successful',
+      data: data
+    });
+    
+  } catch (error) {
+    console.error('Test endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Test failed',
+      details: error.message
+    });
+  }
+});
+
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
