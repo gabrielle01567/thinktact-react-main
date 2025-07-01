@@ -44,6 +44,7 @@ export default function Admin() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState({});
 
   const [showResetEmailModal, setShowResetEmailModal] = useState(false);
   const [resetEmailTarget, setResetEmailTarget] = useState(null);
@@ -97,6 +98,18 @@ export default function Admin() {
   };
 
   const toggleUserStatus = async (userId, blocked) => {
+    // Set loading state for this specific action
+    setActionLoading(prev => ({ ...prev, [`toggle-${userId}`]: true }));
+    
+    // Optimistically update the UI immediately
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === userId 
+          ? { ...user, blocked: blocked }
+          : user
+      )
+    );
+    
     try {
       const response = await fetch('/api/admin/toggle-status', {
         method: 'POST',
@@ -107,19 +120,50 @@ export default function Admin() {
       const data = await response.json();
       if (data.success) {
         setMessage(`User ${blocked ? 'blocked' : 'unblocked'} successfully`);
-        fetchUsers(); // Refresh the list
+        // Update with the actual server response for accuracy
+        if (data.user) {
+          setUsers(prevUsers => 
+            prevUsers.map(user => 
+              user.id === userId 
+                ? data.user
+                : user
+            )
+          );
+        }
       } else {
+        // Revert the optimistic update on error
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, blocked: !blocked }
+              : user
+          )
+        );
         setMessage(data.error || 'Failed to update user status');
       }
-    } catch (error) {
-      setMessage('Error updating user status');
-    }
+          } catch (error) {
+        // Revert the optimistic update on error
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, blocked: !blocked }
+              : user
+          )
+        );
+        setMessage('Error updating user status');
+      } finally {
+        // Clear loading state
+        setActionLoading(prev => ({ ...prev, [`toggle-${userId}`]: false }));
+      }
   };
 
   const deleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
+
+    // Optimistically remove the user from the UI immediately
+    setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
 
     try {
       const response = await fetch('/api/admin/delete-user', {
@@ -131,16 +175,29 @@ export default function Admin() {
       const data = await response.json();
       if (data.success) {
         setMessage('User deleted successfully');
-        fetchUsers(); // Refresh the list
+        // No need to fetchUsers() since we already updated the UI
       } else {
+        // Revert the optimistic update on error by refetching
+        fetchUsers();
         setMessage(data.error || 'Failed to delete user');
       }
     } catch (error) {
+      // Revert the optimistic update on error by refetching
+      fetchUsers();
       setMessage('Error deleting user');
     }
   };
 
   const elevateToAdmin = async (userId, makeAdmin) => {
+    // Optimistically update the UI immediately
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === userId 
+          ? { ...user, isAdmin: makeAdmin }
+          : user
+      )
+    );
+    
     try {
       const response = await fetch('/api/admin/toggle-admin', {
         method: 'POST',
@@ -150,16 +207,50 @@ export default function Admin() {
       const data = await response.json();
       if (data.success) {
         setMessage(`User ${makeAdmin ? 'elevated to' : 'demoted from'} admin successfully`);
-        fetchUsers();
+        // Update with the actual server response for accuracy
+        if (data.user) {
+          setUsers(prevUsers => 
+            prevUsers.map(user => 
+              user.id === userId 
+                ? data.user
+                : user
+            )
+          );
+        }
       } else {
+        // Revert the optimistic update on error
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, isAdmin: !makeAdmin }
+              : user
+          )
+        );
         setMessage(data.error || 'Failed to update admin status');
       }
     } catch (error) {
+      // Revert the optimistic update on error
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId 
+            ? { ...user, isAdmin: !makeAdmin }
+            : user
+        )
+      );
       setMessage('Error updating admin status');
     }
   };
 
   const verifyUser = async (email) => {
+    // Optimistically update the UI immediately
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.email === email 
+          ? { ...user, verified: true }
+          : user
+      )
+    );
+    
     try {
       const response = await fetch('/api/admin/verify-user', {
         method: 'POST',
@@ -170,11 +261,27 @@ export default function Admin() {
       const data = await response.json();
       if (data.success) {
         setMessage('User verified successfully');
-        fetchUsers(); // Refresh the list
+        // No need to fetchUsers() since we already updated the UI
       } else {
+        // Revert the optimistic update on error
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.email === email 
+              ? { ...user, verified: false }
+              : user
+          )
+        );
         setMessage(data.error || 'Failed to verify user');
       }
     } catch (error) {
+      // Revert the optimistic update on error
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.email === email 
+            ? { ...user, verified: false }
+            : user
+        )
+      );
       setMessage('Error verifying user');
     }
   };
@@ -241,7 +348,12 @@ export default function Admin() {
           securityAnswer: '',
           isAdmin: false
         });
-        fetchUsers(); // Refresh the list
+        // Add the new user to the list immediately
+        if (data.user) {
+          setUsers(prevUsers => [...prevUsers, data.user]);
+        } else {
+          fetchUsers(); // Fallback to refresh if user data not returned
+        }
       } else {
         setMessage(data.error || 'Failed to create user');
       }
@@ -288,7 +400,12 @@ export default function Admin() {
           password: '',
           confirmPassword: ''
         });
-        fetchUsers(); // Refresh the list
+        // Add the new super user to the list immediately
+        if (data.user) {
+          setUsers(prevUsers => [...prevUsers, data.user]);
+        } else {
+          fetchUsers(); // Fallback to refresh if user data not returned
+        }
       } else {
         setMessage(data.error || 'Failed to create super user');
       }
@@ -609,9 +726,10 @@ export default function Admin() {
                               )}
                               <button
                                 onClick={() => toggleUserStatus(user.id, !user.blocked)}
-                                className={`${user.blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}`}
+                                disabled={actionLoading[`toggle-${user.id}`]}
+                                className={`${user.blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'} ${actionLoading[`toggle-${user.id}`] ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
-                                {user.blocked ? '✅ Unblock' : '🚫 Block'}
+                                {actionLoading[`toggle-${user.id}`] ? '⏳' : (user.blocked ? '✅ Unblock' : '🚫 Block')}
                               </button>
                               <button
                                 onClick={() => deleteUser(user.id)}

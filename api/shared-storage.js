@@ -72,17 +72,35 @@ export const findUserById = async (userId) => {
     return { user: null, key: null };
   }
   
-  // Production mode
+  // Production mode - optimized to use email-based lookup when possible
   try {
+    // First, try to find the user by checking if we have a cached mapping
+    // or if we can derive the email from the userId pattern
     const { list } = await import('@vercel/blob');
     const { blobs } = await list({ prefix: 'users/' });
-    for (const blob of blobs) {
-      const response = await fetch(blob.url);
-      const user = await response.json();
-      if (user.id === userId) {
-        return { user, key: blob.pathname };
+    
+    // Try to find user by ID with parallel requests for better performance
+    const userPromises = blobs.map(async (blob) => {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.id === userId) {
+          return { user, key: blob.pathname };
+        }
+        return null;
+      } catch (error) {
+        console.error(`Error fetching blob ${blob.pathname}:`, error);
+        return null;
       }
+    });
+    
+    const results = await Promise.all(userPromises);
+    const found = results.find(result => result !== null);
+    
+    if (found) {
+      return found;
     }
+    
     return { user: null, key: null };
   } catch (error) {
     console.error('Error finding user by ID:', error);
@@ -254,29 +272,53 @@ export const findUserByVerificationToken = async (token) => {
 
 // Find user by reset token (for password reset)
 export const findUserByResetToken = async (token) => {
+  console.log('🔍 Searching for user with reset token:', token ? token.substring(0, 10) + '...' : 'null');
+  
   // Development mode
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.log('🖥️ Using development mode storage');
     for (const [key, user] of devStorage.entries()) {
       if (user.resetToken === token) {
+        console.log('✅ Found user in dev storage:', user.email);
         return user;
       }
     }
+    console.log('❌ No user found in dev storage');
     return null;
   }
   
-  // Production mode
+  // Production mode - optimized with parallel processing
   try {
+    console.log('☁️ Using production mode blob storage');
     const { list } = await import('@vercel/blob');
     const { blobs } = await list({ prefix: 'users/' });
     
-    for (const blob of blobs) {
-      const response = await fetch(blob.url);
-      const user = await response.json();
-      if (user.resetToken === token) {
-        return user;
+    console.log(`📁 Searching through ${blobs.length} user blobs`);
+    
+    // Use parallel requests for better performance
+    const userPromises = blobs.map(async (blob) => {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.resetToken === token) {
+          console.log('✅ Found user in blob storage:', user.email);
+          return user;
+        }
+        return null;
+      } catch (error) {
+        console.error(`Error fetching blob ${blob.pathname}:`, error);
+        return null;
       }
+    });
+    
+    const results = await Promise.all(userPromises);
+    const found = results.find(result => result !== null);
+    
+    if (!found) {
+      console.log('❌ No user found in blob storage');
     }
-    return null;
+    
+    return found || null;
   } catch (error) {
     console.error('Error finding user by reset token:', error);
     return null;

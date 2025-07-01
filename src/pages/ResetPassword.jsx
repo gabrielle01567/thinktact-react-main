@@ -13,9 +13,14 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   const token = searchParams.get('token');
+  
+  // Decode the token in case it was URL encoded
+  const decodedToken = token ? decodeURIComponent(token) : null;
 
   useEffect(() => {
-    if (!token) {
+    console.log('🔍 ResetPassword: Token from URL:', token ? token.substring(0, 10) + '...' : 'null');
+    
+    if (!decodedToken) {
       setError('Invalid reset link. Please request a new password reset.');
       return;
     }
@@ -43,7 +48,10 @@ const ResetPassword = () => {
     }
 
     try {
-      const result = await authService.resetPassword(token, password);
+      console.log('🔍 ResetPassword: Sending reset request with token:', decodedToken ? decodedToken.substring(0, 10) + '...' : 'null');
+      const result = await authService.resetPassword(decodedToken, password);
+      
+      console.log('🔍 ResetPassword: API response:', result);
       
       if (result.success) {
         setSuccess('Password has been reset successfully! You can now sign in with your new password.');
@@ -53,7 +61,8 @@ const ResetPassword = () => {
       } else {
         setError(result.error || 'Failed to reset password.');
       }
-    } catch {
+    } catch (error) {
+      console.error('🔍 ResetPassword: Error during reset:', error);
       setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);

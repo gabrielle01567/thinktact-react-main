@@ -9,9 +9,12 @@ export default async function handler(req, res) {
     if (!userId || typeof isAdmin !== 'boolean') {
       return res.status(400).json({ error: 'User ID and isAdmin are required.' });
     }
-    const success = await toggleAdminStatus(userId, isAdmin);
-    if (success) {
-      res.status(200).json({ success: true });
+    const updatedUser = await toggleAdminStatus(userId, isAdmin);
+    if (updatedUser) {
+      res.status(200).json({ 
+        success: true,
+        user: updatedUser
+      });
     } else {
       res.status(404).json({ error: 'User not found' });
     }

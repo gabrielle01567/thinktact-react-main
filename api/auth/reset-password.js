@@ -8,7 +8,10 @@ export default async function handler(req, res) {
   try {
     const { token, newPassword } = req.body;
 
+    console.log('🔍 Password reset attempt with token:', token ? token.substring(0, 10) + '...' : 'null');
+
     if (!token || !newPassword) {
+      console.log('❌ Missing token or password');
       return res.status(400).json({ error: 'Token and new password are required' });
     }
 
@@ -16,8 +19,11 @@ export default async function handler(req, res) {
     const userToUpdate = await findUserByResetToken(token);
 
     if (!userToUpdate) {
+      console.log('❌ No user found with reset token');
       return res.status(400).json({ error: 'Invalid reset token' });
     }
+
+    console.log('✅ User found for reset:', userToUpdate.email);
 
     // Check if token is expired
     if (userToUpdate.resetTokenExpiry && new Date() > new Date(userToUpdate.resetTokenExpiry)) {

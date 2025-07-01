@@ -17,7 +17,8 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       success: true,
-      message: `User ${blocked ? 'blocked' : 'unblocked'} successfully`
+      message: `User ${blocked ? 'blocked' : 'unblocked'} successfully`,
+      user: updatedUser
     });
   } catch (error) {
     console.error('Admin toggle status error:', error);

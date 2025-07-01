@@ -74,12 +74,19 @@ class AuthService {
   // Reset password with token
   async resetPassword(token, newPassword) {
     try {
+      console.log('🔍 AuthService: Sending reset request with token:', token ? token.substring(0, 10) + '...' : 'null');
+      
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword })
       });
+      
+      console.log('🔍 AuthService: Response status:', response.status);
+      
       const result = await response.json();
+      console.log('🔍 AuthService: Response data:', result);
+      
       return result;
     } catch (error) {
       console.error('Password reset error:', error);

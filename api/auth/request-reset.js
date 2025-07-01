@@ -27,6 +27,8 @@ export default async function handler(req, res) {
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+    console.log('🔑 Generated reset token:', resetToken.substring(0, 10) + '...');
+
     // Update user with reset token
     const updatedUser = {
       ...user,
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
     };
 
     await saveUser(updatedUser);
+    console.log('💾 Saved user with reset token');
 
     // Send reset email
     if (process.env.RESEND_API_KEY) {
@@ -42,6 +45,7 @@ export default async function handler(req, res) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         
         const resetUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        console.log('🔗 Generated reset URL:', resetUrl);
         
         await resend.emails.send({
           from: 'ThinkTact AI <noreply@thinktact.ai>',
