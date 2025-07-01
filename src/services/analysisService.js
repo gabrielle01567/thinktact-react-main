@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Use relative path for production (works with Vite proxy and Vercel deployment)
+// Use localhost only for local development
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
