@@ -16,13 +16,13 @@ const Home = () => {
               ThinkTact<span className="text-pink-950">AI</span>
             </h1>
             <p className="mt-4 text-xl font-medium text-gray-600">
-              I built the only tool that roasts your AI draft before the USPTO does.
+              The only tool that catches patent issues before the USPTO does.
             </p>
             <p className="mt-6 text-lg leading-8 text-gray-600">
-              ThinkTact shows you exactly why your patent will get rejected—before you waste time or cash filing it.
+              ThinkTact shows you exactly why your patent might get rejected—before you spend time and money filing it.
             </p>
             <h2 className="mt-8 text-3xl font-bold text-gray-900 sm:text-4xl text-center">
-              Your patent draft is probably trash. Let's catch that before the government does.
+              Let's spot the problems before the government does.
             </h2>
             <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
               <Link to="/patent-audit" 
