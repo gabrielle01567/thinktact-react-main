@@ -95,6 +95,67 @@ export const findUserByEmail = async (email) => {
   }
 };
 
+// Missing functions that are being imported
+export const findUserByResetToken = async (token) => {
+  try {
+    const { blobs } = await list({ prefix: 'users/' });
+    
+    for (const blob of blobs) {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.resetToken === token) {
+          return user;
+        }
+      } catch (error) {
+        console.error(`Error reading blob ${blob.pathname}:`, error);
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error finding user by reset token:', error);
+    return null;
+  }
+};
+
+export const findUserByVerificationToken = async (token) => {
+  try {
+    const { blobs } = await list({ prefix: 'users/' });
+    
+    for (const blob of blobs) {
+      try {
+        const response = await fetch(blob.url);
+        const user = await response.json();
+        if (user.verificationToken === token) {
+          return user;
+        }
+      } catch (error) {
+        console.error(`Error reading blob ${blob.pathname}:`, error);
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error finding user by verification token:', error);
+    return null;
+  }
+};
+
+export const getUserFromToken = async (token) => {
+  try {
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return null;
+    }
+    
+    return await findUserById(decoded.userId);
+  } catch (error) {
+    console.error('Error getting user from token:', error);
+    return null;
+  }
+};
+
 export const findUserById = async (id) => {
   try {
     const { blobs } = await list({ prefix: 'users/' });
