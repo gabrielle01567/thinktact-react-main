@@ -1,7 +1,7 @@
-const { deleteAnalysis } = require('./analysis-history');
-const { getUserFromToken } = require('./shared-storage');
+import { deleteAnalysis } from './analysis-history.js';
+import { getUserFromToken } from './shared-storage.js';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'DELETE') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -34,4 +34,4 @@ module.exports = async (req, res) => {
     console.error('Error in delete-analysis endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}; 
+} 
