@@ -30,7 +30,7 @@ const ArgumentFlow = ({ structure = {} }) => {
         </div>
         
         {/* Unstated assumptions - If present */}
-        {unstatedAssumptions.length > 0 && (
+        {unstatedAssumptions?.length > 0 && (
           <div className="w-full mb-3">
             <div className="text-center mb-1 text-sm text-gray-500 font-medium">HIDDEN ASSUMPTIONS</div>
             <div className="grid grid-cols-1 gap-2">

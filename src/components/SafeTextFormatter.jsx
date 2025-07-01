@@ -12,7 +12,7 @@ const SafeTextFormatter = ({ text, className = "", emphasisColor = "" }) => {
   
   // Limit text length to prevent potential DoS
   const maxLength = 10000; // 10KB limit
-  if (sanitizedText.length > maxLength) {
+  if (!sanitizedText || sanitizedText.length > maxLength) {
     console.warn('SafeTextFormatter: text too long, truncating');
     return <p className={className}>Text too long to display safely</p>;
   }

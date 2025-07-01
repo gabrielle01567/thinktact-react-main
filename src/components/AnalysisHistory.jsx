@@ -60,7 +60,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
 
   // Truncate argument text for display
   const truncateText = (text, maxLength = 60) => {
-    if (text.length <= maxLength) return text;
+    if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
 
@@ -93,7 +93,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
     );
   }
 
-  if (history.length === 0) {
+  if (!history || history.length === 0) {
     return (
       <div className="px-4 py-3">
         <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analyses</h3>
