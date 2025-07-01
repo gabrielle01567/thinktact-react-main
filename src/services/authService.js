@@ -1,7 +1,7 @@
 class AuthService {
   constructor() {
-    // Use the thinktact-react-main-blob backend
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://thinktact-react-main-blob.vercel.app/api';
+    // Use the deployed backend URL
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-gabrielle-shands-projects.vercel.app/api';
   }
 
   // Register a new user

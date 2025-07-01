@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid verification token' });
     }
 
-    if (userToUpdate.verified) {
+    if (userToUpdate.isVerified) {
       console.log('⚠️ User already verified:', userToUpdate.email);
       return res.status(400).json({ error: 'User is already verified' });
     }
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     // Update user verification status
     const updatedUserData = {
       ...userToUpdate,
-      verified: true,
+      isVerified: true,
       verificationToken: null, // Clear the token after verification
       lastLogin: new Date().toISOString()
     };
@@ -56,9 +56,8 @@ export default async function handler(req, res) {
       user: {
         id: userToUpdate.id,
         email: userToUpdate.email,
-        firstName: userToUpdate.firstName,
-        lastName: userToUpdate.lastName,
-        verified: true
+        name: userToUpdate.name,
+        isVerified: true
       }
     });
 

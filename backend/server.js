@@ -3,6 +3,9 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken } from './api/shared-storage.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
+import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,8 +16,8 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://thinktact.ai', 'https://www.thinktact.ai']
-    : ['http://localhost:5173', 'http://localhost:3000'],
+    ? ['https://thinktact.ai', 'https://www.thinktact.ai', 'http://localhost:5174', 'http://localhost:5173']
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
   credentials: true
 }));
 
@@ -50,30 +53,168 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Basic auth endpoints (simplified for now)
+// Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
-    res.json({ 
-      success: true, 
-      message: 'Registration endpoint ready',
-      timestamp: new Date().toISOString()
-    });
+    const { email, password, name } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    const result = await createUser({ email, password, name: name || email.split('@')[0] });
+    
+    if (result.success) {
+      // Send verification email
+      if (process.env.RESEND_API_KEY) {
+        const emailResult = await sendVerificationEmail(email, result.verificationToken, result.user.name);
+        if (emailResult.success) {
+          res.json({
+            success: true,
+            message: 'User registered successfully. Please check your email to verify your account.',
+            user: result.user
+          });
+        } else {
+          // User created but email failed
+          res.json({
+            success: true,
+            message: 'User registered successfully, but verification email could not be sent. Please contact support.',
+            user: result.user
+          });
+        }
+      } else {
+        // No email service configured
+        res.json({
+          success: true,
+          message: 'User registered successfully. Email verification is not configured.',
+          user: result.user
+        });
+      }
+    } else {
+      res.status(400).json(result);
+    }
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    res.json({ 
-      success: true, 
-      message: 'Login endpoint ready',
-      timestamp: new Date().toISOString()
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    const isValidPassword = await verifyPassword(user, password);
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    // Check if user is verified
+    if (!user.isVerified) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Please verify your email before logging in' 
+      });
+    }
+
+    const token = generateToken(user);
+    
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: { 
+        ...user, 
+        password: undefined
+      },
+      token
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Password reset endpoint
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    
+    if (!email || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and new password are required' 
+      });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    // Update user password
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const updatedUser = { ...user, password: hashedPassword };
+    await saveUser(updatedUser);
+    
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Email verification endpoint
+app.get('/api/auth/verify', async (req, res) => {
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Verification token is required' 
+      });
+    }
+
+    const result = await verifyUserByToken(token);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Email verified successfully! You can now log in.',
+        user: result.user
+      });
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

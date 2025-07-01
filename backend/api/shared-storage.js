@@ -58,19 +58,25 @@ export const createUser = async (userData) => {
 
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userId = `user-${Date.now()}`;
+    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     
     const user = {
       id: userId,
       email,
       password: hashedPassword,
       name,
-      isVerified: false,
+      isVerified: false, // Mark as unverified until email is verified
       isAdmin: false,
+      verificationToken,
       createdAt: new Date().toISOString()
     };
     
     await saveUser(user);
-    return { success: true, user: { ...user, password: undefined } };
+    return { 
+      success: true, 
+      user: { ...user, password: undefined },
+      verificationToken // Return token for email sending
+    };
   } catch (error) {
     console.error('Error creating user:', error);
     return { success: false, error: error.message };
@@ -402,6 +408,32 @@ export const toggleUserStatus = async (email) => {
     };
   } catch (error) {
     console.error('Error toggling user status:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const verifyUserByToken = async (verificationToken) => {
+  try {
+    const user = await findUserByVerificationToken(verificationToken);
+    if (!user) {
+      return { success: false, error: 'Invalid verification token' };
+    }
+
+    // Update user to verified
+    const updatedUser = { 
+      ...user, 
+      isVerified: true, 
+      verificationToken: undefined // Remove the token after verification
+    };
+    
+    await saveUser(updatedUser);
+    return { 
+      success: true, 
+      message: 'Email verified successfully',
+      user: { ...updatedUser, password: undefined }
+    };
+  } catch (error) {
+    console.error('Error verifying user:', error);
     return { success: false, error: error.message };
   }
 }; 
