@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createAdminUser } from './api/shared-storage.js';
+// import { createAdminUser } from './api/shared-storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Create admin user on server start
-createAdminUser().catch(console.error);
+// Create admin user on server start - temporarily disabled for Railway deployment
+// createAdminUser().catch(console.error);
 
 // Import API routes
 import registerHandler from './api/auth/register.js';

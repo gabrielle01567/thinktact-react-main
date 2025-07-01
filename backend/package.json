@@ -13,7 +13,6 @@
   "author": "Gabrielle T. S",
   "license": "MIT",
   "dependencies": {
-    "@azure/storage-blob": "^12.27.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
