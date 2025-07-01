@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 
+// Get backend URL from environment variable
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
+
 export default function Admin() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
@@ -58,7 +61,7 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await fetch(`${BACKEND_URL}/admin/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
@@ -79,7 +82,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch('/api/admin/reset-password', {
+      const response = await fetch(`${BACKEND_URL}/admin/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, newPassword })
@@ -111,7 +114,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch('/api/admin/toggle-status', {
+      const response = await fetch(`${BACKEND_URL}/admin/toggle-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, blocked })
@@ -141,20 +144,20 @@ export default function Admin() {
         );
         setMessage(data.error || 'Failed to update user status');
       }
-          } catch (error) {
-        // Revert the optimistic update on error
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user.id === userId 
-              ? { ...user, blocked: !blocked }
-              : user
-          )
-        );
-        setMessage('Error updating user status');
-      } finally {
-        // Clear loading state
-        setActionLoading(prev => ({ ...prev, [`toggle-${userId}`]: false }));
-      }
+    } catch (error) {
+      // Revert the optimistic update on error
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId 
+            ? { ...user, blocked: !blocked }
+            : user
+        )
+      );
+      setMessage('Error updating user status');
+    } finally {
+      // Clear loading state
+      setActionLoading(prev => ({ ...prev, [`toggle-${userId}`]: false }));
+    }
   };
 
   const deleteUser = async (userId) => {
@@ -166,7 +169,7 @@ export default function Admin() {
     setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
 
     try {
-      const response = await fetch('/api/admin/delete-user', {
+      const response = await fetch(`${BACKEND_URL}/admin/delete-user`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -199,7 +202,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch('/api/admin/toggle-admin', {
+      const response = await fetch(`${BACKEND_URL}/admin/toggle-admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, isAdmin: makeAdmin })
@@ -252,7 +255,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch('/api/admin/verify-user', {
+      const response = await fetch(`${BACKEND_URL}/admin/verify-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -288,7 +291,7 @@ export default function Admin() {
 
   const sendPasswordReset = async (email) => {
     try {
-      const response = await fetch('/api/auth/request-reset', {
+      const response = await fetch(`${BACKEND_URL}/auth/request-reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -328,7 +331,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch('/api/admin/create-user', {
+      const response = await fetch(`${BACKEND_URL}/admin/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createUserForm)
@@ -380,7 +383,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch('/api/admin/create-super-user', {
+      const response = await fetch(`${BACKEND_URL}/admin/create-super-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -417,7 +420,7 @@ export default function Admin() {
   const handleTestUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/test-users');
+      const response = await fetch(`${BACKEND_URL}/test-users`);
       const data = await response.json();
       setTestUsersResult(data);
     } catch (error) {
@@ -431,7 +434,7 @@ export default function Admin() {
   const handleMigrateUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/migrate-users', {
+      const response = await fetch(`${BACKEND_URL}/migrate-users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -452,36 +455,36 @@ export default function Admin() {
     setMessage('');
     setError('');
     
-          try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-        
-        const response = await fetch('/api/admin/request-reset-for-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        const data = await response.json();
-        
-        if (response.ok) {
-          setMessage('Password reset email sent to ' + user.email);
-          setShowResetEmailModal(false);
-          setResetEmailTarget(null);
-        } else {
-          setError(data.error || 'Failed to send password reset email.');
-        }
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          setError('Request timed out. Please try again.');
-        } else {
-          setError('Network error. Please try again.');
-        }
-      } finally {
-        setIsSendingResetEmail(false);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const response = await fetch(`${BACKEND_URL}/admin/request-reset-for-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessage('Password reset email sent to ' + user.email);
+        setShowResetEmailModal(false);
+        setResetEmailTarget(null);
+      } else {
+        setError(data.error || 'Failed to send password reset email.');
       }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError('Network error. Please try again.');
+      }
+    } finally {
+      setIsSendingResetEmail(false);
+    }
   };
 
   if (!isAdmin) {
