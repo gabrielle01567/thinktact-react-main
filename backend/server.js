@@ -212,6 +212,61 @@ app.get('/test-resend', async (req, res) => {
   }
 });
 
+// Test registration email flow endpoint
+app.get('/test-registration-email', async (req, res) => {
+  try {
+    console.log('🧪 Testing registration email flow...');
+    
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'RESEND_API_KEY not set'
+      });
+    }
+    
+    console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? `Set (${process.env.RESEND_API_KEY.substring(0, 10)}...)` : 'Not set');
+    
+    // Import the email service
+    const { sendVerificationEmail } = await import('./api/email-service.js');
+    
+    // Simulate the exact same call as registration flow
+    const testEmail = 'test-registration@example.com';
+    const testToken = 'test-token-registration-123';
+    const testName = 'Test Registration User';
+    
+    console.log('Testing email service with registration flow parameters:');
+    console.log('Email:', testEmail);
+    console.log('Token:', testToken);
+    console.log('Name:', testName);
+    
+    const result = await sendVerificationEmail(testEmail, testToken, testName);
+    
+    console.log('Registration email flow test result:', result);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Registration email flow test successful - check your email!',
+        data: result.data
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Registration email flow test failed',
+        details: result.error
+      });
+    }
+    
+  } catch (error) {
+    console.error('Registration email flow test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Registration email flow test error',
+      details: error.message
+    });
+  }
+});
+
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -233,23 +288,36 @@ app.post('/api/auth/register', async (req, res) => {
         console.log('Email:', email);
         console.log('Token:', result.verificationToken ? result.verificationToken.substring(0, 10) + '...' : 'null');
         console.log('Name:', result.user.name);
+        console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Set' : 'Not set');
         
-        const emailResult = await sendVerificationEmail(email, result.verificationToken, result.user.name);
-        console.log('Email result:', emailResult);
-        
-        if (emailResult.success) {
-          res.json({
-            success: true,
-            message: 'User registered successfully. Please check your email to verify your account.',
-            user: result.user
-          });
-        } else {
-          // User created but email failed
-          console.log('❌ Email sending failed:', emailResult.error);
+        try {
+          const emailResult = await sendVerificationEmail(email, result.verificationToken, result.user.name);
+          console.log('Email result:', emailResult);
+          
+          if (emailResult.success) {
+            console.log('✅ Email sent successfully!');
+            res.json({
+              success: true,
+              message: 'User registered successfully. Please check your email to verify your account.',
+              user: result.user
+            });
+          } else {
+            // User created but email failed
+            console.log('❌ Email sending failed:', emailResult.error);
+            res.json({
+              success: true,
+              message: 'User registered successfully, but verification email could not be sent. Please contact support.',
+              user: result.user,
+              emailError: emailResult.error
+            });
+          }
+        } catch (emailError) {
+          console.log('❌ Email service exception:', emailError.message);
           res.json({
             success: true,
             message: 'User registered successfully, but verification email could not be sent. Please contact support.',
-            user: result.user
+            user: result.user,
+            emailError: emailError.message
           });
         }
       } else if (isVerified) {
