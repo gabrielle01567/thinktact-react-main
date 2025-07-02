@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 
 const SECURITY_QUESTIONS = [
   'What was your childhood nickname?',
@@ -109,17 +110,12 @@ const Login = () => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/auth/request-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await response.json();
-      if (data.success) {
+      const result = await authService.requestPasswordReset(email);
+      if (result.success) {
         setResetSent(true);
         setShowResetLink(false);
       } else {
-        setError(data.error || 'Failed to send reset link');
+        setError(result.error || 'Failed to send reset link');
       }
     } catch (err) {
       setError('Failed to send reset link');

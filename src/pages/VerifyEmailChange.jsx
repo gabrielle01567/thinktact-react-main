@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { authService } from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
 
 const VerifyEmailChange = () => {
@@ -21,27 +23,19 @@ const VerifyEmailChange = () => {
 
     const verifyEmailChange = async () => {
       try {
-        const response = await fetch('/api/auth/verify-email-change', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token }),
-        });
+        const result = await authService.verifyEmailChange(token);
 
-        const data = await response.json();
-
-        if (response.ok) {
+        if (result.success) {
           setStatus('success');
-          setMessage(data.message || 'Email address updated successfully!');
+          setMessage(result.message || 'Email address updated successfully!');
           
           // Update user data in AuthContext if user data is returned
-          if (data.user) {
-            updateUser(data.user);
+          if (result.user) {
+            updateUser(result.user);
           }
         } else {
           setStatus('error');
-          setError(data.error || 'Email verification failed');
+          setError(result.error || 'Email verification failed');
         }
       } catch (err) {
         setStatus('error');

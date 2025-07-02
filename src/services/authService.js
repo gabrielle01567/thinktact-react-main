@@ -95,6 +95,70 @@ class AuthService {
     }
   }
 
+  // Change email
+  async changeEmail(currentEmail, newEmail) {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/change-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentEmail, newEmail })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Change email error:', error);
+      return { success: false, error: 'Failed to change email' };
+    }
+  }
+
+  // Delete account
+  async deleteAccount(email) {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/delete-account`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Delete account error:', error);
+      return { success: false, error: 'Failed to delete account' };
+    }
+  }
+
+  // Resend verification email
+  async resendVerification(email) {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      return { success: false, error: 'Failed to resend verification email' };
+    }
+  }
+
+  // Verify email change
+  async verifyEmailChange(token) {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/verify-email-change`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Verify email change error:', error);
+      return { success: false, error: 'Failed to verify email change' };
+    }
+  }
+
   // Demo mode for development (fallback)
   async demoLogin(email, password) {
     if (email && password) {

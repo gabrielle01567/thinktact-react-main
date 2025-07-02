@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { authService } from '../services/authService';
 
 const Profile = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -33,25 +34,14 @@ const Profile = () => {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/change-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentEmail: user.email,
-          newEmail: newEmail
-        }),
-      });
+      const result = await authService.changeEmail(user.email, newEmail);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (result.success) {
         setMessage('Verification email sent to your new email address. Please check your inbox and click the verification link to complete the change.');
         setShowEmailChange(false);
         setNewEmail('');
       } else {
-        setError(data.error || 'Failed to send verification email');
+        setError(result.error || 'Failed to send verification email');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -73,26 +63,16 @@ const Profile = () => {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/delete-account', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: user.email
-        }),
-      });
+      const result = await authService.deleteAccount(user.email);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (result.success) {
         setMessage('Account deleted successfully. You will receive a confirmation email shortly.');
         logout();
         setTimeout(() => {
           navigate('/');
         }, 3000);
       } else {
-        setError(data.error || 'Failed to delete account');
+        setError(result.error || 'Failed to delete account');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -118,19 +98,14 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/request-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      });
-      const data = await response.json();
-      if (response.ok) {
+      const result = await authService.requestPasswordReset(user.email);
+      if (result.success) {
         setMessage('Password reset email sent. Please check your inbox.');
         setShowResetModal(false);
         setSecurityAnswerInput('');
         setModalError('');
       } else {
-        setModalError(data.error || 'Failed to send password reset email.');
+        setModalError(result.error || 'Failed to send password reset email.');
       }
     } catch (err) {
       setModalError('Network error. Please try again.');

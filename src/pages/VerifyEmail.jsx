@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { authService } from '../services/authService';
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState('');
@@ -8,7 +10,7 @@ export default function VerifyEmail() {
   const location = useLocation();
 
   // Get email and message from location state if available (from registration or login)
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.state?.email) {
       setEmail(location.state.email);
     }
@@ -27,18 +29,12 @@ export default function VerifyEmail() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/resend-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+      const response = await authService.resendVerification(email);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         setMessage('Verification email sent successfully! Please check your inbox.');
       } else {
-        setMessage(data.error || 'Failed to send verification email');
+        setMessage(response.error || 'Failed to send verification email');
       }
     } catch (error) {
       setMessage('Error sending verification email. Please try again.');
