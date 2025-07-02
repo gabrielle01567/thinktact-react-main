@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     }
 
     // Check if user already exists
-    const existingUser = findUserByEmail(email);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ success: false, error: 'User with this email already exists' });
     }
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     };
 
     // Store user
-    saveUser(newUser);
+    await saveUser(newUser);
 
     console.log(`✅ Admin created user: ${email}`);
     console.log(`📧 Email: ${email}`);
