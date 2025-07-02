@@ -485,6 +485,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     
+    console.log('🔍 Password reset attempt with token:', token ? token.substring(0, 10) + '...' : 'null');
+    
     if (!token || !newPassword) {
       return res.status(400).json({ 
         success: false, 
@@ -496,12 +498,28 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     
+    console.log('🔍 Searching for user with reset token...');
+    
+    // First, let's check if any user has this token (without expiration check)
+    const { data: allUsers, error: allError } = await supabase
+      .from('users')
+      .select('id, email, reset_token, reset_token_expires')
+      .eq('reset_token', token);
+    
+    console.log('🔍 All users with this token:', allUsers);
+    console.log('🔍 Error from all users query:', allError);
+    
+    // Now check with expiration
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
       .eq('reset_token', token)
-      .eq('reset_token_expires', '>', new Date().toISOString())
+      .gt('reset_token_expires', new Date().toISOString())
       .limit(1);
+
+    console.log('🔍 Users with valid token:', users);
+    console.log('🔍 Error from valid token query:', error);
+    console.log('🔍 Current time:', new Date().toISOString());
 
     if (error || !users || users.length === 0) {
       return res.status(400).json({ 
@@ -843,12 +861,18 @@ app.post('/api/admin/request-reset-for-user', async (req, res) => {
 
     // Generate a reset token
     const resetToken = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    
+    console.log('🔧 Generated reset token:', resetToken.substring(0, 10) + '...');
+    console.log('🔧 Token expires at:', expiresAt.toISOString());
     
     // Update user with reset token
     const updatedUser = await updateUser(user.id, { 
       reset_token: resetToken,
-      reset_token_expires: new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
+      reset_token_expires: expiresAt
     });
+    
+    console.log('🔧 Updated user result:', updatedUser ? 'Success' : 'Failed');
 
     if (!updatedUser) {
       return res.status(500).json({ success: false, error: 'Failed to update user with reset token' });
