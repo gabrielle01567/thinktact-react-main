@@ -623,54 +623,43 @@ app.post('/api/admin/create-user', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
     }
 
-    // Check if user already exists
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ success: false, error: 'User with this email already exists' });
-    }
-
-    // Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user object
-    const newUser = {
-      id: Date.now().toString(),
-      firstName,
-      lastName,
+    // Use the Supabase service createUser function
+    const result = await createUser({
       email,
-      password: hashedPassword,
-      securityQuestion,
-      securityAnswer,
-      isAdmin: isAdmin || false,
-      verified: true, // Admin-created users are automatically verified
-      blocked: false,
-      createdAt: new Date().toISOString(),
-      lastLogin: null
-    };
-
-    // Store user
-    await saveUser(newUser);
-
-    console.log(`✅ Admin created user: ${email}`);
-    console.log(`📧 Email: ${email}`);
-    console.log(`🔑 Password: ${password}`);
-    console.log(`👤 Name: ${firstName} ${lastName}`);
-    console.log(`👑 Admin: ${isAdmin ? 'Yes' : 'No'}`);
-
-    res.status(201).json({ 
-      success: true, 
-      message: 'User created successfully',
-      user: {
-        id: newUser.id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        isAdmin: newUser.isAdmin,
-        verified: newUser.verified,
-        createdAt: newUser.createdAt
-      }
+      password,
+      name: `${firstName} ${lastName}`,
+      isVerified: true, // Admin-created users are automatically verified
+      isAdmin: isAdmin || false
     });
+
+    if (result.success) {
+      console.log(`✅ Admin created user: ${email}`);
+      console.log(`📧 Email: ${email}`);
+      console.log(`🔑 Password: ${password}`);
+      console.log(`👤 Name: ${firstName} ${lastName}`);
+      console.log(`👑 Admin: ${isAdmin ? 'Yes' : 'No'}`);
+
+      res.status(201).json({ 
+        success: true, 
+        message: 'User created successfully',
+        user: {
+          id: result.user.id,
+          firstName: firstName,
+          lastName: lastName,
+          email: result.user.email,
+          isAdmin: result.user.isAdmin,
+          verified: result.user.isVerified,
+          createdAt: result.user.createdAt
+        }
+      });
+    } else {
+      if (result.error === 'User already exists') {
+        res.status(400).json({ success: false, error: 'User with this email already exists' });
+      } else {
+        console.error('Error creating user:', result.error);
+        res.status(500).json({ success: false, error: 'Failed to create user' });
+      }
+    }
 
   } catch (error) {
     console.error('Error creating user:', error);
