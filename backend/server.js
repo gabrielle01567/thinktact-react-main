@@ -584,14 +584,111 @@ app.get('/api/auth/verify', async (req, res) => {
   }
 });
 
-// Test endpoints (removed blob dependencies)
-app.post('/api/test-blob', async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Blob endpoints removed - using Supabase database',
-    timestamp: new Date().toISOString()
-  });
+// Resend verification email endpoint
+app.post('/api/auth/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email is required' 
+      });
+    }
+
+    console.log('📧 Resending verification email to:', email);
+
+    // Find user by email
+    const user = await findUserByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'User is already verified' 
+      });
+    }
+
+    // Generate a new verification token
+    const verificationToken = generateVerificationToken();
+    
+    // Update user with new verification token
+    const updatedUser = await updateUser(user.id, { 
+      verification_token: verificationToken
+    });
+
+    if (!updatedUser) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update user with verification token' 
+      });
+    }
+
+    // Send verification email
+    const emailResult = await sendVerificationEmail(email, verificationToken, user.name || user.firstName);
+
+    if (emailResult.success) {
+      console.log('✅ Verification email resent successfully to:', email);
+      res.json({
+        success: true,
+        message: 'Verification email sent successfully'
+      });
+    } else {
+      console.error('❌ Failed to send verification email:', emailResult.error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send verification email',
+        details: emailResult.error
+      });
+    }
+
+  } catch (error) {
+    console.error('Error resending verification email:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 });
+
+// Test email service endpoint
+app.post('/api/test-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    console.log('🧪 Testing email service with:', email);
+    
+    // Test verification email
+    const testToken = generateVerificationToken();
+    const emailResult = await sendVerificationEmail(email, testToken, 'Test User');
+    
+    if (emailResult.success) {
+      res.json({
+        success: true,
+        message: 'Test email sent successfully',
+        details: emailResult
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send test email',
+        details: emailResult.error
+      });
+    }
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Test endpoints (removed blob dependencies)
 
 app.get('/api/test-blob', async (req, res) => {
   res.json({
