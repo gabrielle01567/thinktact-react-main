@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState('');
@@ -84,6 +84,15 @@ export default function VerifyEmail() {
               {isResending ? 'Sending...' : 'Resend Verification Email'}
             </button>
           </div>
+        </div>
+        
+        <div className="border-t pt-6 mt-6">
+          <Link
+            to="/login"
+            className="inline-block w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-center"
+          >
+            Back to Sign In
+          </Link>
         </div>
       </div>
     </div>
