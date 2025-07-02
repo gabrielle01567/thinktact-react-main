@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, updateUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -21,31 +21,31 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (user.verified) {
+    if (user.isVerified) {
       return res.status(400).json({ error: 'User is already verified' });
     }
 
-    // Update user data to mark as verified
-    const updatedUserData = {
-      ...user,
-      verified: true,
-      verificationToken: undefined
-    };
-
-    // Store updated user data
-    await saveUser(updatedUserData);
-
-    res.status(200).json({
-      success: true,
-      message: 'User verified successfully',
-      user: {
-        id: updatedUserData.id,
-        email: updatedUserData.email,
-        firstName: updatedUserData.firstName,
-        lastName: updatedUserData.lastName,
-        verified: updatedUserData.verified
-      }
+    // Update user to verified using Supabase service
+    const updatedUser = await updateUser(user.id, { 
+      is_verified: true,
+      verification_token: null
     });
+
+    if (updatedUser) {
+      res.status(200).json({
+        success: true,
+        message: 'User verified successfully',
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          firstName: updatedUser.name ? updatedUser.name.split(' ')[0] : '',
+          lastName: updatedUser.name ? updatedUser.name.split(' ').slice(1).join(' ') : '',
+          verified: updatedUser.is_verified
+        }
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to update user' });
+    }
 
   } catch (error) {
     console.error('Error verifying user:', error);
