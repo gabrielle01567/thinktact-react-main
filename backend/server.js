@@ -483,32 +483,54 @@ app.post('/api/auth/login', async (req, res) => {
 // Password reset endpoint
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
+    const { token, newPassword } = req.body;
     
-    if (!email || !newPassword) {
+    if (!token || !newPassword) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Email and new password are required' 
+        error: 'Reset token and new password are required' 
       });
     }
 
-    const user = await findUserByEmail(email);
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'User not found' 
-      });
-    }
-
-    // Update user password
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
-    const updatedUser = { ...user, password: hashedPassword };
-    await saveUser(updatedUser);
+    // Find user by reset token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     
-    res.json({
-      success: true,
-      message: 'Password reset successfully'
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('reset_token', token)
+      .eq('reset_token_expires', '>', new Date().toISOString())
+      .limit(1);
+
+    if (error || !users || users.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid or expired reset token' 
+      });
+    }
+
+    const user = users[0];
+    
+    // Update user password and clear reset token
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const updatedUser = await updateUser(user.id, { 
+      password_hash: hashedPassword,
+      reset_token: null,
+      reset_token_expires: null
     });
+    
+    if (updatedUser) {
+      res.json({
+        success: true,
+        message: 'Password reset successfully'
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update password' 
+      });
+    }
   } catch (error) {
     console.error('Password reset error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
