@@ -34,8 +34,8 @@ export const sendVerificationEmail = async (email, verificationToken, name) => {
       return { success: false, error: 'Email service not configured' };
     }
     
-    // Use a simple from address that should work
-    const fromEmail = 'onboarding@resend.dev'; // Resend's default sender
+    // Use your verified domain email address
+    const fromEmail = 'noreply@thinktact.ai'; // Your verified domain email
     console.log('From:', fromEmail);
     
     const verificationUrl = `https://thinktact.ai/verify?token=${verificationToken}`;
@@ -89,7 +89,7 @@ export const sendVerificationEmail = async (email, verificationToken, name) => {
 // Send password reset email
 export const sendPasswordResetEmail = async (email, resetToken, name) => {
   try {
-    const fromEmail = 'onboarding@resend.dev'; // Resend's default sender
+    const fromEmail = 'noreply@thinktact.ai'; // Your verified domain email
     const resetUrl = `https://thinktact.ai/reset-password?token=${resetToken}`;
     
     const { data, error } = await resend.emails.send({
