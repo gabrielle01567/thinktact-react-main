@@ -470,7 +470,21 @@ export const getAllUsers = async () => {
       return [];
     }
     
-    return users || [];
+    // Transform the data to match frontend expectations
+    const transformedUsers = (users || []).map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      firstName: user.name ? user.name.split(' ')[0] : '',
+      lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
+      verified: user.is_verified,
+      isAdmin: user.is_admin,
+      blocked: user.blocked || false,
+      createdAt: user.created_at,
+      created_at: user.created_at // Keep original for backward compatibility
+    }));
+    
+    return transformedUsers;
   } catch (error) {
     console.error('Error getting all users:', error);
     return [];
