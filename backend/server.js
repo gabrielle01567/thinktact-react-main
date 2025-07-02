@@ -177,7 +177,14 @@ app.post('/api/auth/register', async (req, res) => {
     if (result.success) {
       // Only send verification email if user is not already verified
       if (!isVerified && process.env.RESEND_API_KEY) {
+        console.log('📧 Sending verification email...');
+        console.log('Email:', email);
+        console.log('Token:', result.verificationToken ? result.verificationToken.substring(0, 10) + '...' : 'null');
+        console.log('Name:', result.user.name);
+        
         const emailResult = await sendVerificationEmail(email, result.verificationToken, result.user.name);
+        console.log('Email result:', emailResult);
+        
         if (emailResult.success) {
           res.json({
             success: true,
@@ -186,6 +193,7 @@ app.post('/api/auth/register', async (req, res) => {
           });
         } else {
           // User created but email failed
+          console.log('❌ Email sending failed:', emailResult.error);
           res.json({
             success: true,
             message: 'User registered successfully, but verification email could not be sent. Please contact support.',
@@ -201,6 +209,7 @@ app.post('/api/auth/register', async (req, res) => {
         });
       } else {
         // No email service configured
+        console.log('⚠️ No email service configured - RESEND_API_KEY not set');
         res.json({
           success: true,
           message: 'User registered successfully. Email verification is not configured.',

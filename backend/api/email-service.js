@@ -1,5 +1,8 @@
 import { Resend } from 'resend';
 
+console.log('🔧 Email Service Configuration:');
+console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? `Set (${process.env.RESEND_API_KEY.substring(0, 10)}...)` : 'Not set');
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Generate a random verification token
@@ -10,10 +13,17 @@ const generateVerificationToken = () => {
 // Send verification email
 export const sendVerificationEmail = async (email, verificationToken, name) => {
   try {
+    console.log('📧 Attempting to send verification email...');
+    console.log('To:', email);
+    console.log('Token:', verificationToken ? verificationToken.substring(0, 10) + '...' : 'null');
+    console.log('Name:', name);
+    
     // For now, use a simple from address that should work
     const fromEmail = 'onboarding@resend.dev'; // Resend's default sender
+    console.log('From:', fromEmail);
     
     const verificationUrl = `https://thinktact.ai/verify?token=${verificationToken}`;
+    console.log('Verification URL:', verificationUrl);
     
     const { data, error } = await resend.emails.send({
       from: fromEmail,
@@ -39,14 +49,19 @@ export const sendVerificationEmail = async (email, verificationToken, name) => {
     });
 
     if (error) {
-      console.error('Error sending verification email:', error);
+      console.error('❌ Error sending verification email:', error);
+      console.error('Error details:', error.message);
+      console.error('Error code:', error.code);
       return { success: false, error: error.message };
     }
 
-    console.log('Verification email sent successfully to:', email);
+    console.log('✅ Verification email sent successfully to:', email);
+    console.log('Resend response data:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('❌ Exception sending verification email:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return { success: false, error: error.message };
   }
 };
