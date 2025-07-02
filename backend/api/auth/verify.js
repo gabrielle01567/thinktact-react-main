@@ -1,4 +1,4 @@
-import { findUserByVerificationToken, saveUser } from '../shared-storage.js';
+import { findUserByVerificationToken, updateUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     console.log('💾 Saving verified user:', userToUpdate.email);
 
     // Save user
-    await saveUser(updatedUserData);
+    await updateUser(updatedUserData);
 
     console.log('✅ User verified successfully:', userToUpdate.email);
 

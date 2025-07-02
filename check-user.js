@@ -1,4 +1,4 @@
-import { findUserByEmail } from './backend/api/shared-storage.js';
+import { findUserByEmail } from './backend/api/supabase-service.js';
 
 const email = process.argv[2];
 

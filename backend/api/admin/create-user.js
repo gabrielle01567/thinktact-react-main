@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, createUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     };
 
     // Store user
-    await saveUser(newUser);
+    await createUser(newUser);
 
     console.log(`✅ Admin created user: ${email}`);
     console.log(`📧 Email: ${email}`);

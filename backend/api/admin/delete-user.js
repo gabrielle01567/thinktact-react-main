@@ -1,4 +1,4 @@
-import { deleteUser } from '../supabase-service.js';
+import { findUserById, deleteUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'DELETE') {

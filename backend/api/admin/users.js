@@ -1,4 +1,4 @@
-import { getAllUsers } from '../supabase-service.js';
+import { getAllUsers } from './supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

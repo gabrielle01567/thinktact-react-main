@@ -1,4 +1,5 @@
-import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, updateUser } from '../supabase-service.js';
+import { sendResetEmail } from '../email-service.js';
 import { Resend } from 'resend';
 
 export default async function handler(req, res) {
@@ -42,7 +43,7 @@ export default async function handler(req, res) {
     console.log('💾 Reset token to save:', updatedUser.resetToken);
     console.log('💾 Reset token expiry:', updatedUser.resetTokenExpiry);
 
-    await saveUser(updatedUser);
+    await updateUser(updatedUser);
     console.log('💾 Successfully saved user with reset token');
 
     // Send reset email

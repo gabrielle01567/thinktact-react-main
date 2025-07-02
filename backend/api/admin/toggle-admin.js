@@ -1,4 +1,4 @@
-import { updateUser } from '../supabase-service.js';
+import { findUserByEmail, updateUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

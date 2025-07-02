@@ -1,4 +1,4 @@
-import { findUserByResetToken, saveUser } from '../shared-storage.js';
+import { findUserByResetToken, updateUser } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     };
 
     // Save updated user
-    await saveUser(updatedUserData);
+    await updateUser(updatedUserData);
 
     res.status(200).json({
       success: true,
