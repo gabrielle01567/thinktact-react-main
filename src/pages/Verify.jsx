@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 export default function Verify() {
   const [searchParams] = useSearchParams();
@@ -14,11 +15,7 @@ export default function Verify() {
       return;
     }
 
-    // Use the backend API URL
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-lw86jv6tt-gabrielle-shands-projects.vercel.app';
-    
-    fetch(`${backendUrl}/auth/verify?token=${encodeURIComponent(token)}`)
-      .then(res => res.json())
+    authService.verifyEmail(token)
       .then(data => {
         if (data.success) {
           setStatus('success');

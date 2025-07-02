@@ -43,3 +43,4 @@ coverage
 .eslintcache
 .parcel-cache
 .vercel
+.env*.local

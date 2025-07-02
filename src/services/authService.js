@@ -159,6 +159,18 @@ class AuthService {
     }
   }
 
+  // Verify email
+  async verifyEmail(token) {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/verify?token=${encodeURIComponent(token)}`);
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Verify email error:', error);
+      return { success: false, error: 'Failed to verify email' };
+    }
+  }
+
   // Demo mode for development (fallback)
   async demoLogin(email, password) {
     if (email && password) {
