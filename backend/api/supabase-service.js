@@ -523,7 +523,11 @@ export const getAllUsers = async () => {
       isAdmin: user.is_admin,
       blocked: user.blocked || false,
       createdAt: user.created_at,
-      created_at: user.created_at // Keep original for backward compatibility
+      created_at: user.created_at, // Keep original for backward compatibility
+      lastLogin: null, // Not currently tracked in database
+      isSuperUser: false, // Not currently tracked in database
+      securityQuestion: null, // Not currently tracked in database
+      securityAnswer: null // Not currently tracked in database
     }));
     
     return transformedUsers;

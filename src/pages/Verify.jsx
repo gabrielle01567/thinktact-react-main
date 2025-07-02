@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 
 export default function Verify() {
   const [searchParams] = useSearchParams();
@@ -40,6 +40,17 @@ export default function Verify() {
       <div className="bg-white p-8 rounded shadow-md max-w-md w-full text-center">
         <h1 className="text-2xl font-bold mb-4">Email Verification</h1>
         <p className={status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : ''}>{message}</p>
+        
+        {status === 'success' && (
+          <div className="mt-6">
+            <Link
+              to="/login"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Login
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
