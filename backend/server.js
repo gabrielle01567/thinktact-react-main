@@ -177,7 +177,8 @@ app.get('/test-resend', async (req, res) => {
     // Import and test the email service
     const { sendVerificationEmail } = await import('./api/email-service.js');
     
-    const testEmail = 'test@example.com';
+    // Use a real email address for testing (you can change this to your email)
+    const testEmail = 'alex.hawke54@gmail.com'; // Use a real email address
     const testToken = 'test-token-123';
     const testName = 'Test User';
     
@@ -190,7 +191,7 @@ app.get('/test-resend', async (req, res) => {
     if (result.success) {
       res.json({
         success: true,
-        message: 'Resend API test successful',
+        message: 'Resend API test successful - check your email!',
         data: result.data
       });
     } else {
