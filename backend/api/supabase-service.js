@@ -491,7 +491,7 @@ export const getAllUsers = async () => {
     // Try to select with blocked field first
     let { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, is_verified, is_admin, blocked, created_at')
+      .select('id, email, name, is_verified, is_admin, blocked, last_login, created_at')
       .order('created_at', { ascending: false });
     
     // If blocked column doesn't exist, try without it
@@ -499,7 +499,7 @@ export const getAllUsers = async () => {
       console.log('⚠️ Blocked column not found, fetching users without blocked status');
       const { data: usersWithoutBlocked, error: error2 } = await supabase
         .from('users')
-        .select('id, email, name, is_verified, is_admin, created_at')
+        .select('id, email, name, is_verified, is_admin, last_login, created_at')
         .order('created_at', { ascending: false });
       
       if (error2) {
@@ -529,7 +529,7 @@ export const getAllUsers = async () => {
       blocked: user.blocked || false,
       createdAt: user.created_at,
       created_at: user.created_at, // Keep original for backward compatibility
-      lastLogin: null, // Not currently tracked in database
+      lastLogin: user.last_login,
       isSuperUser: false, // Not currently tracked in database
       securityQuestion: null, // Not currently tracked in database
       securityAnswer: null // Not currently tracked in database
@@ -581,7 +581,25 @@ export const updateUser = async (userId, updates) => {
       throw error;
     }
     
-    return user;
+    // Transform the user data to match frontend expectations (same format as getAllUsers)
+    const transformedUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      firstName: user.name ? user.name.split(' ')[0] : '',
+      lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
+      verified: user.is_verified,
+      isAdmin: user.is_admin,
+      blocked: user.blocked || false,
+      createdAt: user.created_at,
+      created_at: user.created_at, // Keep original for backward compatibility
+      lastLogin: user.last_login,
+      isSuperUser: false, // Not currently tracked in database
+      securityQuestion: null, // Not currently tracked in database
+      securityAnswer: null // Not currently tracked in database
+    };
+    
+    return transformedUser;
   } catch (error) {
     console.error('Error updating user:', error);
     throw error;

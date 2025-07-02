@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, updateUser, verifyPassword } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,28 +25,22 @@ export default async function handler(req, res) {
     }
 
     // Check if user is verified (unless they're an admin)
-    if (!user.verified && !user.isAdmin && !user.isSuperUser) {
+    if (!user.isVerified && !user.isAdmin) {
       return res.status(403).json({ error: 'Please verify your email before logging in.' });
     }
 
     // Verify password
-    const bcrypt = await import('bcryptjs');
-    const isValidPassword = await bcrypt.default.compare(password, user.passwordHash);
+    const isValidPassword = await verifyPassword(user, password);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Update last login
-    const updatedUser = {
-      ...user,
-      lastLogin: new Date().toISOString()
-    };
+    await updateUser(user.id, { last_login: new Date().toISOString() });
 
-    await saveUser(updatedUser);
-
-    // Return user data (without password hash)
-    const { passwordHash, ...userData } = updatedUser;
+    // Return user data (without password)
+    const { password: _, ...userData } = user;
     res.status(200).json({
       success: true,
       user: userData

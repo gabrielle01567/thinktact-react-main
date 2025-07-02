@@ -40,23 +40,40 @@ export const sendVerificationEmail = async (email, verificationToken, name) => {
     
     const verificationUrl = `https://thinktact.ai/verify?token=${verificationToken}`;
     console.log('Verification URL:', verificationUrl);
+
+    // Extract first name (fallback to name or email if not available)
+    let firstName = name;
+    if (name && name.includes(' ')) {
+      firstName = name.split(' ')[0];
+    }
+    if (!firstName) {
+      firstName = email.split('@')[0];
+    }
     
-    // Create a simpler email template to avoid potential issues
+    // Improved email template
     const emailData = {
       from: fromEmail,
       to: [email],
       subject: 'Verify your ThinkTact account',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Welcome to ThinkTact!</h2>
-          <p>Hi ${name},</p>
-          <p>Thank you for registering with ThinkTact. Please verify your email address by clicking the link below:</p>
-          <p><a href="${verificationUrl}">${verificationUrl}</a></p>
-          <p>This link will expire in 24 hours.</p>
-          <p>Best regards,<br>The ThinkTact Team</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 32px 24px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <img src="https://thinktact.ai/logo.png" alt="ThinkTact Logo" style="height: 48px; margin-bottom: 8px;" />
+            <h2 style="color: #2d3748; margin: 0;">Welcome to ThinkTact!</h2>
+          </div>
+          <p style="font-size: 1.1em; color: #333;">Hi <strong>${firstName}</strong>,</p>
+          <p style="color: #444;">Thank you for registering with ThinkTact. Please verify your email address by clicking the button below:</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${verificationUrl}" style="background: #2563eb; color: #fff; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 1.1em; box-shadow: 0 2px 4px rgba(37,99,235,0.15);">Verify Email</a>
+          </div>
+          <p style="color: #666;">If the button above doesn't work, copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; color: #2563eb; font-size: 0.97em; background: #eef2ff; padding: 8px 12px; border-radius: 4px;">${verificationUrl}</p>
+          <p style="color: #888; font-size: 0.95em;">This link will expire in 24 hours.</p>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0 16px 0;" />
+          <p style="color: #888; font-size: 0.95em;">Best regards,<br>The ThinkTact Team</p>
         </div>
       `,
-      text: `Welcome to ThinkTact! Please verify your email by visiting: ${verificationUrl}`
+      text: `Hi ${firstName},\n\nThank you for registering with ThinkTact. Please verify your email by visiting: ${verificationUrl}\n\nIf the link doesn't work, copy and paste it into your browser.\n\nBest regards,\nThe ThinkTact Team`
     };
     
     console.log('📧 Sending email with data:', {

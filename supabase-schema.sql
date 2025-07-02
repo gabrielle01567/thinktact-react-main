@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   verification_token VARCHAR(255),
   reset_token VARCHAR(255),
   reset_token_expires TIMESTAMP WITH TIME ZONE,
+  last_login TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
