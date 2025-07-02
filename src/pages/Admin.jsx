@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 
 // Get backend URL from environment variable
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
+console.log('🔍 BACKEND_URL:', BACKEND_URL);
+console.log('🔍 VITE_BACKEND_URL env var:', import.meta.env.VITE_BACKEND_URL);
 
 export default function Admin() {
   const { user } = useAuth();
@@ -61,15 +63,26 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
+      console.log('🔍 Fetching users from:', `${BACKEND_URL}/admin/users`);
       const response = await fetch(`${BACKEND_URL}/admin/users`);
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response ok:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('🔍 Users data:', data);
         setUsers(data.users);
+        setError(''); // Clear any previous errors
       } else {
+        const errorText = await response.text();
+        console.error('🔍 Error response:', errorText);
         setMessage('Failed to fetch users');
+        setError(`HTTP ${response.status}: ${errorText}`);
       }
     } catch (error) {
+      console.error('🔍 Fetch error:', error);
       setMessage('Error fetching users');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
