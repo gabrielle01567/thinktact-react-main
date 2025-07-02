@@ -5,7 +5,9 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-rudd
 
 // Get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('thinktact_token');
+  const token = localStorage.getItem('thinktact_token');
+  console.log('🔍 AnalysisService: Retrieved token:', token ? token.substring(0, 20) + '...' : 'null');
+  return token;
 };
 
 // Save a new analysis

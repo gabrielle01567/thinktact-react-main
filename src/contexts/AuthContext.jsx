@@ -39,17 +39,15 @@ export const AuthProvider = ({ children }) => {
       // Try API authentication
       const result = await authService.loginUser(email, password);
       
-      if (result.success && result.user) {
-        // Generate a simple token (in production, this would come from your backend)
-        const token = btoa(JSON.stringify(result.user) + Date.now());
-        
-        // Save to localStorage
-        localStorage.setItem('thinktact_token', token);
+      console.log('🔍 Login result:', result);
+      
+      if (result.success && result.user && result.token) {
+        // Save the real JWT token from backend
+        console.log('🔍 Storing JWT token:', result.token.substring(0, 20) + '...');
+        localStorage.setItem('thinktact_token', result.token);
         localStorage.setItem('thinktact_user', JSON.stringify(result.user));
-        
         setUser(result.user);
         setIsAuthenticated(true);
-        
         return { success: true };
       } else {
         // Check if the error is about email verification

@@ -1,4 +1,4 @@
-import { findUserByEmail, updateUser, verifyPassword } from '../supabase-service.js';
+import { findUserByEmail, updateUser, verifyPassword, generateToken } from '../supabase-service.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -39,10 +39,14 @@ export default async function handler(req, res) {
     // Update last login
     await updateUser(user.id, { last_login: new Date().toISOString() });
 
-    // Return user data (without password)
+    // Generate JWT token
+    const token = generateToken(user);
+
+    // Return user data (without password) and token
     const { password: _, ...userData } = user;
     res.status(200).json({
       success: true,
+      token,
       user: userData
     });
 

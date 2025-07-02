@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
+import { clearAllStorage, checkTokenStatus, forceTokenRefresh } from '../utils/debug';
 
 // Get backend URL from environment variable
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
@@ -1116,6 +1117,33 @@ export default function Admin() {
             </div>
           </div>
           )}
+
+          {/* Token Debug Section */}
+          <div className="card bg-yellow-100 shadow-xl mb-6">
+            <div className="card-body">
+              <h2 className="card-title text-xl mb-4">🔍 Token Debug</h2>
+              <div className="flex gap-4 mb-4">
+                <button 
+                  onClick={checkTokenStatus}
+                  className="btn btn-info"
+                >
+                  Check Token Status
+                </button>
+                <button 
+                  onClick={clearAllStorage}
+                  className="btn btn-warning"
+                >
+                  Clear All Storage
+                </button>
+                <button 
+                  onClick={forceTokenRefresh}
+                  className="btn btn-error"
+                >
+                  Force Token Refresh
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Admin-triggered Password Reset Modal */}
           {showResetEmailModal && resetEmailTarget && (
