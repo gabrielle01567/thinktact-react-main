@@ -119,7 +119,7 @@ export const createUser = async (userData) => {
     
     if (insertError) {
       console.error('Error creating user:', insertError);
-      return { success: false, error: insertError.message };
+      return { success: false, error: insertError.message || JSON.stringify(insertError) };
     }
     
     console.log(`User created successfully: ${email}`);
