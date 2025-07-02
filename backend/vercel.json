@@ -15,9 +15,5 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "server.js": {
-      "maxDuration": 30
-    }
-  }
+  "buildCommand": "echo 'No build step required for backend'"
 } 
