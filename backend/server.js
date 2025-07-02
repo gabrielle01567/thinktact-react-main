@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser } from './api/supabase-service.js';
+import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
@@ -17,7 +17,13 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://thinktact.ai', 'https://www.thinktact.ai', 'http://localhost:5174', 'http://localhost:5173']
+    ? [
+        'https://thinktact.ai',
+        'https://www.thinktact.ai',
+        'https://thinktact-react-main-hwyfvscjs-gabrielle-shands-projects.vercel.app',
+        'http://localhost:5174',
+        'http://localhost:5173'
+      ]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
   credentials: true
 }));
@@ -706,30 +712,117 @@ app.get('/api/list-blobs', async (req, res) => {
   });
 });
 
-// Analysis endpoints (simplified for now)
+// Analysis endpoints
 app.post('/api/analysis/save', async (req, res) => {
   try {
-    res.json({ 
-      success: true, 
-      message: 'Analysis save endpoint ready',
-      timestamp: new Date().toISOString()
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const { originalArgument, processedAnalysis } = req.body;
+
+    if (!originalArgument || !processedAnalysis) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    console.log('Saving analysis for user:', user.id);
+    console.log('Original argument:', originalArgument.substring(0, 100) + '...');
+
+    const result = await saveAnalysis(user.id, {
+      title: `Analysis - ${new Date().toLocaleDateString()}`,
+      content: originalArgument,
+      analysisData: processedAnalysis
     });
+
+    console.log('Analysis saved successfully:', result);
+    res.status(200).json({ success: true, analysis: result });
+
   } catch (error) {
     console.error('Analysis save error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
 app.get('/api/analysis/history', async (req, res) => {
   try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const history = await getAnalysisHistory(user.id);
+    
     res.json({ 
       success: true, 
-      history: [],
-      message: 'Analysis history endpoint ready',
-      timestamp: new Date().toISOString()
+      history: history || []
     });
   } catch (error) {
     console.error('Analysis history error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/analysis/delete', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const { analysisId } = req.body;
+
+    if (!analysisId) {
+      return res.status(400).json({ error: 'Analysis ID is required' });
+    }
+
+    const result = await deleteAnalysis(user.id, analysisId);
+    
+    res.json({ 
+      success: true, 
+      message: 'Analysis deleted successfully'
+    });
+  } catch (error) {
+    console.error('Analysis delete error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
