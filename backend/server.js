@@ -878,6 +878,114 @@ app.post('/api/admin/request-reset-for-user', async (req, res) => {
   }
 });
 
+// Migration endpoint to add reset token fields
+app.post('/api/migrate-reset-token-fields', async (req, res) => {
+  try {
+    console.log('🔧 Starting reset token fields migration...');
+    
+    // Import Supabase client
+    const { createClient } = await import('@supabase/supabase-js');
+    
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase environment variables');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database configuration missing' 
+      });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // First, let's check if the columns already exist by trying to select them
+    console.log('🔍 Checking if reset token columns already exist...');
+    const { data: testUsers, error: testError } = await supabase
+      .from('users')
+      .select('id, email, reset_token, reset_token_expires')
+      .limit(1);
+    
+    if (!testError) {
+      console.log('✅ Reset token columns already exist!');
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Reset token columns already exist',
+        users: testUsers
+      });
+    }
+    
+    console.log('❌ Reset token columns missing, adding them...');
+    
+    // Add the columns using direct SQL
+    const migrationSQL = `
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS reset_token TEXT,
+      ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
+    `;
+    
+    const { error: migrationError } = await supabase.rpc('exec_sql', {
+      sql_query: migrationSQL
+    });
+    
+    if (migrationError) {
+      console.error('❌ Migration failed:', migrationError);
+      
+      // Try alternative approach - add columns one by one
+      console.log('🔄 Trying alternative approach...');
+      
+      const { error: tokenError } = await supabase.rpc('exec_sql', {
+        sql_query: 'ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;'
+      });
+      
+      const { error: expiresError } = await supabase.rpc('exec_sql', {
+        sql_query: 'ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;'
+      });
+      
+      if (tokenError || expiresError) {
+        console.error('❌ Alternative approach also failed');
+        console.error('Token error:', tokenError);
+        console.error('Expires error:', expiresError);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to add reset token columns' 
+        });
+      }
+    }
+    
+    console.log('✅ Reset token fields migration completed successfully!');
+    
+    // Verify the migration worked
+    const { data: users, error: verifyError } = await supabase
+      .from('users')
+      .select('id, email, reset_token, reset_token_expires')
+      .limit(5);
+    
+    if (verifyError) {
+      console.error('❌ Error verifying migration:', verifyError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Migration completed but verification failed' 
+      });
+    }
+    
+    console.log('✅ Migration verification successful:', users);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Reset token fields migration completed successfully',
+      users: users || []
+    });
+    
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Migration endpoint to add security fields
 app.post('/api/migrate-security-fields', async (req, res) => {
   try {
