@@ -1,8 +1,7 @@
-// Simple backend test
-const BACKEND_URL = 'https://thinktact-react-main-blob.vercel.app';
+const BACKEND_URL = 'https://backendv2-ruddy.vercel.app';
 
-console.log('🔍 Simple Backend Test');
-console.log('======================');
+console.log('🔍 Testing Correct Backend URL');
+console.log('==============================');
 console.log(`Backend URL: ${BACKEND_URL}`);
 console.log('');
 
@@ -39,6 +38,21 @@ async function testBackend() {
       console.log('3. Check the build settings and root directory');
     } else {
       console.log('\n✅ Backend is responding properly!');
+      
+      // Try to parse as JSON
+      try {
+        const data = JSON.parse(text);
+        console.log('✅ JSON Response:', data);
+        
+        // Check if Supabase is configured
+        if (data.supabaseUrl && data.supabaseKey) {
+          console.log('✅ Supabase environment variables are set!');
+        } else {
+          console.log('❌ Supabase environment variables are missing!');
+        }
+      } catch (parseError) {
+        console.log('⚠️ Response is not JSON');
+      }
     }
     
   } catch (error) {

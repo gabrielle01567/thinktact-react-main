@@ -115,6 +115,51 @@ app.get('/test-supabase', async (req, res) => {
   }
 });
 
+// Test Supabase service endpoint
+app.get('/test-supabase-service', async (req, res) => {
+  try {
+    console.log('🧪 Testing Supabase service directly...');
+    
+    // Import and test the createUser function
+    const { createUser } = await import('./api/supabase-service.js');
+    
+    const testEmail = `test-${Date.now()}@example.com`;
+    console.log(`Test email: ${testEmail}`);
+    
+    const result = await createUser({
+      email: testEmail,
+      password: 'testpassword123',
+      name: 'Test Service User',
+      isVerified: true,
+      isAdmin: false
+    });
+    
+    console.log('Service test result:', result);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Supabase service test successful',
+        user: result.user
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Supabase service test failed',
+        details: result.error
+      });
+    }
+    
+  } catch (error) {
+    console.error('Service test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Service test error',
+      details: error.message
+    });
+  }
+});
+
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {

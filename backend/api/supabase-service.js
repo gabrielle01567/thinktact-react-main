@@ -14,10 +14,11 @@ const initializeSupabase = async () => {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
-    console.log('🔧 Supabase Configuration:');
+    console.log('🔧 Supabase Configuration (Detailed):');
     console.log('SUPABASE_URL:', supabaseUrl ? `Set (${supabaseUrl.substring(0, 20)}...)` : 'Not set');
     console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? `Set (${supabaseServiceKey.substring(0, 10)}...)` : 'Not set');
     console.log('JWT_SECRET:', jwtSecret ? 'Set' : 'Not set');
+    console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Missing Supabase environment variables');
