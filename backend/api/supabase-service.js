@@ -178,6 +178,8 @@ export const findUserByEmail = async (email) => {
       email: user.email,
       password: user.password_hash,
       name: user.name,
+      firstName: user.name ? user.name.split(' ')[0] : '',
+      lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
       isVerified: user.is_verified,
       isAdmin: user.is_admin,
       verificationToken: user.verification_token,

@@ -55,6 +55,8 @@ export default function Admin() {
   const [resetEmailTarget, setResetEmailTarget] = useState(null);
   const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
 
+  const showDebugTools = false;
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
@@ -1075,10 +1077,10 @@ export default function Admin() {
           )}
 
           {/* Debug Section */}
+          {showDebugTools && (
           <div className="card bg-base-200 shadow-xl mb-6">
             <div className="card-body">
               <h2 className="card-title text-xl mb-4">🔧 Debug Tools</h2>
-              
               <div className="flex gap-4 mb-4">
                 <button 
                   onClick={handleTestUsers}
@@ -1087,7 +1089,6 @@ export default function Admin() {
                 >
                   {isLoading ? 'Loading...' : 'Test Users'}
                 </button>
-                
                 <button 
                   onClick={handleMigrateUsers}
                   disabled={isLoading}
@@ -1096,7 +1097,6 @@ export default function Admin() {
                   {isLoading ? 'Migrating...' : 'Migrate Users'}
                 </button>
               </div>
-
               {testUsersResult && (
                 <div className="bg-base-100 p-4 rounded-lg">
                   <h3 className="font-bold mb-2">Test Users Result:</h3>
@@ -1105,7 +1105,6 @@ export default function Admin() {
                   </pre>
                 </div>
               )}
-
               {migrationResult && (
                 <div className="bg-base-100 p-4 rounded-lg mt-4">
                   <h3 className="font-bold mb-2">Migration Result:</h3>
@@ -1116,6 +1115,7 @@ export default function Admin() {
               )}
             </div>
           </div>
+          )}
 
           {/* Admin-triggered Password Reset Modal */}
           {showResetEmailModal && resetEmailTarget && (
