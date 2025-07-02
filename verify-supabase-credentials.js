@@ -24,7 +24,7 @@ console.log('\n🔧 To test your credentials locally:');
 console.log('1. Set environment variables:');
 console.log('   $env:SUPABASE_URL="your-project-url"');
 console.log('   $env:SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"');
-console.log('\n2. Run: node test-supabase-direct.js');
+console.log('\n2. Run: er-node test-supabase-direct.js');
 
 console.log('\n📋 Current Backend Status:');
 console.log('✅ Environment variables are set on backend');
