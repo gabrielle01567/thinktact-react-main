@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     await updateUser(user.id, { verification_token: newVerificationToken });
 
     // Send verification email using the email service
-    const emailResult = await sendVerificationEmail(email, newVerificationToken, user.name);
+    const emailResult = await sendVerificationEmail(email, newVerificationToken, user.firstName);
     
     if (!emailResult.success) {
       console.error('Error sending verification email:', emailResult.error);

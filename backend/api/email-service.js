@@ -41,11 +41,8 @@ export const sendVerificationEmail = async (email, verificationToken, name) => {
     const verificationUrl = `https://thinktact.ai/verify?token=${verificationToken}`;
     console.log('Verification URL:', verificationUrl);
 
-    // Extract first name (fallback to name or email if not available)
+    // Use the provided name as first name, fallback to email prefix if not provided
     let firstName = name;
-    if (name && name.includes(' ')) {
-      firstName = name.split(' ')[0];
-    }
     if (!firstName) {
       firstName = email.split('@')[0];
     }

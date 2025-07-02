@@ -84,7 +84,7 @@ export const createUser = async (userData) => {
       return { success: false, error: 'Database not configured' };
     }
 
-    const { email, password, name, isVerified = false, isAdmin = false } = userData;
+    const { email, password, name, isVerified = false, isAdmin = false, securityQuestion, securityAnswer } = userData;
     
     // Check if user already exists
     const { data: existingUser, error: findError } = await supabase
@@ -117,7 +117,9 @@ export const createUser = async (userData) => {
         name: name || email.split('@')[0],
         is_verified: isVerified,
         is_admin: isAdmin,
-        verification_token: verificationToken
+        verification_token: verificationToken,
+        security_question: securityQuestion,
+        security_answer: securityAnswer
       })
       .select()
       .single();
@@ -179,6 +181,8 @@ export const findUserByEmail = async (email) => {
       verificationToken: user.verification_token,
       resetToken: user.reset_token,
       resetTokenExpires: user.reset_token_expires,
+      securityQuestion: user.security_question,
+      securityAnswer: user.security_answer,
       createdAt: user.created_at,
       updatedAt: user.updated_at
     };
@@ -221,6 +225,8 @@ export const findUserById = async (id) => {
       verificationToken: user.verification_token,
       resetToken: user.reset_token,
       resetTokenExpires: user.reset_token_expires,
+      securityQuestion: user.security_question,
+      securityAnswer: user.security_answer,
       createdAt: user.created_at,
       updatedAt: user.updated_at
     };
@@ -491,7 +497,7 @@ export const getAllUsers = async () => {
     // Try to select with blocked field first
     let { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, is_verified, is_admin, blocked, last_login, created_at')
+      .select('id, email, name, is_verified, is_admin, blocked, last_login, security_question, security_answer, created_at')
       .order('created_at', { ascending: false });
     
     // If blocked column doesn't exist, try without it
@@ -499,7 +505,7 @@ export const getAllUsers = async () => {
       console.log('⚠️ Blocked column not found, fetching users without blocked status');
       const { data: usersWithoutBlocked, error: error2 } = await supabase
         .from('users')
-        .select('id, email, name, is_verified, is_admin, last_login, created_at')
+        .select('id, email, name, is_verified, is_admin, last_login, security_question, security_answer, created_at')
         .order('created_at', { ascending: false });
       
       if (error2) {
@@ -531,8 +537,8 @@ export const getAllUsers = async () => {
       created_at: user.created_at, // Keep original for backward compatibility
       lastLogin: user.last_login,
       isSuperUser: false, // Not currently tracked in database
-      securityQuestion: null, // Not currently tracked in database
-      securityAnswer: null // Not currently tracked in database
+      securityQuestion: user.security_question,
+      securityAnswer: user.security_answer
     }));
     
     return transformedUsers;
@@ -595,8 +601,8 @@ export const updateUser = async (userId, updates) => {
       created_at: user.created_at, // Keep original for backward compatibility
       lastLogin: user.last_login,
       isSuperUser: false, // Not currently tracked in database
-      securityQuestion: null, // Not currently tracked in database
-      securityAnswer: null // Not currently tracked in database
+      securityQuestion: user.security_question,
+      securityAnswer: user.security_answer
     };
     
     return transformedUser;
