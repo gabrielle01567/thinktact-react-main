@@ -677,7 +677,7 @@ app.post('/api/admin/create-user', async (req, res) => {
       email,
       password,
       name: `${firstName} ${lastName}`,
-      isVerified: true, // Admin-created users are automatically verified
+      isVerified: false, // Admin-created users need email verification
       isAdmin: isAdmin || false
     });
 
@@ -690,7 +690,7 @@ app.post('/api/admin/create-user', async (req, res) => {
 
       res.status(201).json({ 
         success: true, 
-        message: 'User created successfully',
+        message: 'User created successfully. Verification email will be sent.',
         user: {
           id: result.user.id,
           firstName: firstName,
