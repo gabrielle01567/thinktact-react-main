@@ -183,6 +183,48 @@ export const findUserByEmail = async (email) => {
   }
 };
 
+export const findUserById = async (id) => {
+  try {
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in findUserById');
+      return null;
+    }
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // User not found
+      }
+      console.error('Error finding user by ID:', error);
+      return null;
+    }
+    
+    return {
+      id: user.id,
+      email: user.email,
+      password: user.password_hash,
+      name: user.name,
+      isVerified: user.is_verified,
+      isAdmin: user.is_admin,
+      verificationToken: user.verification_token,
+      resetToken: user.reset_token,
+      resetTokenExpires: user.reset_token_expires,
+      createdAt: user.created_at,
+      updatedAt: user.updated_at
+    };
+  } catch (error) {
+    console.error('Error finding user by ID:', error);
+    return null;
+  }
+};
+
 export const findUserByVerificationToken = async (token) => {
   try {
     const { data: user, error } = await supabase

@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { findUserById, saveUser, resetUserPassword } from '../shared-storage.js';
+import { findUserById, updateUser } from '../supabase-service.js';
 
 const SALT_ROUNDS = 12;
 
@@ -19,8 +19,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // Use the resetUserPassword function from shared-storage
-    const updatedUser = await resetUserPassword(userId, newPassword);
+    // Find the user by ID
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Hash the new password
+    const passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS);
+
+    // Update the user's password
+    const updatedUser = await updateUser(userId, {
+      password_hash: passwordHash
+    });
 
     res.status(200).json({
       success: true,
