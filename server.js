@@ -17,30 +17,29 @@ app.use(express.json());
 
 // Admin user creation handled by Supabase service
 
-// Import API routes
-import registerHandler from './api/auth/register.js';
-import loginHandler from './api/auth/login.js';
-// Blob handler removed - using Supabase database
-import requestResetHandler from './api/auth/request-reset.js';
-import resetPasswordHandler from './api/auth/reset-password.js';
-import verifyHandler from './api/auth/verify.js';
-import changeEmailHandler from './api/auth/change-email.js';
-import verifyEmailChangeHandler from './api/auth/verify-email-change.js';
-import resendVerificationHandler from './api/auth/resend-verification.js';
-import testEmailHandler from './api/test-email.js';
-import testUsersHandler from './api/test-users.js';
-import migrateUsersHandler from './api/migrate-users.js';
-import usersHandler from './api/admin/users.js';
-import resetPasswordAdminHandler from './api/admin/reset-password.js';
-import toggleStatusHandler from './api/admin/toggle-status.js';
-import deleteUserHandler from './api/admin/delete-user.js';
-import toggleAdminHandler from './api/admin/toggle-admin.js';
-import createUserHandler from './api/admin/create-user.js';
-import createSuperUserHandler from './api/admin/create-super-user.js';
-import verifyUserHandler from './api/admin/verify-user.js';
-import saveAnalysisHandler from './api/save-analysis.js';
-import getAnalysisHistoryHandler from './api/get-analysis-history.js';
-import deleteAnalysisHandler from './api/delete-analysis.js';
+// Import API routes from backend
+import registerHandler from './backend/api/auth/register.js';
+import loginHandler from './backend/api/auth/login.js';
+import requestResetHandler from './backend/api/auth/request-reset.js';
+import resetPasswordHandler from './backend/api/auth/reset-password.js';
+import verifyHandler from './backend/api/auth/verify.js';
+import changeEmailHandler from './backend/api/auth/change-email.js';
+import verifyEmailChangeHandler from './backend/api/auth/verify-email-change.js';
+import resendVerificationHandler from './backend/api/auth/resend-verification.js';
+import testEmailHandler from './backend/api/test-email.js';
+import testUsersHandler from './backend/api/test-users.js';
+import migrateUsersHandler from './backend/api/migrate-users.js';
+import usersHandler from './backend/api/admin/users.js';
+import resetPasswordAdminHandler from './backend/api/admin/reset-password.js';
+import toggleStatusHandler from './backend/api/admin/toggle-status.js';
+import deleteUserHandler from './backend/api/admin/delete-user.js';
+import toggleAdminHandler from './backend/api/admin/toggle-admin.js';
+import createUserHandler from './backend/api/admin/create-user.js';
+import createSuperUserHandler from './backend/api/admin/create-super-user.js';
+import verifyUserHandler from './backend/api/admin/verify-user.js';
+import saveAnalysisHandler from './backend/api/save-analysis.js';
+import getAnalysisHistoryHandler from './backend/api/get-analysis-history.js';
+import deleteAnalysisHandler from './backend/api/delete-analysis.js';
 
 // API Routes
 app.post('/api/auth/register', async (req, res) => {
