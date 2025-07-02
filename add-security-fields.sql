@@ -31,4 +31,13 @@ BEGIN
     ELSE
         RAISE NOTICE 'security_answer column already exists in users table';
     END IF;
-END $$; 
+END $$;
+
+-- Add security question and answer columns to users table
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS security_question TEXT,
+ADD COLUMN IF NOT EXISTS security_answer TEXT;
+
+-- Add comment to document the purpose
+COMMENT ON COLUMN users.security_question IS 'Security question selected by user during registration';
+COMMENT ON COLUMN users.security_answer IS 'Hashed security answer provided by user during registration'; 

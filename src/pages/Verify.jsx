@@ -15,7 +15,7 @@ export default function Verify() {
     }
 
     // Use the backend API URL
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backend-gabrielle-shands-projects.vercel.app/api';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-lw86jv6tt-gabrielle-shands-projects.vercel.app';
     
     fetch(`${backendUrl}/auth/verify?token=${encodeURIComponent(token)}`)
       .then(res => res.json())

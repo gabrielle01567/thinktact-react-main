@@ -1,42 +1,58 @@
-const BACKEND_URL = 'https://backendv2-ruddy.vercel.app';
+import fetch from 'node-fetch';
 
-console.log('🔍 Testing Backend Health');
-console.log('=========================');
-console.log(`Backend URL: ${BACKEND_URL}`);
-console.log('');
+const BACKEND_URL = 'https://backendv2-kktt055xn-gabrielle-shands-projects.vercel.app';
 
 async function testBackendHealth() {
+  console.log('🔍 Testing Backend Health');
+  console.log('=========================');
+  
   try {
-    console.log('🧪 Testing backend health endpoint...');
+    // Test root endpoint
+    console.log('📊 Testing root endpoint...');
+    const rootResponse = await fetch(`${BACKEND_URL}/`);
+    console.log('Root Status:', rootResponse.status);
+    if (rootResponse.ok) {
+      const rootData = await rootResponse.json();
+      console.log('Root Response:', rootData);
+    }
     
-    const response = await fetch(`${BACKEND_URL}/health`);
+    // Test health endpoint
+    console.log('\n📊 Testing health endpoint...');
+    const healthResponse = await fetch(`${BACKEND_URL}/health`);
+    console.log('Health Status:', healthResponse.status);
+    if (healthResponse.ok) {
+      const healthData = await healthResponse.json();
+      console.log('Health Response:', healthData);
+    }
     
-    console.log(`Status: ${response.status}`);
-    console.log(`Status Text: ${response.statusText}`);
+    // Test admin users endpoint
+    console.log('\n📊 Testing admin users endpoint...');
+    const usersResponse = await fetch(`${BACKEND_URL}/api/admin/users`);
+    console.log('Users Status:', usersResponse.status);
+    if (usersResponse.ok) {
+      const usersData = await usersResponse.json();
+      console.log('Users Response:', usersData);
+    }
     
-    const text = await response.text();
-    console.log(`Response: ${text}`);
-    
-    try {
-      const data = JSON.parse(text);
-      console.log('✅ JSON Response:', data);
-      
-      if (data.status === 'ok') {
-        console.log('🎉 Backend is healthy!');
-        console.log('📊 Environment:', data.environment);
-        console.log('🔧 Supabase URL:', data.supabaseUrl ? 'Set' : 'Not set');
-        console.log('🔑 Supabase Key:', data.supabaseKey ? 'Set' : 'Not set');
-        console.log('🔐 JWT Secret:', data.jwtSecret ? 'Set' : 'Not set');
-        console.log('📧 Resend Key:', data.resendKey ? 'Set' : 'Not set');
-      } else {
-        console.log('❌ Backend health check failed');
+    // Test migration endpoint
+    console.log('\n📊 Testing migration endpoint...');
+    const migrationResponse = await fetch(`${BACKEND_URL}/api/migrate-security-fields`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
       }
-    } catch (parseError) {
-      console.log('⚠️ Response is not JSON');
+    });
+    console.log('Migration Status:', migrationResponse.status);
+    if (migrationResponse.ok) {
+      const migrationData = await migrationResponse.json();
+      console.log('Migration Response:', migrationData);
+    } else {
+      const errorData = await migrationResponse.text();
+      console.log('Migration Error:', errorData.substring(0, 200) + '...');
     }
     
   } catch (error) {
-    console.log('❌ Network Error:', error.message);
+    console.error('❌ Network Error:', error.message);
   }
 }
 

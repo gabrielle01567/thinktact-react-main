@@ -503,10 +503,10 @@ export const getAllUsers = async () => {
     console.log('🔍 Supabase client:', !!supabase);
     console.log('🔍 Attempting to query users...');
 
-    // Only select columns that exist
+    // Select all columns including security fields
     let { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, is_verified, is_admin, blocked, last_login, created_at')
+      .select('id, email, name, is_verified, is_admin, blocked, last_login, security_question, security_answer, created_at')
       .order('created_at', { ascending: false });
     
     console.log('🔍 Query result:', { users: users?.length || 0, error: error?.message });
@@ -531,7 +531,9 @@ export const getAllUsers = async () => {
       createdAt: user.created_at,
       created_at: user.created_at, // Keep original for backward compatibility
       lastLogin: user.last_login,
-      isSuperUser: false // Not currently tracked in database
+      isSuperUser: false, // Not currently tracked in database
+      securityQuestion: user.security_question,
+      securityAnswer: user.security_answer
     }));
     
     console.log('🔍 Transformed users:', transformedUsers.length);

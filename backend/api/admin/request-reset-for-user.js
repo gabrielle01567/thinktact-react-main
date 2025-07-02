@@ -1,4 +1,4 @@
-import { findUserByEmail, saveUser } from '../shared-storage.js';
+import { findUserByEmail, updateUser } from '../supabase-service.js';
 import { Resend } from 'resend';
 
 export default async function handler(req, res) {
@@ -23,19 +23,18 @@ export default async function handler(req, res) {
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Update user with reset token
-    const updatedUser = {
-      ...user,
-      resetToken,
-      resetTokenExpiry: resetTokenExpiry.toISOString()
-    };
-    await saveUser(updatedUser);
+    // Update user with reset token in Supabase
+    await updateUser(user.id, {
+      reset_token: resetToken,
+      reset_token_expires: resetTokenExpiry.toISOString()
+    });
 
     // Send reset email
     if (process.env.RESEND_API_KEY) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
-        const baseUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        // Use the frontend URL for the reset link
+        const baseUrl = process.env.FRONTEND_URL || 'https://thinktact.ai';
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
         await resend.emails.send({
           from: 'ThinkTact AI <noreply@thinktact.ai>',
@@ -44,13 +43,13 @@ export default async function handler(req, res) {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #333;">Password Reset Request</h2>
-              <p>Hi ${user.firstName},</p>
+              <p>Hi ${user.name || user.email},</p>
               <p>An admin has requested a password reset for your ThinkTact AI account. Click the button below to reset your password:</p>
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+                <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
               </div>
               <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #666;"><a href="${resetUrl}" style="color: #0066cc; text-decoration: underline;">ThinkTact AI Password Reset</a></p>
+              <p style="word-break: break-all; color: #666;"><a href="${resetUrl}" style="color: #0066cc; text-decoration: underline;">${resetUrl}</a></p>
               <p>This link will expire in 24 hours.</p>
               <p>If you didn't request a password reset, you can safely ignore this email.</p>
               <p>Best regards,<br>The ThinkTact AI Team</p>

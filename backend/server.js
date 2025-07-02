@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser } from './api/supabase-service.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from './api/email-service.js';
+import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
 // Force redeploy to apply environment variables - 2025-07-01 - Database Reconfiguration
@@ -761,7 +761,9 @@ app.post('/api/admin/create-user', async (req, res) => {
       password,
       name: `${firstName} ${lastName}`,
       isVerified: false, // Admin-created users need email verification
-      isAdmin: isAdmin || false
+      isAdmin: isAdmin || false,
+      securityQuestion,
+      securityAnswer
     });
 
     if (result.success) {
@@ -796,6 +798,169 @@ app.post('/api/admin/create-user', async (req, res) => {
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to request password reset for a user
+app.post('/api/admin/request-reset-for-user', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    console.log('🔧 Admin requesting password reset for:', email);
+
+    // Find user by email
+    const user = await findUserByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Generate a reset token
+    const resetToken = generateVerificationToken();
+    
+    // Update user with reset token
+    const updatedUser = await updateUser(user.id, { 
+      reset_token: resetToken,
+      reset_token_expires: new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
+    });
+
+    if (!updatedUser) {
+      return res.status(500).json({ success: false, error: 'Failed to update user with reset token' });
+    }
+
+    // Send password reset email
+    const emailResult = await sendPasswordResetEmail(email, resetToken, user.name || user.firstName);
+
+    if (emailResult.success) {
+      console.log('✅ Password reset email sent successfully to:', email);
+      res.json({
+        success: true,
+        message: 'Password reset email sent successfully'
+      });
+    } else {
+      console.error('❌ Failed to send password reset email:', emailResult.error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send password reset email',
+        details: emailResult.error
+      });
+    }
+
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Migration endpoint to add security fields
+app.post('/api/migrate-security-fields', async (req, res) => {
+  try {
+    console.log('🔧 Starting security fields migration...');
+    
+    // Import Supabase client
+    const { createClient } = await import('@supabase/supabase-js');
+    
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase environment variables');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database configuration missing' 
+      });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // First, let's check if the columns already exist by trying to select them
+    console.log('🔍 Checking if security columns already exist...');
+    const { data: testUsers, error: testError } = await supabase
+      .from('users')
+      .select('id, email, security_question, security_answer')
+      .limit(1);
+    
+    if (!testError) {
+      console.log('✅ Security columns already exist!');
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Security columns already exist',
+        users: testUsers
+      });
+    }
+    
+    console.log('❌ Security columns missing, adding them...');
+    
+    // Add the columns using direct SQL
+    const migrationSQL = `
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS security_question TEXT,
+      ADD COLUMN IF NOT EXISTS security_answer TEXT;
+    `;
+    
+    const { error: migrationError } = await supabase.rpc('exec_sql', {
+      sql_query: migrationSQL
+    });
+    
+    if (migrationError) {
+      console.error('❌ Migration failed:', migrationError);
+      
+      // Try alternative approach - add columns one by one
+      console.log('🔄 Trying alternative approach...');
+      
+      const { error: questionError } = await supabase.rpc('exec_sql', {
+        sql_query: 'ALTER TABLE users ADD COLUMN IF NOT EXISTS security_question TEXT;'
+      });
+      
+      const { error: answerError } = await supabase.rpc('exec_sql', {
+        sql_query: 'ALTER TABLE users ADD COLUMN IF NOT EXISTS security_answer TEXT;'
+      });
+      
+      if (questionError || answerError) {
+        console.error('❌ Alternative approach also failed');
+        console.error('Question error:', questionError);
+        console.error('Answer error:', answerError);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to add security columns' 
+        });
+      }
+    }
+    
+    console.log('✅ Security fields migration completed successfully!');
+    
+    // Verify the migration worked
+    const { data: users, error: verifyError } = await supabase
+      .from('users')
+      .select('id, email, security_question, security_answer')
+      .limit(5);
+    
+    if (verifyError) {
+      console.error('❌ Error verifying migration:', verifyError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Migration completed but verification failed' 
+      });
+    }
+    
+    console.log('✅ Migration verification successful:', users);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Security fields migration completed successfully',
+      users: users || []
+    });
+    
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 });
 

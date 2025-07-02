@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const BACKEND_URL = 'https://backendv2-qbqfa9sv3-gabrielle-shands-projects.vercel.app';
+const BACKEND_URL = 'https://backendv2-lw86jv6tt-gabrielle-shands-projects.vercel.app';
 
 async function testAdminUsersFixed() {
   console.log('🔍 Testing Admin Users Endpoint After Fix');
@@ -24,6 +24,7 @@ async function testAdminUsersFixed() {
           console.log(`     Verified: ${user.verified ? 'Yes' : 'No'}`);
           console.log(`     Blocked: ${user.blocked ? 'Yes' : 'No'}`);
           console.log(`     Created: ${user.createdAt}`);
+          console.log(`     Security Question: ${user.securityQuestion || 'Not set'}`);
           console.log('');
         });
       } else {
