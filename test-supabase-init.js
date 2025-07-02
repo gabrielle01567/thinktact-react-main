@@ -43,4 +43,46 @@ try {
   }
 } catch (error) {
   console.log('❌ Error creating Supabase client:', error);
-} 
+}
+
+const BACKEND_URL = 'https://backendv2-ruddy.vercel.app/api';
+
+async function testSupabaseInit() {
+  console.log('🔍 Testing Supabase Initialization');
+  console.log('==================================');
+  console.log(`Backend URL: ${BACKEND_URL}\n`);
+
+  try {
+    // Test the health endpoint which should show Supabase status
+    const healthResponse = await fetch(`${BACKEND_URL}/health`);
+    console.log(`📊 Health Status: ${healthResponse.status}`);
+    
+    if (healthResponse.ok) {
+      const healthData = await healthResponse.json();
+      console.log('✅ Health Response:', JSON.stringify(healthData, null, 2));
+    } else {
+      console.log('❌ Health check failed');
+      const errorText = await healthResponse.text();
+      console.log('Error:', errorText);
+    }
+
+    // Test a simple database operation
+    console.log('\n🧪 Testing database operation...');
+    const testResponse = await fetch(`${BACKEND_URL}/test`);
+    console.log(`📊 Test Status: ${testResponse.status}`);
+    
+    if (testResponse.ok) {
+      const testData = await testResponse.json();
+      console.log('✅ Test Response:', JSON.stringify(testData, null, 2));
+    } else {
+      console.log('❌ Test failed');
+      const errorText = await testResponse.text();
+      console.log('Error:', errorText);
+    }
+
+  } catch (error) {
+    console.error('❌ Error testing Supabase initialization:', error);
+  }
+}
+
+testSupabaseInit(); 

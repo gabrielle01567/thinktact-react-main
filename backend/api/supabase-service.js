@@ -480,7 +480,8 @@ export const getAllUsers = async () => {
     const isInitialized = await waitForInitialization();
     if (!isInitialized) {
       console.error('❌ Supabase not initialized in getAllUsers');
-      return [];
+      // Temporarily bypass initialization check to debug
+      console.log('⚠️ Bypassing initialization check for debugging');
     }
 
     // Try to select with blocked field first
