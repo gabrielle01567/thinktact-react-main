@@ -56,7 +56,10 @@ const initializeSupabase = async () => {
 };
 
 // Initialize immediately and store the promise
-initializationPromise = initializeSupabase().catch(error => {
+initializationPromise = initializeSupabase().then(result => {
+  console.log('✅ Initialization promise resolved with:', result);
+  return result;
+}).catch(error => {
   console.error('❌ Failed to initialize Supabase:', error);
   return false;
 });
@@ -64,7 +67,9 @@ initializationPromise = initializeSupabase().catch(error => {
 // Wait for initialization to complete
 const waitForInitialization = async () => {
   if (initializationPromise) {
-    await initializationPromise;
+    const result = await initializationPromise;
+    console.log('🔍 waitForInitialization result:', result, 'supabaseInitialized:', supabaseInitialized);
+    return result && supabaseInitialized;
   }
   return supabaseInitialized;
 };
@@ -480,8 +485,7 @@ export const getAllUsers = async () => {
     const isInitialized = await waitForInitialization();
     if (!isInitialized) {
       console.error('❌ Supabase not initialized in getAllUsers');
-      // Temporarily bypass initialization check to debug
-      console.log('⚠️ Bypassing initialization check for debugging');
+      return [];
     }
 
     // Try to select with blocked field first
