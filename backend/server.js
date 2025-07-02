@@ -160,6 +160,57 @@ app.get('/test-supabase-service', async (req, res) => {
   }
 });
 
+// Test Resend API endpoint
+app.get('/test-resend', async (req, res) => {
+  try {
+    console.log('🧪 Testing Resend API directly...');
+    
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'RESEND_API_KEY not set'
+      });
+    }
+    
+    console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? `Set (${process.env.RESEND_API_KEY.substring(0, 10)}...)` : 'Not set');
+    
+    // Import and test the email service
+    const { sendVerificationEmail } = await import('./api/email-service.js');
+    
+    const testEmail = 'test@example.com';
+    const testToken = 'test-token-123';
+    const testName = 'Test User';
+    
+    console.log('Testing email service with:', { testEmail, testToken, testName });
+    
+    const result = await sendVerificationEmail(testEmail, testToken, testName);
+    
+    console.log('Email service test result:', result);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Resend API test successful',
+        data: result.data
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Resend API test failed',
+        details: result.error
+      });
+    }
+    
+  } catch (error) {
+    console.error('Resend test error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Resend test error',
+      details: error.message
+    });
+  }
+});
+
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
