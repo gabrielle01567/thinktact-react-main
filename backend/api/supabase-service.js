@@ -11,19 +11,21 @@ let initializationPromise = null;
 const initializeSupabase = async () => {
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
     const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
     console.log('🔧 Supabase Configuration (Detailed):');
     console.log('SUPABASE_URL:', supabaseUrl ? `Set (${supabaseUrl.substring(0, 20)}...)` : 'Not set');
-    console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? `Set (${supabaseServiceKey.substring(0, 10)}...)` : 'Not set');
+    console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `Set (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 10)}...)` : 'Not set');
+    console.log('SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_KEY ? `Set (${process.env.SUPABASE_SERVICE_KEY.substring(0, 10)}...)` : 'Not set');
     console.log('JWT_SECRET:', jwtSecret ? 'Set' : 'Not set');
     console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Missing Supabase environment variables');
       console.error('SUPABASE_URL:', !!supabaseUrl);
-      console.error('SUPABASE_SERVICE_ROLE_KEY:', !!supabaseServiceKey);
+      console.error('SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+      console.error('SUPABASE_SERVICE_KEY:', !!process.env.SUPABASE_SERVICE_KEY);
       console.warn('⚠️ Supabase not initialized - some features will not work');
       return false;
     }
@@ -487,41 +489,34 @@ export const deleteAnalysis = async (userId, analysisId) => {
 // Admin functions
 export const getAllUsers = async () => {
   try {
+    console.log('🔍 getAllUsers called');
+    
     // Wait for initialization to complete
     const isInitialized = await waitForInitialization();
+    console.log('🔍 isInitialized:', isInitialized);
+    
     if (!isInitialized) {
       console.error('❌ Supabase not initialized in getAllUsers');
       return [];
     }
 
-    // Try to select with blocked field first
+    console.log('🔍 Supabase client:', !!supabase);
+    console.log('🔍 Attempting to query users...');
+
+    // Only select columns that exist
     let { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, is_verified, is_admin, blocked, last_login, security_question, security_answer, created_at')
+      .select('id, email, name, is_verified, is_admin, blocked, last_login, created_at')
       .order('created_at', { ascending: false });
     
-    // If blocked column doesn't exist, try without it
-    if (error && error.message.includes('column "blocked" does not exist')) {
-      console.log('⚠️ Blocked column not found, fetching users without blocked status');
-      const { data: usersWithoutBlocked, error: error2 } = await supabase
-        .from('users')
-        .select('id, email, name, is_verified, is_admin, last_login, security_question, security_answer, created_at')
-        .order('created_at', { ascending: false });
-      
-      if (error2) {
-        console.error('Error getting all users (without blocked):', error2);
-        return [];
-      }
-      
-      // Add blocked: false to all users since column doesn't exist
-      users = usersWithoutBlocked.map(user => ({
-        ...user,
-        blocked: false
-      }));
-    } else if (error) {
+    console.log('🔍 Query result:', { users: users?.length || 0, error: error?.message });
+    
+    if (error) {
       console.error('Error getting all users:', error);
       return [];
     }
+    
+    console.log('🔍 Final users before transform:', users?.length || 0);
     
     // Transform the data to match frontend expectations
     const transformedUsers = (users || []).map(user => ({
@@ -536,11 +531,10 @@ export const getAllUsers = async () => {
       createdAt: user.created_at,
       created_at: user.created_at, // Keep original for backward compatibility
       lastLogin: user.last_login,
-      isSuperUser: false, // Not currently tracked in database
-      securityQuestion: user.security_question,
-      securityAnswer: user.security_answer
+      isSuperUser: false // Not currently tracked in database
     }));
     
+    console.log('🔍 Transformed users:', transformedUsers.length);
     return transformedUsers;
   } catch (error) {
     console.error('Error getting all users:', error);

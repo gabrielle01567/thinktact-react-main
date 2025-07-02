@@ -160,6 +160,89 @@ app.get('/test-supabase-service', async (req, res) => {
   }
 });
 
+// Debug Supabase configuration endpoint
+app.get('/api/debug-supabase-config', async (req, res) => {
+  try {
+    console.log('🔍 Debugging Supabase configuration...');
+    
+    // Check environment variables (mask sensitive data)
+    const supabaseUrl = process.env.SUPABASE_URL || 'NOT_SET';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || 'NOT_SET';
+    const supabaseKeyMasked = supabaseKey !== 'NOT_SET' ? 
+      supabaseKey.substring(0, 10) + '...' + supabaseKey.substring(supabaseKey.length - 10) : 
+      'NOT_SET';
+
+    console.log('Environment variables:');
+    console.log('  SUPABASE_URL:', supabaseUrl);
+    console.log('  SUPABASE_KEY:', supabaseKeyMasked);
+
+    // Test Supabase connection using the service
+    const { getAllUsers } = await import('./api/supabase-service.js');
+    
+    console.log('Testing getAllUsers function...');
+    const users = await getAllUsers();
+    
+    console.log('getAllUsers result:', users);
+
+    // Test a simple select * query to see what columns exist
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
+    console.log('Testing simple select * query...');
+    const { data: allColumns, error: allColumnsError } = await supabase
+      .from('users')
+      .select('*')
+      .limit(1);
+    
+    console.log('Select * result:', allColumns);
+    console.log('Select * error:', allColumnsError);
+
+    // Test the exact query that getAllUsers should be using
+    console.log('Testing exact getAllUsers query...');
+    const { data: exactQuery, error: exactError } = await supabase
+      .from('users')
+      .select('id, email, name, is_verified, is_admin, blocked, last_login, created_at')
+      .order('created_at', { ascending: false });
+    
+    console.log('Exact query result:', exactQuery);
+    console.log('Exact query error:', exactError);
+
+    res.status(200).json({
+      success: true,
+      config: {
+        supabaseUrl: supabaseUrl,
+        supabaseKey: supabaseKeyMasked,
+        hasError: false,
+        error: null,
+        usersCount: users ? users.length : 0,
+        users: users,
+        allColumnsTest: {
+          data: allColumns,
+          error: allColumnsError ? allColumnsError.message : null
+        },
+        exactQueryTest: {
+          data: exactQuery,
+          error: exactError ? exactError.message : null
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in debug endpoint:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to debug Supabase config',
+      message: error.message,
+      config: {
+        supabaseUrl: process.env.SUPABASE_URL || 'NOT_SET',
+        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || 'NOT_SET',
+        hasError: true,
+        error: error.message
+      }
+    });
+  }
+});
+
 // Test Resend API endpoint
 app.get('/test-resend', async (req, res) => {
   try {
