@@ -1143,8 +1143,8 @@ app.post('/api/admin/set-security-question', async (req, res) => {
         user: {
           id: updatedUser.id,
           email: updatedUser.email,
-          securityQuestion: updatedUser.security_question,
-          securityAnswer: updatedUser.security_answer ? '***SET***' : 'NOT SET'
+          securityQuestion: updatedUser.securityQuestion,
+          securityAnswer: updatedUser.securityAnswer ? '***SET***' : 'NOT SET'
         }
       });
     } else {
