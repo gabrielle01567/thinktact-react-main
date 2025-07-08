@@ -35,6 +35,7 @@ app.use(cors({
     ? [
         'https://thinktact.ai',
         'https://www.thinktact.ai',
+        'https://thinktact-react-main.vercel.app',
         'https://thinktact-react-main-hwyfvscjs-gabrielle-shands-projects.vercel.app',
         'http://localhost:5174',
         'http://localhost:5173'
