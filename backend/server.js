@@ -1108,6 +1108,55 @@ app.post('/api/admin/request-reset-for-user', async (req, res) => {
   }
 });
 
+// Admin endpoint to set security question and answer for a user
+app.post('/api/admin/set-security-question', async (req, res) => {
+  try {
+    const { email, securityQuestion, securityAnswer } = req.body;
+    
+    if (!email || !securityQuestion || !securityAnswer) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email, security question, and security answer are required' 
+      });
+    }
+
+    console.log('🔧 Admin setting security question for:', email);
+
+    // Find user by email
+    const user = await findUserByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Update user with security question and answer
+    const updatedUser = await updateUser(user.id, { 
+      security_question: securityQuestion,
+      security_answer: securityAnswer
+    });
+    
+    if (updatedUser) {
+      console.log('✅ Security question and answer set successfully for:', email);
+      res.json({
+        success: true,
+        message: 'Security question and answer set successfully',
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          securityQuestion: updatedUser.security_question,
+          securityAnswer: updatedUser.security_answer ? '***SET***' : 'NOT SET'
+        }
+      });
+    } else {
+      res.status(500).json({ success: false, error: 'Failed to update user' });
+    }
+
+  } catch (error) {
+    console.error('Error setting security question:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // Get user by email endpoint (for password reset flow)
 app.get('/api/auth/user/:email', async (req, res) => {
   try {
