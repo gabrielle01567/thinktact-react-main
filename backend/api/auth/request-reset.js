@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
         
-        const resetUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL || 'https://thinktact-react-main.vercel.app'}/reset-password?token=${resetToken}`;
         console.log('🔗 Generated reset URL:', resetUrl);
         
         await resend.emails.send({
