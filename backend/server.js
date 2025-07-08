@@ -1108,6 +1108,42 @@ app.post('/api/admin/request-reset-for-user', async (req, res) => {
   }
 });
 
+// Get user by email endpoint (for password reset flow)
+app.get('/api/auth/user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    console.log('Getting user info for email:', email);
+
+    // Find user by email
+    const user = await findUserByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return only necessary user info (no sensitive data)
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      securityQuestion: user.securityQuestion,
+      isVerified: user.isVerified,
+      isAdmin: user.isAdmin
+    });
+
+  } catch (error) {
+    console.error('Error getting user by email:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Migration endpoint to add reset token fields
 app.post('/api/migrate-reset-token-fields', async (req, res) => {
   try {
