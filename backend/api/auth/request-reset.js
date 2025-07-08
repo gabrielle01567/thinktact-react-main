@@ -14,15 +14,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
+    // Normalize email (same as registration)
+    const normalizedEmail = email.toLowerCase().trim();
+    
     console.log('Password reset request for email:', email);
+    console.log('Normalized email:', normalizedEmail);
 
     // Find user by email (normalized)
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
-      console.log('User not found for password reset:', email);
+      console.log('User not found for password reset:', normalizedEmail);
       return res.status(404).json({ error: 'No account found with this email address' });
     }
+
+    console.log('User found for password reset:', user.email);
 
     // Generate reset token
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
