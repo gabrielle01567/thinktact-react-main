@@ -8,12 +8,27 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/health",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/test-supabase",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/test-supabase-service",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/",
       "dest": "/server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "buildCommand": "echo 'No build step required for backend'"
+  }
 } 

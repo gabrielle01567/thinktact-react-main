@@ -3,6 +3,20 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Debug environment variables (mask sensitive data)
+console.log('🔍 Environment Variables Check:');
+console.log('  SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
+console.log('  SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET');
+console.log('  SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_KEY ? 'SET' : 'NOT SET');
+console.log('  JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
+console.log('  RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
+console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
+
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
@@ -223,25 +237,27 @@ app.get('/api/debug-supabase-config', async (req, res) => {
         usersCount: users ? users.length : 0,
         users: users,
         allColumnsTest: {
+          success: !allColumnsError,
           data: allColumns,
-          error: allColumnsError ? allColumnsError.message : null
+          error: allColumnsError
         },
         exactQueryTest: {
+          success: !exactError,
           data: exactQuery,
-          error: exactError ? exactError.message : null
+          error: exactError
         }
       }
     });
-
+    
   } catch (error) {
-    console.error('Error in debug endpoint:', error);
-    res.status(500).json({ 
+    console.error('❌ Debug endpoint error:', error);
+    res.status(500).json({
       success: false,
-      error: 'Failed to debug Supabase config',
-      message: error.message,
+      error: 'Debug failed',
+      details: error.message,
       config: {
-        supabaseUrl: process.env.SUPABASE_URL || 'NOT_SET',
-        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || 'NOT_SET',
+        supabaseUrl: process.env.SUPABASE_URL ? 'SET' : 'NOT_SET',
+        supabaseKey: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY) ? 'SET' : 'NOT_SET',
         hasError: true,
         error: error.message
       }
