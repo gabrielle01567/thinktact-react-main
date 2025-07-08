@@ -1216,8 +1216,10 @@ app.post('/api/auth/request-reset', async (req, res) => {
         
         const resetUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
         console.log('🔗 Generated reset URL:', resetUrl);
+        console.log('📧 Attempting to send email to:', email);
+        console.log('🔑 Resend API Key length:', process.env.RESEND_API_KEY.length);
         
-        await resend.emails.send({
+        const emailResult = await resend.emails.send({
           from: 'ThinkTact AI <noreply@thinktact.ai>',
           to: [email],
           subject: 'Reset your ThinkTact AI password',
@@ -1238,10 +1240,19 @@ app.post('/api/auth/request-reset', async (req, res) => {
           `
         });
         
+        console.log('📧 Email result:', emailResult);
         console.log(`📧 Password reset email sent to: ${email}`);
       } catch (emailError) {
-        console.error('Error sending password reset email:', emailError);
-        return res.status(500).json({ error: 'Failed to send reset email' });
+        console.error('❌ Error sending password reset email:', emailError);
+        console.error('❌ Error details:', emailError.message);
+        console.error('❌ Error code:', emailError.code);
+        console.error('❌ Error status:', emailError.status);
+        return res.status(500).json({ 
+          error: 'Failed to send reset email',
+          details: emailError.message,
+          code: emailError.code,
+          status: emailError.status
+        });
       }
     } else {
       console.log('⚠️ RESEND_API_KEY not set - email service not configured');
