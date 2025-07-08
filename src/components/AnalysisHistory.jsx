@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAnalysisHistory, deleteAnalysis } from '../services/analysisService';
 
 const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) => {
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +61,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
   };
 
   // Truncate argument text for display
-  const truncateText = (text, maxLength = 60) => {
+  const truncateText = (text, maxLength = 120) => {
     if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
@@ -117,7 +119,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
         {history.map((analysis) => (
           <div
             key={analysis.id}
-            onClick={() => onSelectAnalysis(analysis)}
+            onClick={() => navigate(`/analysis/${analysis.id}`)}
             className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
               currentAnalysisId === analysis.id
                 ? 'border-pink-300 bg-pink-50'

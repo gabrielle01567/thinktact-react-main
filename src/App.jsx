@@ -22,6 +22,7 @@ import Verify from './pages/Verify';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import VerifyEmailChange from './pages/VerifyEmailChange';
+import AnalysisDetail from './pages/AnalysisDetail';
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
+          <Route path="/analysis/:analysisId" element={<AnalysisDetail />} />
 
           <Route 
             path="/admin" 
