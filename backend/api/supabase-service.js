@@ -429,13 +429,20 @@ export const verifyUserByToken = async (verificationToken) => {
 // Analysis history functions
 export const saveAnalysis = async (userId, analysisData) => {
   try {
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in saveAnalysis');
+      throw new Error('Database not configured');
+    }
+
     const { data: analysis, error } = await supabase
       .from('analysis_history')
       .insert({
         user_id: userId,
-        title: analysisData.title || 'Analysis',
-        content: analysisData.content,
-        analysis_data: analysisData.analysisData || analysisData
+        argument_text: analysisData.originalArgument,
+        analysis_results: analysisData.processedAnalysis,
+        timestamp: new Date().toISOString()
       })
       .select()
       .single();
@@ -445,7 +452,14 @@ export const saveAnalysis = async (userId, analysisData) => {
       throw error;
     }
     
-    return analysis;
+    // Transform the response to match frontend expectations
+    return {
+      id: analysis.id,
+      userId: analysis.user_id,
+      timestamp: analysis.timestamp,
+      argumentText: analysis.argument_text,
+      analysisResults: analysis.analysis_results
+    };
   } catch (error) {
     console.error('Error saving analysis:', error);
     throw error;
@@ -454,18 +468,33 @@ export const saveAnalysis = async (userId, analysisData) => {
 
 export const getAnalysisHistory = async (userId) => {
   try {
+    // Wait for initialization to complete
+    const isInitialized = await waitForInitialization();
+    if (!isInitialized) {
+      console.error('❌ Supabase not initialized in getAnalysisHistory');
+      return [];
+    }
+
     const { data: analyses, error } = await supabase
       .from('analysis_history')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('timestamp', { ascending: false })
+      .limit(10);
     
     if (error) {
       console.error('Error getting analysis history:', error);
       return [];
     }
     
-    return analyses || [];
+    // Transform the data to match frontend expectations
+    return (analyses || []).map(analysis => ({
+      id: analysis.id,
+      userId: analysis.user_id,
+      timestamp: analysis.timestamp,
+      argumentText: analysis.argument_text,
+      analysisResults: analysis.analysis_results
+    }));
   } catch (error) {
     console.error('Error getting analysis history:', error);
     return [];

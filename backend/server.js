@@ -18,8 +18,7 @@ console.log('  JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
 console.log('  RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
 console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
 
-import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById } from './api/supabase-service.js';
-import { saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/analysis-history.js';
+import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
