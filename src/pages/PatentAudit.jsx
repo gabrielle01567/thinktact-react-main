@@ -2225,4 +2225,5 @@ const PatentAudit = () => {
   );
 };
 
-export default PatentAudit; 
+// At the bottom, export the wizard as a named component
+export const PatentApplicationWizard = PatentAudit;
