@@ -25,6 +25,7 @@ import Profile from './pages/Profile';
 import VerifyEmailChange from './pages/VerifyEmailChange';
 import AnalysisDetail from './pages/AnalysisDetail';
 import PatentBuddy from './pages/PatentBuddy';
+import { PatentApplicationWizard } from './pages/PatentAudit';
 
 function App() {
   return (
@@ -41,7 +42,8 @@ function App() {
             <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
             <Route path="patent-applications" element={<PatentApplications />} />
             <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
-            <Route path="patent-buddy/*" element={<PatentBuddy />} />
+            <Route path="patent-buddy" element={<PatentBuddy />} />
+            <Route path="patent-buddy/wizard/*" element={<PatentApplicationWizard />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>
           
