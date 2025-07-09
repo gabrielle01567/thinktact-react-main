@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from './supabaseClient';
 
 // Use the deployed backend URL
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
@@ -151,4 +152,41 @@ export const deletePatentApplication = async (applicationId) => {
     console.error('Error deleting patent application:', error);
     throw error;
   }
+}; 
+
+// Upload an image to Supabase Storage and return its public URL and metadata
+export const uploadPatentImage = async (file, userId, applicationId) => {
+  if (!file) throw new Error('No file provided');
+  if (!userId || !applicationId) throw new Error('User ID and Application ID required');
+
+  // Create a unique file path: userId/appId/timestamp_filename
+  const timestamp = Date.now();
+  const filePath = `${userId}/${applicationId}/${timestamp}_${file.name}`;
+
+  // Upload to the 'patent-images' bucket
+  const { data, error } = await supabase.storage
+    .from('patent-images')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+
+  if (error) {
+    console.error('Error uploading image to Supabase Storage:', error);
+    throw error;
+  }
+
+  // Get the public URL
+  const { data: publicUrlData } = supabase.storage
+    .from('patent-images')
+    .getPublicUrl(filePath);
+
+  return {
+    name: file.name,
+    url: publicUrlData.publicUrl,
+    path: filePath,
+    uploadedAt: new Date().toISOString(),
+    size: file.size,
+    type: file.type
+  };
 }; 

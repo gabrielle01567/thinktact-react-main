@@ -53,6 +53,7 @@ export const savePatentApplication = async (userId, applicationData) => {
         critical: applicationData.critical || '',
         alternatives: applicationData.alternatives || '',
         boilerplate: applicationData.boilerplate || '',
+        images: applicationData.images || [],
         completed_sections: applicationData.completedSections || {},
         status: applicationData.status || 'draft'
       })
@@ -77,6 +78,7 @@ export const savePatentApplication = async (userId, applicationData) => {
       critical: application.critical,
       alternatives: application.alternatives,
       boilerplate: application.boilerplate,
+      images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
       createdAt: application.created_at,
@@ -104,6 +106,7 @@ export const updatePatentApplication = async (userId, applicationId, application
         critical: applicationData.critical,
         alternatives: applicationData.alternatives,
         boilerplate: applicationData.boilerplate,
+        images: applicationData.images || [],
         completed_sections: applicationData.completedSections,
         status: applicationData.status,
         updated_at: new Date().toISOString()
@@ -135,6 +138,7 @@ export const updatePatentApplication = async (userId, applicationId, application
       critical: application.critical,
       alternatives: application.alternatives,
       boilerplate: application.boilerplate,
+      images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
       createdAt: application.created_at,
@@ -173,6 +177,7 @@ export const getPatentApplications = async (userId) => {
       critical: application.critical,
       alternatives: application.alternatives,
       boilerplate: application.boilerplate,
+      images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
       createdAt: application.created_at,
@@ -216,6 +221,7 @@ export const getPatentApplication = async (userId, applicationId) => {
       critical: application.critical,
       alternatives: application.alternatives,
       boilerplate: application.boilerplate,
+      images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
       createdAt: application.created_at,

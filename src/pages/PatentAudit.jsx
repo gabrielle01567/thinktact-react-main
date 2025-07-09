@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { savePatentApplication, updatePatentApplication, getPatentApplication } from '../services/patentService.js';
+import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const PatentAudit = () => {
@@ -43,6 +43,10 @@ const PatentAudit = () => {
     Boilerplate: false
   });
 
+  const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   const sections = ['Title', 'Field', 'Background', 'Summary', 'Drawings', 'Detailed Description', 'Critical', 'Alternatives', 'Boilerplate'];
   
   // Calculate actual completed sections
@@ -77,6 +81,7 @@ const PatentAudit = () => {
           setCritical(application.critical || '');
           setAlternatives(application.alternatives || '');
           setBoilerplate(application.boilerplate || '');
+          setImages(application.images || []);
           
           // Set completion status
           if (application.completedSections) {
@@ -120,6 +125,7 @@ const PatentAudit = () => {
         critical,
         alternatives,
         boilerplate,
+        images,
         completedSections,
         status: Object.values(completedSections).filter(Boolean).length === sections.length ? 'complete' : 'draft'
       };
@@ -418,6 +424,47 @@ const PatentAudit = () => {
             <p className="text-gray-600 mb-6">Describe any drawings or figures that illustrate your invention.</p>
             
             <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Upload Drawing Images</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files);
+                    if (!files.length || !user || !applicationId) return;
+                    setUploading(true);
+                    setUploadError('');
+                    try {
+                      const uploaded = [];
+                      for (const file of files) {
+                        const img = await uploadPatentImage(file, user.id, applicationId || 'new');
+                        uploaded.push(img);
+                      }
+                      setImages(prev => [...prev, ...uploaded]);
+                    } catch (err) {
+                      setUploadError('Failed to upload image(s).');
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                  disabled={uploading}
+                  className="mb-2"
+                />
+                {uploadError && <div className="text-red-600 text-sm mb-2">{uploadError}</div>}
+                <div className="flex flex-wrap gap-4 mt-2">
+                  {images.map((img, idx) => (
+                    <div key={img.url} className="relative w-24 h-24 border rounded overflow-hidden">
+                      <img src={img.url} alt={img.name} className="object-cover w-full h-full" />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-xs"
+                        onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                      >✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Drawing Descriptions</label>
                 <textarea
