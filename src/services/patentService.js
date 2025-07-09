@@ -57,6 +57,7 @@ export const savePatentApplication = async (applicationData) => {
     });
 
     console.log('🔍 PatentService: Save successful:', response.data);
+    // The backend returns { success: true, application: result }
     return response.data;
   } catch (error) {
     console.error('🔍 PatentService: Save error details:', {
@@ -84,7 +85,8 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
       }
     });
 
-    return response.data;
+    // The backend returns { success: true, application: result }
+    return response.data.application;
   } catch (error) {
     console.error('Error updating patent application:', error);
     throw error;
@@ -105,6 +107,7 @@ export const getPatentApplications = async () => {
       }
     });
 
+    // The backend returns { success: true, applications: [...] }
     return response.data.applications;
   } catch (error) {
     console.error('Error getting patent applications:', error);

@@ -167,6 +167,8 @@ const PatentAudit = () => {
         // Update existing application
         result = await updatePatentApplication(applicationId, applicationData);
         setSaveMessage('Application updated successfully!');
+        // Redirect to the updated application (if needed)
+        // navigate(`/patent-audit/${result.id}`); // Uncomment if you want to redirect after update
       } else {
         // Save new application
         result = await savePatentApplication(applicationData);
