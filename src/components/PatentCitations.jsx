@@ -9,124 +9,46 @@ const PatentCitations = () => {
   const [activeView, setActiveView] = useState('overview');
   const [dataSource, setDataSource] = useState('USPTO');
   const [apiStatus, setApiStatus] = useState('connected');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Generate citation data using real API or fallback
-  const generateCitationData = async (patentId) => {
-    return {
-      patent: {
-        id: patentId,
-        title: 'System and Method for AI-Powered Content Generation',
-        inventors: ['Dr. Sarah Chen', 'Prof. Michael Rodriguez'],
-        assignee: 'TechCorp Inc.',
-        filingDate: '2023-01-15',
-        publicationDate: '2023-07-20',
-        status: 'Published'
-      },
-      citations: {
-        forward: [
-          {
-            id: 'US10123457',
-            title: 'Machine Learning Algorithm for Patent Analysis',
-            inventors: ['Alice Johnson'],
-            assignee: 'InnovateTech LLC',
-            date: '2023-08-15',
-            relevance: 0.92
-          },
-          {
-            id: 'US10123458',
-            title: 'Automated Patent Search and Analysis Tool',
-            inventors: ['Bob Wilson', 'Carol Brown'],
-            assignee: 'PatentSolutions Corp.',
-            date: '2023-09-02',
-            relevance: 0.88
-          },
-          {
-            id: 'US10123459',
-            title: 'AI-Powered Document Classification System',
-            inventors: ['David Lee'],
-            assignee: 'DataTech Inc.',
-            date: '2023-09-15',
-            relevance: 0.85
-          }
-        ],
-        backward: [
-          {
-            id: 'US10123450',
-            title: 'Content Generation Using Neural Networks',
-            inventors: ['John Smith'],
-            assignee: 'NeuralCorp',
-            date: '2022-06-10',
-            relevance: 0.95
-          },
-          {
-            id: 'US10123451',
-            title: 'Natural Language Processing for Document Creation',
-            inventors: ['Jane Doe', 'Mike Johnson'],
-            assignee: 'NLP Solutions',
-            date: '2022-08-22',
-            relevance: 0.89
-          },
-          {
-            id: 'US10123452',
-            title: 'Automated Text Generation Methods',
-            inventors: ['Robert Wilson'],
-            assignee: 'TextGen Inc.',
-            date: '2022-11-05',
-            relevance: 0.87
-          }
-        ]
-      },
-      impact: {
-        citationCount: 15,
-        hIndex: 8,
-        influenceScore: 0.78,
-        technologyImpact: 'High',
-        marketRelevance: 'Medium',
-        innovationLevel: 'High'
-      },
-      network: {
-        clusters: [
-          {
-            name: 'AI Content Generation',
-            patents: 12,
-            companies: 8,
-            influence: 'High'
-          },
-          {
-            name: 'Natural Language Processing',
-            patents: 8,
-            companies: 6,
-            influence: 'Medium'
-          },
-          {
-            name: 'Document Automation',
-            patents: 5,
-            companies: 4,
-            influence: 'Medium'
-          }
-        ],
-        keyConnections: [
-          {
-            from: 'TechCorp Inc.',
-            to: 'InnovateTech LLC',
-            strength: 0.85,
-            type: 'Technology Transfer'
-          },
-          {
-            from: 'TechCorp Inc.',
-            to: 'NeuralCorp',
-            strength: 0.92,
-            type: 'Prior Art'
-          },
-          {
-            from: 'InnovateTech LLC',
-            to: 'PatentSolutions Corp.',
-            strength: 0.78,
-            type: 'Collaboration'
-          }
-        ]
-      }
-    };
+  // Helper function to generate clusters from citations
+  const generateClustersFromCitations = (citations) => {
+    const allCitations = [...citations.forward, ...citations.backward];
+    const assignees = [...new Set(allCitations.map(c => c.assignee))];
+    
+    return assignees.slice(0, 3).map(assignee => ({
+      name: assignee,
+      patents: allCitations.filter(c => c.assignee === assignee).length,
+      companies: 1,
+      influence: allCitations.filter(c => c.assignee === assignee).length > 5 ? 'High' : 'Medium'
+    }));
+  };
+
+  // Helper function to generate connections from citations
+  const generateConnectionsFromCitations = (citations, mainAssignee) => {
+    const connections = [];
+    const forwardAssignees = [...new Set(citations.forward.map(c => c.assignee))];
+    const backwardAssignees = [...new Set(citations.backward.map(c => c.assignee))];
+    
+    forwardAssignees.slice(0, 2).forEach(assignee => {
+      connections.push({
+        from: mainAssignee,
+        to: assignee,
+        strength: 0.8 + Math.random() * 0.2,
+        type: 'Technology Transfer'
+      });
+    });
+    
+    backwardAssignees.slice(0, 1).forEach(assignee => {
+      connections.push({
+        from: assignee,
+        to: mainAssignee,
+        strength: 0.9 + Math.random() * 0.1,
+        type: 'Prior Art'
+      });
+    });
+    
+    return connections;
   };
 
   const handleAnalyze = async () => {
@@ -134,84 +56,51 @@ const PatentCitations = () => {
     
     setIsLoading(true);
     setApiStatus('connecting');
+    setErrorMessage('');
     
     try {
       // Get patent details and citations from real API
       const [patentDetails] = await patentSearchService.searchByPatentNumber(patentNumber);
       const citations = await patentSearchService.getPatentCitations(patentNumber);
       
-      if (patentDetails) {
-        const citationData = {
-          patent: {
-            id: patentDetails.id,
-            title: patentDetails.title,
-            inventors: patentDetails.inventors,
-            assignee: patentDetails.assignee,
-            filingDate: patentDetails.filingDate,
-            publicationDate: patentDetails.publicationDate,
-            status: patentDetails.status
-          },
-          citations: citations,
-          impact: {
-            citationCount: citations.forward.length + citations.backward.length,
-            hIndex: Math.floor(Math.random() * 10) + 5, // Would be calculated from real data
-            influenceScore: 0.78,
-            technologyImpact: 'High',
-            marketRelevance: 'Medium',
-            innovationLevel: 'High'
-          },
-          network: {
-            clusters: [
-              {
-                name: 'AI Content Generation',
-                patents: 12,
-                companies: 8,
-                influence: 'High'
-              },
-              {
-                name: 'Natural Language Processing',
-                patents: 8,
-                companies: 6,
-                influence: 'Medium'
-              },
-              {
-                name: 'Document Automation',
-                patents: 5,
-                companies: 4,
-                influence: 'Medium'
-              }
-            ],
-            keyConnections: [
-              {
-                from: patentDetails.assignee,
-                to: 'InnovateTech LLC',
-                strength: 0.85,
-                type: 'Technology Transfer'
-              },
-              {
-                from: patentDetails.assignee,
-                to: 'NeuralCorp',
-                strength: 0.92,
-                type: 'Prior Art'
-              }
-            ]
-          }
-        };
+      if (!patentDetails) {
+        throw new Error('Patent not found. Please check the patent number and try again.');
+      }
+      
+      const citationData = {
+        patent: {
+          id: patentDetails.id,
+          title: patentDetails.title,
+          inventors: patentDetails.inventors,
+          assignee: patentDetails.assignee,
+          filingDate: patentDetails.filingDate,
+          publicationDate: patentDetails.publicationDate,
+          status: patentDetails.status
+        },
+        citations: citations,
+        impact: {
+          citationCount: citations.forward.length + citations.backward.length,
+          hIndex: Math.max(1, Math.floor((citations.forward.length + citations.backward.length) / 2)),
+          influenceScore: Math.min(1.0, (citations.forward.length + citations.backward.length) / 20),
+          technologyImpact: citations.forward.length > 10 ? 'High' : citations.forward.length > 5 ? 'Medium' : 'Low',
+          marketRelevance: citations.forward.length > 5 ? 'High' : 'Medium',
+          innovationLevel: citations.forward.length > 8 ? 'High' : citations.forward.length > 3 ? 'Medium' : 'Low'
+        },
+        network: {
+          clusters: this.generateClustersFromCitations(citations),
+          keyConnections: this.generateConnectionsFromCitations(citations, patentDetails.assignee)
+        }
+      };
         
         setCitationData(citationData);
         setDataSource(patentDetails.source || 'USPTO');
         setApiStatus('connected');
-      } else {
-        throw new Error('Patent not found');
-      }
-      
+        
     } catch (error) {
       console.error('Citation analysis error:', error);
       setApiStatus('error');
-      // Fallback to mock data
-      const mockData = generateCitationData(patentNumber);
-      setCitationData(mockData);
-      setDataSource('Mock Data (API Unavailable)');
+      setCitationData(null);
+      setErrorMessage(`Citation analysis failed: ${error.message}. Please check the patent number and try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -517,6 +406,39 @@ const PatentCitations = () => {
           </button>
         </div>
       </div>
+
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+            <h3 className="text-lg font-semibold text-red-900">Analysis Error</h3>
+          </div>
+          <p className="text-red-700 mt-2">{errorMessage}</p>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                setErrorMessage('');
+                setCitationData(null);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <Clock className="w-5 h-5 text-blue-500 mr-2 animate-spin" />
+            <h3 className="text-lg font-semibold text-blue-900">Analyzing Citations...</h3>
+          </div>
+          <p className="text-blue-700 mt-2">Fetching patent data and citation information...</p>
+        </div>
+      )}
 
       {citationData && (
         <>

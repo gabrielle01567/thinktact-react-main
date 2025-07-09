@@ -15,6 +15,7 @@ const PatentSearch = () => {
   });
     const [dataSource, setDataSource] = useState('USPTO');
   const [apiStatus, setApiStatus] = useState('connected');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const searchModes = [
     { key: 'keyword', label: 'Keyword Search', icon: Search, description: 'Search by invention description, technology, or concept' },
@@ -28,6 +29,7 @@ const PatentSearch = () => {
     
     setIsLoading(true);
     setApiStatus('connecting');
+    setErrorMessage('');
     
     try {
       let results;
@@ -53,13 +55,15 @@ const PatentSearch = () => {
       setDataSource(results[0]?.source || 'USPTO');
       setApiStatus('connected');
       
+      if (results.length === 0) {
+        setErrorMessage('No patents found matching your search criteria. Try different keywords or search terms.');
+      }
+      
     } catch (error) {
       console.error('Search error:', error);
       setApiStatus('error');
-      // Fallback to enhanced mock data
-      const fallbackResults = await patentSearchService.getEnhancedMockData(searchQuery, filters);
-      setSearchResults(fallbackResults);
-      setDataSource('Mock Data (API Unavailable)');
+      setSearchResults([]);
+      setErrorMessage(`Search failed: ${error.message}. Please try again or check your internet connection.`);
     } finally {
       setIsLoading(false);
     }
@@ -197,7 +201,42 @@ const PatentSearch = () => {
   );
 
   const renderSearchResults = () => {
-    if (searchResults.length === 0) return null;
+    if (searchResults.length === 0 && !errorMessage && !isLoading) return null;
+    
+    if (errorMessage) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+            <h3 className="text-lg font-semibold text-red-900">Search Error</h3>
+          </div>
+          <p className="text-red-700 mt-2">{errorMessage}</p>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                setErrorMessage('');
+                setSearchResults([]);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    if (searchResults.length === 0 && isLoading) {
+      return (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <Clock className="w-5 h-5 text-blue-500 mr-2 animate-spin" />
+            <h3 className="text-lg font-semibold text-blue-900">Searching...</h3>
+          </div>
+          <p className="text-blue-700 mt-2">Searching patent databases for your query...</p>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-4">

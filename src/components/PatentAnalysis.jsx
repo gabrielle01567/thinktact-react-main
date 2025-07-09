@@ -20,90 +20,24 @@ const PatentAnalysis = () => {
     'Augmented Reality'
   ];
 
-  // Mock analysis data - in real implementation, this would come from AI analysis
-  const generateAnalysisData = (technology) => {
-    return {
-      overview: {
-        totalPatents: Math.floor(Math.random() * 5000) + 1000,
-        activePatents: Math.floor(Math.random() * 3000) + 500,
-        pendingApplications: Math.floor(Math.random() * 2000) + 200,
-        topInventors: [
-          { name: 'Dr. Sarah Chen', patents: 45, company: 'TechCorp Inc.' },
-          { name: 'Prof. Michael Rodriguez', patents: 38, company: 'InnovateTech LLC' },
-          { name: 'Dr. Emily Watson', patents: 32, company: 'FutureSystems Corp.' }
-        ],
-        topCompanies: [
-          { name: 'Google Inc.', patents: 156, growth: '+12%' },
-          { name: 'Microsoft Corporation', patents: 134, growth: '+8%' },
-          { name: 'IBM Corp.', patents: 98, growth: '+5%' }
-        ]
-      },
-      trends: {
-        yearlyGrowth: [
-          { year: 2019, patents: 1200 },
-          { year: 2020, patents: 1450 },
-          { year: 2021, patents: 1780 },
-          { year: 2022, patents: 2100 },
-          { year: 2023, patents: 2450 }
-        ],
-        monthlyTrends: [
-          { month: 'Jan', applications: 180, grants: 145 },
-          { month: 'Feb', applications: 195, grants: 162 },
-          { month: 'Mar', applications: 210, grants: 178 },
-          { month: 'Apr', applications: 225, grants: 190 },
-          { month: 'May', applications: 240, grants: 205 },
-          { month: 'Jun', applications: 255, grants: 220 }
-        ]
-      },
-      opportunities: {
-        whiteSpace: [
-          'Edge AI for IoT devices',
-          'Federated learning in healthcare',
-          'AI-powered cybersecurity automation',
-          'Quantum machine learning algorithms',
-          'Sustainable AI computing'
-        ],
-        emergingTrends: [
-          'Explainable AI (XAI)',
-          'AI ethics and governance',
-          'Neuromorphic computing',
-          'AI for climate change',
-          'Human-AI collaboration'
-        ],
-        marketGaps: [
-          'Small business AI solutions',
-          'AI for education accessibility',
-          'AI-powered mental health tools',
-          'Agricultural AI applications',
-          'AI for elderly care'
-        ]
-      },
-      competitive: {
-        patentClusters: [
-          { area: 'Core Algorithms', density: 'High', companies: 15, patents: 234 },
-          { area: 'Applications', density: 'Medium', companies: 28, patents: 456 },
-          { area: 'Hardware Integration', density: 'Low', companies: 8, patents: 67 },
-          { area: 'Data Processing', density: 'High', companies: 22, patents: 312 }
-        ],
-        keyPlayers: [
-          { name: 'Google Inc.', strength: 95, focus: 'Core AI', threat: 'High' },
-          { name: 'Microsoft Corp.', strength: 87, focus: 'Enterprise AI', threat: 'High' },
-          { name: 'Amazon.com', strength: 82, focus: 'Cloud AI', threat: 'Medium' },
-          { name: 'Meta Platforms', strength: 78, focus: 'Social AI', threat: 'Medium' }
-        ]
-      }
-    };
-  };
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleAnalyze = async () => {
     if (!selectedTechnology) return;
     
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setAnalysisData(generateAnalysisData(selectedTechnology));
+    setErrorMessage('');
+    
+    try {
+      // This would integrate with real patent analysis APIs
+      // For now, show that real data analysis is not yet available
+      throw new Error('Real-time patent analysis is not yet available. Please use the Patent Search tool to find specific patents.');
+    } catch (error) {
+      setErrorMessage(error.message);
+      setAnalysisData(null);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const renderOverview = () => {
@@ -420,6 +354,39 @@ const PatentAnalysis = () => {
           </button>
         </div>
       </div>
+
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+            <h3 className="text-lg font-semibold text-red-900">Analysis Unavailable</h3>
+          </div>
+          <p className="text-red-700 mt-2">{errorMessage}</p>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                setErrorMessage('');
+                setAnalysisData(null);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Clear Message
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <Clock className="w-5 h-5 text-blue-500 mr-2 animate-spin" />
+            <h3 className="text-lg font-semibold text-blue-900">Analyzing Patent Landscape...</h3>
+          </div>
+          <p className="text-blue-700 mt-2">Processing patent data and generating analysis...</p>
+        </div>
+      )}
 
       {analysisData && (
         <>

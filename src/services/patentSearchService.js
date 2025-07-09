@@ -1,15 +1,16 @@
-// Patent Search Service - Real API integration
+// Patent Search Service - Real API integration only
 const USPTO_BASE_URL = 'https://developer.uspto.gov/ds-api';
+const USPTO_SEARCH_URL = 'https://patents.google.com/api/query'; // Using Google Patents as primary since USPTO has CORS issues
 const PATENTSCOPE_BASE_URL = 'https://patentscope.wipo.int/search/en/result.jsf';
 
-// USPTO API endpoints
+// USPTO API endpoints (these may have CORS restrictions)
 const USPTO_ENDPOINTS = {
   search: `${USPTO_BASE_URL}/patents/v1/patents/search`,
   detail: `${USPTO_BASE_URL}/patents/v1/patents`,
   citations: `${USPTO_BASE_URL}/patents/v1/patents/citations`
 };
 
-// Fallback to Google Patents API if USPTO is unavailable
+// Google Patents API (more reliable for web applications)
 const GOOGLE_PATENTS_BASE_URL = 'https://patents.google.com/api/query';
 
 class PatentSearchService {
@@ -21,20 +22,28 @@ class PatentSearchService {
   // Search patents by keywords
   async searchByKeywords(query, filters = {}) {
     try {
-      // Try USPTO API first
-      const usptoResults = await this.searchUSPTO(query, filters);
-      if (usptoResults && usptoResults.length > 0) {
-        return this.formatUSPTOResults(usptoResults);
+      // Try Google Patents first (more reliable for web apps)
+      const googleResults = await this.searchGooglePatents(query, filters);
+      if (googleResults && googleResults.length > 0) {
+        return this.formatGoogleResults(googleResults);
       }
 
-      // Fallback to Google Patents
-      const googleResults = await this.searchGooglePatents(query, filters);
-      return this.formatGoogleResults(googleResults);
+      // Fallback to USPTO (may fail due to CORS)
+      try {
+        const usptoResults = await this.searchUSPTO(query, filters);
+        if (usptoResults && usptoResults.length > 0) {
+          return this.formatUSPTOResults(usptoResults);
+        }
+      } catch (usptoError) {
+        console.log('USPTO API failed:', usptoError.message);
+      }
+
+      // No results found from any API
+      return [];
 
     } catch (error) {
       console.error('Error searching patents:', error);
-      // Return enhanced mock data as fallback
-      return this.getEnhancedMockData(query, filters);
+      throw new Error(`Failed to search patents: ${error.message}`);
     }
   }
 
@@ -45,7 +54,7 @@ class PatentSearchService {
       return await this.searchByKeywords(query, filters);
     } catch (error) {
       console.error('Error searching by inventor:', error);
-      return this.getEnhancedMockData(`inventor:${inventorName}`, filters);
+      throw new Error(`Failed to search by inventor: ${error.message}`);
     }
   }
 
@@ -55,21 +64,28 @@ class PatentSearchService {
       // Clean patent number
       const cleanNumber = patentNumber.replace(/[^\d]/g, '');
       
-      // Try USPTO direct lookup
-      const usptoResult = await this.getUSPTODetail(cleanNumber);
-      if (usptoResult) {
-        return [this.formatUSPTOResult(usptoResult)];
-      }
-
-      // Fallback to Google Patents
+      // Try Google Patents first
       const googleResult = await this.getGooglePatentDetail(patentNumber);
       if (googleResult) {
         return [this.formatGoogleResult(googleResult)];
       }
 
+      // Fallback to USPTO
+      try {
+        const usptoResult = await this.getUSPTODetail(cleanNumber);
+        if (usptoResult) {
+          return [this.formatUSPTOResult(usptoResult)];
+        }
+      } catch (usptoError) {
+        console.log('USPTO API failed for patent number lookup:', usptoError.message);
+      }
+
+      // No results found
+      return [];
+
     } catch (error) {
       console.error('Error searching by patent number:', error);
-      return this.getEnhancedMockData(`patent:${patentNumber}`);
+      throw new Error(`Failed to search by patent number: ${error.message}`);
     }
   }
 
@@ -80,11 +96,11 @@ class PatentSearchService {
       return await this.searchByKeywords(query, filters);
     } catch (error) {
       console.error('Error searching by assignee:', error);
-      return this.getEnhancedMockData(`assignee:${assigneeName}`, filters);
+      throw new Error(`Failed to search by assignee: ${error.message}`);
     }
   }
 
-  // USPTO API search
+  // USPTO API search (may fail due to CORS)
   async searchUSPTO(query, filters = {}) {
     const cacheKey = `uspto_${query}_${JSON.stringify(filters)}`;
     if (this.cache.has(cacheKey)) {
@@ -105,12 +121,14 @@ class PatentSearchService {
       params.append('dateRange', dateFilter);
     }
 
+    // Note: USPTO API may have CORS restrictions
     const response = await fetch(`${USPTO_ENDPOINTS.search}?${params}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'PatentBuddy/1.0'
-      }
+      },
+      mode: 'cors' // This may fail
     });
 
     if (!response.ok) {
@@ -128,7 +146,7 @@ class PatentSearchService {
     return data.results || [];
   }
 
-  // Get USPTO patent detail
+  // Get USPTO patent detail (may fail due to CORS)
   async getUSPTODetail(patentNumber) {
     const cacheKey = `uspto_detail_${patentNumber}`;
     if (this.cache.has(cacheKey)) {
@@ -143,7 +161,8 @@ class PatentSearchService {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'PatentBuddy/1.0'
-      }
+      },
+      mode: 'cors' // This may fail
     });
 
     if (!response.ok) {
@@ -160,8 +179,16 @@ class PatentSearchService {
     return data;
   }
 
-  // Google Patents search (fallback)
+  // Google Patents search (more reliable)
   async searchGooglePatents(query, filters = {}) {
+    const cacheKey = `google_${query}_${JSON.stringify(filters)}`;
+    if (this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey);
+      if (Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data;
+      }
+    }
+
     const params = new URLSearchParams({
       q: query,
       language: 'ENGLISH',
@@ -169,38 +196,78 @@ class PatentSearchService {
       num: '50'
     });
 
-    const response = await fetch(`${GOOGLE_PATENTS_BASE_URL}?${params}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'PatentBuddy/1.0'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Google Patents API error: ${response.status}`);
+    // Add date filters if specified
+    if (filters.dateRange && filters.dateRange !== 'all') {
+      const dateFilter = this.getGoogleDateFilter(filters.dateRange);
+      params.append('dateRange', dateFilter);
     }
 
-    const data = await response.json();
-    return data.results || [];
+    try {
+      const response = await fetch(`${GOOGLE_PATENTS_BASE_URL}?${params}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'PatentBuddy/1.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google Patents API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Cache the results
+      this.cache.set(cacheKey, {
+        data: data.results || [],
+        timestamp: Date.now()
+      });
+
+      return data.results || [];
+    } catch (error) {
+      console.error('Google Patents API error:', error);
+      throw error;
+    }
   }
 
   // Get Google Patent detail
   async getGooglePatentDetail(patentNumber) {
-    const response = await fetch(`${GOOGLE_PATENTS_BASE_URL}?q=${patentNumber}&type=PATENT`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'PatentBuddy/1.0'
+    const cacheKey = `google_detail_${patentNumber}`;
+    if (this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey);
+      if (Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data;
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Google Patents API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data.results?.[0] || null;
+    try {
+      const response = await fetch(`${GOOGLE_PATENTS_BASE_URL}?q=${patentNumber}&type=PATENT`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'PatentBuddy/1.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google Patents API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = data.results?.[0] || null;
+      
+      if (result) {
+        this.cache.set(cacheKey, {
+          data: result,
+          timestamp: Date.now()
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Google Patents detail error:', error);
+      throw error;
+    }
   }
 
   // Format USPTO results
@@ -242,7 +309,7 @@ class PatentSearchService {
   // Format Google results
   formatGoogleResults(results) {
     return results.map(patent => ({
-      id: patent.patentNumber,
+      id: patent.patentNumber || patent.id,
       title: patent.title,
       inventors: patent.inventors || [],
       assignee: patent.assignee || 'Unknown',
@@ -255,6 +322,24 @@ class PatentSearchService {
       similarity: this.calculateSimilarity(patent),
       source: 'Google Patents'
     }));
+  }
+
+  // Format single Google result
+  formatGoogleResult(patent) {
+    return {
+      id: patent.patentNumber || patent.id,
+      title: patent.title,
+      inventors: patent.inventors || [],
+      assignee: patent.assignee || 'Unknown',
+      filingDate: patent.filingDate,
+      publicationDate: patent.publicationDate,
+      status: 'Published',
+      abstract: patent.abstract,
+      claims: patent.claims?.length || 0,
+      citations: patent.citations?.length || 0,
+      similarity: 1.0,
+      source: 'Google Patents'
+    };
   }
 
   // Calculate similarity score (placeholder for AI integration)
@@ -280,137 +365,66 @@ class PatentSearchService {
     }
   }
 
-  // Enhanced mock data with more realistic information
-  getEnhancedMockData(query, filters = {}) {
-    const mockPatents = [
-      {
-        id: 'US10123456',
-        title: 'System and Method for AI-Powered Content Generation',
-        inventors: ['Dr. Sarah Chen', 'Prof. Michael Rodriguez'],
-        assignee: 'TechCorp Inc.',
-        filingDate: '2023-01-15',
-        publicationDate: '2023-07-20',
-        status: 'Published',
-        abstract: 'A system for generating content using artificial intelligence that includes natural language processing, machine learning algorithms, and automated content optimization techniques.',
-        claims: 15,
-        citations: 8,
-        similarity: 0.85,
-        source: 'Mock Data'
-      },
-      {
-        id: 'US10123457',
-        title: 'Machine Learning Algorithm for Patent Analysis',
-        inventors: ['Alice Johnson'],
-        assignee: 'InnovateTech LLC',
-        filingDate: '2022-11-30',
-        publicationDate: '2023-06-15',
-        status: 'Published',
-        abstract: 'An improved machine learning approach for analyzing patent documents, including claim construction, prior art identification, and patentability assessment.',
-        claims: 12,
-        citations: 5,
-        similarity: 0.72,
-        source: 'Mock Data'
-      },
-      {
-        id: 'US10123458',
-        title: 'Automated Patent Search and Analysis Tool',
-        inventors: ['Bob Wilson', 'Carol Brown'],
-        assignee: 'PatentSolutions Corp.',
-        filingDate: '2023-03-10',
-        publicationDate: '2023-08-05',
-        status: 'Published',
-        abstract: 'A comprehensive tool for searching and analyzing patent databases with advanced filtering, citation analysis, and competitive intelligence features.',
-        claims: 20,
-        citations: 12,
-        similarity: 0.68,
-        source: 'Mock Data'
-      },
-      {
-        id: 'US10123459',
-        title: 'AI-Powered Document Classification System',
-        inventors: ['David Lee'],
-        assignee: 'DataTech Inc.',
-        filingDate: '2023-02-28',
-        publicationDate: '2023-07-10',
-        status: 'Published',
-        abstract: 'A system for automatically classifying documents using artificial intelligence, with applications in patent analysis and intellectual property management.',
-        claims: 18,
-        citations: 7,
-        similarity: 0.75,
-        source: 'Mock Data'
-      },
-      {
-        id: 'US10123460',
-        title: 'Neural Network for Patent Similarity Detection',
-        inventors: ['Emily Watson', 'Frank Miller'],
-        assignee: 'NeuralCorp',
-        filingDate: '2023-04-15',
-        publicationDate: '2023-09-01',
-        status: 'Published',
-        abstract: 'A neural network architecture specifically designed for detecting similarities between patent documents and identifying potential prior art.',
-        claims: 14,
-        citations: 9,
-        similarity: 0.82,
-        source: 'Mock Data'
-      }
-    ];
-
-    // Filter based on query type
-    if (query.includes('inventor:')) {
-      const inventorName = query.replace('inventor:', '').toLowerCase();
-      return mockPatents.filter(patent => 
-        patent.inventors.some(inventor => 
-          inventor.toLowerCase().includes(inventorName)
-        )
-      );
-    }
-
-    if (query.includes('assignee:')) {
-      const assigneeName = query.replace('assignee:', '').toLowerCase();
-      return mockPatents.filter(patent => 
-        patent.assignee.toLowerCase().includes(assigneeName)
-      );
-    }
-
-    if (query.includes('patent:')) {
-      const patentNumber = query.replace('patent:', '').replace(/[^\d]/g, '');
-      return mockPatents.filter(patent => 
-        patent.id.includes(patentNumber)
-      );
-    }
-
-    // Apply date filters
-    if (filters.dateRange && filters.dateRange !== 'all') {
-      const cutoffDate = this.getCutoffDate(filters.dateRange);
-      return mockPatents.filter(patent => 
-        new Date(patent.filingDate) >= cutoffDate
-      );
-    }
-
-    return mockPatents;
-  }
-
-  // Get cutoff date for filtering
-  getCutoffDate(dateRange) {
+  // Get date filter for Google Patents
+  getGoogleDateFilter(dateRange) {
     const now = new Date();
     const year = now.getFullYear();
     
     switch (dateRange) {
       case '1year':
-        return new Date(year - 1, 0, 1);
+        return `after:${year - 1}`;
       case '5years':
-        return new Date(year - 5, 0, 1);
+        return `after:${year - 5}`;
       case '10years':
-        return new Date(year - 10, 0, 1);
+        return `after:${year - 10}`;
       default:
-        return new Date(1900, 0, 1);
+        return '';
     }
   }
 
   // Get patent citations
   async getPatentCitations(patentNumber) {
     try {
-      const response = await fetch(`${USPTO_ENDPOINTS.citations}/${patentNumber}`, {
+      // Try Google Patents first
+      const googleCitations = await this.getGooglePatentCitations(patentNumber);
+      if (googleCitations) {
+        return googleCitations;
+      }
+
+      // Fallback to USPTO (may fail due to CORS)
+      try {
+        const response = await fetch(`${USPTO_ENDPOINTS.citations}/${patentNumber}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'PatentBuddy/1.0'
+          },
+          mode: 'cors'
+        });
+
+        if (!response.ok) {
+          throw new Error(`USPTO Citations API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return this.formatCitations(data);
+      } catch (usptoError) {
+        console.log('USPTO citations API failed:', usptoError.message);
+      }
+
+      // No citations found
+      return { forward: [], backward: [] };
+
+    } catch (error) {
+      console.error('Error fetching citations:', error);
+      throw new Error(`Failed to fetch citations: ${error.message}`);
+    }
+  }
+
+  // Get Google Patent citations
+  async getGooglePatentCitations(patentNumber) {
+    try {
+      const response = await fetch(`${GOOGLE_PATENTS_BASE_URL}?q=cites:${patentNumber}&type=PATENT`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -419,14 +433,14 @@ class PatentSearchService {
       });
 
       if (!response.ok) {
-        throw new Error(`USPTO Citations API error: ${response.status}`);
+        throw new Error(`Google Patents Citations API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return this.formatCitations(data);
+      return this.formatGoogleCitations(data);
     } catch (error) {
-      console.error('Error fetching citations:', error);
-      return this.getMockCitations(patentNumber);
+      console.error('Google Patents citations error:', error);
+      return null;
     }
   }
 
@@ -452,45 +466,18 @@ class PatentSearchService {
     };
   }
 
-  // Mock citations data
-  getMockCitations(patentNumber) {
+  // Format Google citations data
+  formatGoogleCitations(data) {
     return {
-      forward: [
-        {
-          id: 'US10123461',
-          title: 'Advanced AI Content Generation System',
-          inventors: ['John Smith'],
-          assignee: 'FutureTech Inc.',
-          date: '2023-08-15',
-          relevance: 0.92
-        },
-        {
-          id: 'US10123462',
-          title: 'Machine Learning for Document Analysis',
-          inventors: ['Jane Doe'],
-          assignee: 'ML Solutions Corp.',
-          date: '2023-09-02',
-          relevance: 0.88
-        }
-      ],
-      backward: [
-        {
-          id: 'US10123450',
-          title: 'Content Generation Using Neural Networks',
-          inventors: ['Robert Wilson'],
-          assignee: 'NeuralCorp',
-          date: '2022-06-10',
-          relevance: 0.95
-        },
-        {
-          id: 'US10123451',
-          title: 'Natural Language Processing for Document Creation',
-          inventors: ['Alice Johnson', 'Mike Brown'],
-          assignee: 'NLP Solutions',
-          date: '2022-08-22',
-          relevance: 0.89
-        }
-      ]
+      forward: data.results?.map(citation => ({
+        id: citation.patentNumber || citation.id,
+        title: citation.title,
+        inventors: citation.inventors || [],
+        assignee: citation.assignee || 'Unknown',
+        date: citation.filingDate,
+        relevance: 0.8
+      })) || [],
+      backward: [] // Google Patents doesn't provide backward citations in this format
     };
   }
 }
