@@ -10,8 +10,388 @@ const PatentAudit = () => {
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // New state for other sections
+  const [field, setField] = useState('');
+  const [background, setBackground] = useState('');
+  const [summary, setSummary] = useState('');
+  const [drawings, setDrawings] = useState('');
+  const [detailedDescription, setDetailedDescription] = useState('');
+  const [critical, setCritical] = useState('');
+  const [alternatives, setAlternatives] = useState('');
+  const [boilerplate, setBoilerplate] = useState('');
+
   const sections = ['Title', 'Field', 'Background', 'Summary', 'Drawings', 'Detailed Description', 'Critical', 'Alternatives', 'Boilerplate'];
-  const completedSections = 4; // Example: 4 of 9 sections complete
+  
+  // Calculate actual completed sections
+  const completedSections = [
+    title.trim(),
+    field.trim(),
+    background.trim(),
+    summary.trim(),
+    drawings.trim(),
+    detailedDescription.trim(),
+    critical.trim(),
+    alternatives.trim(),
+    boilerplate.trim()
+  ].filter(Boolean).length;
+
+  // Helper function to render section content
+  const renderSectionContent = () => {
+    switch (currentSection) {
+      case 'Title':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Title of the Invention</h2>
+            <p className="text-gray-600 mb-6">Provide a clear, concise title that accurately describes your invention. Avoid overly broad or vague titles.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder='e.g., "System and Method for AI-Powered Content Generation"'
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="A brief description to help you identify this invention in your documents"
+                  value={shortDescription}
+                  onChange={(e) => setShortDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <button
+                  className="flex items-center justify-between w-full text-left font-medium text-blue-900"
+                  onClick={() => setShowTips(!showTips)}
+                >
+                  Tips for a Strong Title
+                  <span>{showTips ? '▲' : '▼'}</span>
+                </button>
+                {showTips && (
+                  <ul className="mt-2 space-y-2 text-sm text-blue-800">
+                    <li>• Be specific about the technology area</li>
+                    <li>• Include key technical features that make your invention unique</li>
+                    <li>• Avoid marketing language or superlatives</li>
+                    <li>• Keep it under 15 words if possible</li>
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Field':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of the Invention</h2>
+            <p className="text-gray-600 mb-6">Describe the technical field or area of technology to which your invention relates.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Field Description</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={4}
+                  placeholder="e.g., This invention relates to the field of artificial intelligence and machine learning, specifically to natural language processing systems for content generation."
+                  value={field}
+                  onChange={(e) => setField(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">Tips for Field Section</h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>• Be broad enough to encompass your invention</li>
+                  <li>• Include relevant technical disciplines</li>
+                  <li>• Avoid being too narrow or too broad</li>
+                  <li>• Reference established technical areas</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Background':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Background of the Invention</h2>
+            <p className="text-gray-600 mb-6">Describe the problem your invention solves and the limitations of existing solutions.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={4}
+                  placeholder="Describe the specific problem or need that your invention addresses..."
+                  value={background}
+                  onChange={(e) => setBackground(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <h4 className="font-medium text-yellow-900 mb-2">Background Section Guidelines</h4>
+                <ul className="space-y-2 text-sm text-yellow-800">
+                  <li>• Focus on the problem, not just the solution</li>
+                  <li>• Explain why existing solutions are inadequate</li>
+                  <li>• Provide context for your invention</li>
+                  <li>• Be objective and factual</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Summary':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary of the Invention</h2>
+            <p className="text-gray-600 mb-6">Provide a concise overview of your invention and its key advantages.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={6}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">Summary Best Practices</h4>
+                <ul className="space-y-2 text-sm text-green-800">
+                  <li>• Keep it concise but comprehensive</li>
+                  <li>• Highlight key technical features</li>
+                  <li>• Mention advantages over prior art</li>
+                  <li>• Avoid overly technical jargon</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Drawings':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Brief Description of the Drawings</h2>
+            <p className="text-gray-600 mb-6">Describe any drawings or figures that illustrate your invention.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Drawing Descriptions</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={6}
+                  placeholder="Describe your drawings, figures, or diagrams. For example: Figure 1 shows a block diagram of the system architecture..."
+                  value={drawings}
+                  onChange={(e) => setDrawings(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-purple-50 rounded-lg p-4">
+                <h4 className="font-medium text-purple-900 mb-2">Drawing Guidelines</h4>
+                <ul className="space-y-2 text-sm text-purple-800">
+                  <li>• Number your figures (Figure 1, Figure 2, etc.)</li>
+                  <li>• Describe what each drawing shows</li>
+                  <li>• Reference specific elements in the drawings</li>
+                  <li>• Keep descriptions clear and technical</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Detailed Description':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description of the Invention</h2>
+            <p className="text-gray-600 mb-6">This is the most critical section. Provide a complete, detailed description of how your invention works.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Detailed Description</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={12}
+                  placeholder="Provide a comprehensive description of your invention, including how it works, its components, and implementation details..."
+                  value={detailedDescription}
+                  onChange={(e) => setDetailedDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-red-50 rounded-lg p-4">
+                <h4 className="font-medium text-red-900 mb-2">⚠️ Critical Section Requirements</h4>
+                <ul className="space-y-2 text-sm text-red-800">
+                  <li>• Must enable someone skilled in the art to make and use your invention</li>
+                  <li>• Include specific implementation details</li>
+                  <li>• Describe the "how" not just the "what"</li>
+                  <li>• Provide sufficient detail for reproducibility</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Critical':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Critical Elements and Novel Features</h2>
+            <p className="text-gray-600 mb-6">Identify the most important and novel aspects of your invention.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Critical Elements</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={6}
+                  placeholder="Describe the critical, novel elements that make your invention unique and patentable..."
+                  value={critical}
+                  onChange={(e) => setCritical(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-orange-50 rounded-lg p-4">
+                <h4 className="font-medium text-orange-900 mb-2">Critical Elements Focus</h4>
+                <ul className="space-y-2 text-sm text-orange-800">
+                  <li>• What makes your invention different from prior art?</li>
+                  <li>• Which elements are essential to the invention?</li>
+                  <li>• What would break if these elements were removed?</li>
+                  <li>• Focus on technical innovations, not obvious combinations</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Alternatives':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Alternative Embodiments</h2>
+            <p className="text-gray-600 mb-6">Describe alternative ways to implement your invention or variations of the core concept.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Alternative Implementations</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={8}
+                  placeholder="Describe alternative ways to implement your invention, different materials, methods, or configurations..."
+                  value={alternatives}
+                  onChange={(e) => setAlternatives(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-indigo-50 rounded-lg p-4">
+                <h4 className="font-medium text-indigo-900 mb-2">Alternative Embodiments Tips</h4>
+                <ul className="space-y-2 text-sm text-indigo-800">
+                  <li>• Consider different materials or components</li>
+                  <li>• Describe variations in implementation</li>
+                  <li>• Include different use cases or applications</li>
+                  <li>• Show flexibility in your invention design</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Boilerplate':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Standard Language and Disclaimers</h2>
+            <p className="text-gray-600 mb-6">Include standard patent language, disclaimers, and legal boilerplate text.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Boilerplate Text</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={8}
+                  placeholder="Include standard patent language such as: 'While the invention has been described with reference to specific embodiments...'"
+                  value={boilerplate}
+                  onChange={(e) => setBoilerplate(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-2">Standard Boilerplate Elements</h4>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Disclaimer of specific embodiments</li>
+                  <li>• Statement about equivalents</li>
+                  <li>• Reservation of rights</li>
+                  <li>• Standard legal language</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Helper function to get section-specific help content
+  const getSectionHelp = () => {
+    const helpContent = {
+      'Title': {
+        title: 'Current Section: Title',
+        description: 'The title should be brief but technically accurate, avoiding marketing language.',
+        link: 'Learn more about titles'
+      },
+      'Field': {
+        title: 'Current Section: Field',
+        description: 'Define the technical area your invention belongs to. Be broad enough to encompass your invention.',
+        link: 'Learn more about field definitions'
+      },
+      'Background': {
+        title: 'Current Section: Background',
+        description: 'Describe the problem your invention solves and why existing solutions are inadequate.',
+        link: 'Learn more about background sections'
+      },
+      'Summary': {
+        title: 'Current Section: Summary',
+        description: 'Provide a concise overview of your invention and its key advantages.',
+        link: 'Learn more about summaries'
+      },
+      'Drawings': {
+        title: 'Current Section: Drawings',
+        description: 'Describe any figures or diagrams that illustrate your invention.',
+        link: 'Learn more about drawing descriptions'
+      },
+      'Detailed Description': {
+        title: 'Current Section: Detailed Description',
+        description: 'This is the most critical section. Provide complete details on how your invention works.',
+        link: 'Learn more about detailed descriptions'
+      },
+      'Critical': {
+        title: 'Current Section: Critical Elements',
+        description: 'Identify the novel and essential aspects that make your invention patentable.',
+        link: 'Learn more about critical elements'
+      },
+      'Alternatives': {
+        title: 'Current Section: Alternatives',
+        description: 'Describe different ways to implement your invention or variations.',
+        link: 'Learn more about alternative embodiments'
+      },
+      'Boilerplate': {
+        title: 'Current Section: Boilerplate',
+        description: 'Include standard patent language and legal disclaimers.',
+        link: 'Learn more about boilerplate language'
+      }
+    };
+    return helpContent[currentSection] || helpContent['Title'];
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -160,54 +540,8 @@ const PatentAudit = () => {
             </div>
           </div>
 
-          {/* Title Form */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Title of the Invention</h2>
-            <p className="text-gray-600 mb-6">Provide a clear, concise title that accurately describes your invention. Avoid overly broad or vague titles.</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder='e.g., "System and Method for AI-Powered Content Generation"'
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={3}
-                  placeholder="A brief description to help you identify this invention in your documents"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
-                />
-              </div>
-
-              {/* Tips Box */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <button
-                  className="flex items-center justify-between w-full text-left font-medium text-blue-900"
-                  onClick={() => setShowTips(!showTips)}
-                >
-                  Tips for a Strong Title
-                  <span>{showTips ? '▲' : '▼'}</span>
-                </button>
-                {showTips && (
-                  <ul className="mt-2 space-y-2 text-sm text-blue-800">
-                    <li>• Be specific about the technology area</li>
-                    <li>• Include key technical features that make your invention unique</li>
-                    <li>• Avoid marketing language or superlatives</li>
-                    <li>• Keep it under 15 words if possible</li>
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Dynamic Section Content */}
+          {renderSectionContent()}
 
           {/* Document Preview */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -225,8 +559,11 @@ const PatentAudit = () => {
                 <h4 className="text-xl font-bold text-center">PROVISIONAL PATENT APPLICATION</h4>
                 <div className="space-y-2">
                   <h5 className="font-medium">{title || '[TITLE OF THE INVENTION]'}</h5>
-                  <p className="text-gray-500">FIELD OF THE INVENTION — Not yet completed</p>
-                  <p className="text-gray-500">BACKGROUND OF THE INVENTION — Not yet completed</p>
+                  <p className="text-gray-500">FIELD OF THE INVENTION — {field ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-500">BACKGROUND OF THE INVENTION — {background ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-500">SUMMARY OF THE INVENTION — {summary ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-500">BRIEF DESCRIPTION OF THE DRAWINGS — {drawings ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-500">DETAILED DESCRIPTION — {detailedDescription ? 'Completed' : 'Not yet completed'}</p>
                 </div>
               </div>
             )}
@@ -239,9 +576,9 @@ const PatentAudit = () => {
         <div className="mb-8">
           <h3 className="text-lg font-medium text-gray-900 mb-2">Help & Resources</h3>
           <div className="bg-white rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-2">Current Section: Title</h4>
-            <p className="text-sm text-gray-600 mb-4">The title should be brief but technically accurate...</p>
-            <a href="#" className="text-sm text-blue-600 hover:text-blue-800">Learn more about titles</a>
+            <h4 className="font-medium text-gray-900 mb-2">{getSectionHelp().title}</h4>
+            <p className="text-sm text-gray-600 mb-4">{getSectionHelp().description}</p>
+            <a href="#" className="text-sm text-blue-600 hover:text-blue-800">{getSectionHelp().link}</a>
           </div>
         </div>
 
