@@ -660,6 +660,34 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-6 text-gray-800">Argument Analyzer</h1>
               
+              {/* Context and Instructions */}
+              <div className="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <h2 className="text-lg font-semibold text-blue-900 mb-3">What this tool can do:</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                  <div>
+                    <h3 className="font-medium mb-2">🔍 Analysis Features:</h3>
+                    <ul className="space-y-1 ml-4">
+                      <li>• Break down arguments into premises and conclusions</li>
+                      <li>• Identify logical flaws and hidden assumptions</li>
+                      <li>• Detect reasoning methods (analogy, causal, statistical)</li>
+                      <li>• Find necessary and sufficient assumptions</li>
+                      <li>• Generate counter-arguments</li>
+                      <li>• Provide improved versions of arguments</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">📝 How to use:</h3>
+                    <ul className="space-y-1 ml-4">
+                      <li>• Paste any argument or claim you want to analyze</li>
+                      <li>• Include context and reasoning when possible</li>
+                      <li>• Click "Analyze Argument" to get detailed breakdown</li>
+                      <li>• Review the visual argument structure and logic breakdown</li>
+                      <li>• Use the improved version to strengthen your reasoning</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
               <div className="mb-6">
                 <label htmlFor="argument" className="block text-lg font-medium mb-3 text-gray-700">
                   Enter your argument below
