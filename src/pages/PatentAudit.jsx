@@ -20,10 +20,23 @@ const PatentAudit = () => {
   const [alternatives, setAlternatives] = useState('');
   const [boilerplate, setBoilerplate] = useState('');
 
+  // Completion status for each section
+  const [completedSections, setCompletedSections] = useState({
+    Title: false,
+    Field: false,
+    Background: false,
+    Summary: false,
+    Drawings: false,
+    'Detailed Description': false,
+    Critical: false,
+    Alternatives: false,
+    Boilerplate: false
+  });
+
   const sections = ['Title', 'Field', 'Background', 'Summary', 'Drawings', 'Detailed Description', 'Critical', 'Alternatives', 'Boilerplate'];
   
   // Calculate actual completed sections
-  const completedSections = [
+  const completedSectionsCount = [
     title.trim(),
     field.trim(),
     background.trim(),
@@ -84,6 +97,34 @@ const PatentAudit = () => {
                   </ul>
                 )}
               </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Title: !prev.Title }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Title
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Title ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -114,6 +155,34 @@ const PatentAudit = () => {
                   <li>• Avoid being too narrow or too broad</li>
                   <li>• Reference established technical areas</li>
                 </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Field: !prev.Field }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Field
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Field ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -146,6 +215,34 @@ const PatentAudit = () => {
                   <li>• Be objective and factual</li>
                 </ul>
               </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Background: !prev.Background }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Background
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Background ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -176,6 +273,34 @@ const PatentAudit = () => {
                   <li>• Mention advantages over prior art</li>
                   <li>• Avoid overly technical jargon</li>
                 </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Summary: !prev.Summary }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Summary
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Summary ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -208,6 +333,34 @@ const PatentAudit = () => {
                   <li>• Keep descriptions clear and technical</li>
                 </ul>
               </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Drawings: !prev.Drawings }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Drawings
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Drawings ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -238,6 +391,34 @@ const PatentAudit = () => {
                   <li>• Describe the "how" not just the "what"</li>
                   <li>• Provide sufficient detail for reproducibility</li>
                 </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, 'Detailed Description': !prev['Detailed Description'] }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections['Detailed Description']
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections['Detailed Description'] ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -270,6 +451,34 @@ const PatentAudit = () => {
                   <li>• Focus on technical innovations, not obvious combinations</li>
                 </ul>
               </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Critical: !prev.Critical }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Critical
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Critical ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -301,6 +510,34 @@ const PatentAudit = () => {
                   <li>• Show flexibility in your invention design</li>
                 </ul>
               </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Alternatives: !prev.Alternatives }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Alternatives
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Alternatives ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -331,6 +568,34 @@ const PatentAudit = () => {
                   <li>• Reservation of rights</li>
                   <li>• Standard legal language</li>
                 </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Boilerplate: !prev.Boilerplate }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Boilerplate
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Boilerplate ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -481,11 +746,18 @@ const PatentAudit = () => {
               <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50">
                 Save Draft
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 flex items-center">
+              <button 
+                className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                  Object.values(completedSections).filter(Boolean).length === sections.length
+                    ? 'text-white bg-green-600 hover:bg-green-700'
+                    : 'text-gray-500 bg-gray-200 cursor-not-allowed'
+                }`}
+                disabled={Object.values(completedSections).filter(Boolean).length !== sections.length}
+              >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
-                Complete
+                {Object.values(completedSections).filter(Boolean).length === sections.length ? 'Complete' : `${Object.values(completedSections).filter(Boolean).length}/${sections.length} Complete`}
               </button>
             </div>
           </div>
@@ -493,11 +765,11 @@ const PatentAudit = () => {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress: {completedSections} of {sections.length} sections complete</span>
-              <span className="text-sm text-gray-500">{Math.round((completedSections / sections.length) * 100)}%</span>
+              <span className="text-sm font-medium text-gray-700">Progress: {Object.values(completedSections).filter(Boolean).length} of {sections.length} sections complete</span>
+              <span className="text-sm text-gray-500">{Math.round((Object.values(completedSections).filter(Boolean).length / sections.length) * 100)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${(completedSections / sections.length) * 100}%` }}></div>
+              <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${(Object.values(completedSections).filter(Boolean).length / sections.length) * 100}%` }}></div>
             </div>
           </div>
 
@@ -506,7 +778,7 @@ const PatentAudit = () => {
             {sections.map((section) => (
               <button
                 key={section}
-                className={`px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
+                className={`px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap flex items-center ${
                   section === currentSection
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -516,6 +788,11 @@ const PatentAudit = () => {
                 {section}
                 {section === 'Detailed Description' && (
                   <span className="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-orange-500 rounded-full">Critical</span>
+                )}
+                {completedSections[section] && (
+                  <svg className="ml-2 w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
                 )}
               </button>
             ))}
@@ -546,7 +823,7 @@ const PatentAudit = () => {
           {/* Document Preview */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Document Preview</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Document Preview</h3>
               <button
                 className="text-sm text-blue-600 hover:text-blue-800"
                 onClick={() => setShowDocumentPreview(!showDocumentPreview)}
@@ -556,14 +833,14 @@ const PatentAudit = () => {
             </div>
             {showDocumentPreview && (
               <div className="bg-gray-50 rounded-md p-6 space-y-4">
-                <h4 className="text-xl font-bold text-center">PROVISIONAL PATENT APPLICATION</h4>
+                <h4 className="text-xl font-semibold text-gray-900 text-center">PROVISIONAL PATENT APPLICATION</h4>
                 <div className="space-y-2">
-                  <h5 className="font-medium">{title || '[TITLE OF THE INVENTION]'}</h5>
-                  <p className="text-gray-500">FIELD OF THE INVENTION — {field ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-500">BACKGROUND OF THE INVENTION — {background ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-500">SUMMARY OF THE INVENTION — {summary ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-500">BRIEF DESCRIPTION OF THE DRAWINGS — {drawings ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-500">DETAILED DESCRIPTION — {detailedDescription ? 'Completed' : 'Not yet completed'}</p>
+                  <h5 className="text-sm font-medium text-gray-700">{title || '[TITLE OF THE INVENTION]'}</h5>
+                  <p className="text-gray-600">FIELD OF THE INVENTION — {field ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-600">BACKGROUND OF THE INVENTION — {background ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-600">SUMMARY OF THE INVENTION — {summary ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-600">BRIEF DESCRIPTION OF THE DRAWINGS — {drawings ? 'Completed' : 'Not yet completed'}</p>
+                  <p className="text-gray-600">DETAILED DESCRIPTION — {detailedDescription ? 'Completed' : 'Not yet completed'}</p>
                 </div>
               </div>
             )}
