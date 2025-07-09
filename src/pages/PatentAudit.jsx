@@ -2170,21 +2170,9 @@ const PatentAudit = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto">
-        <div className="min-h-screen flex flex-col items-center justify-center p-8">
-          {/* Progress Indicator */}
-          {renderProgress()}
-
-          {/* Step Content */}
-          <div className="w-full max-w-2xl mx-auto">
-            {renderCurrentStep()}
-            {renderComeBackLaterButton()}
-          </div>
-
-          {/* Document Preview */}
-          <div className="w-full max-w-2xl mx-auto">{renderDocumentPreview()}</div>
-
-          {/* Navigation Buttons */}
-          <div className="w-full max-w-2xl mx-auto flex justify-between mt-8">
+        <div className="min-h-screen flex flex-col p-8">
+          {/* Navigation Buttons - Moved to top */}
+          <div className="w-full max-w-2xl mx-auto flex justify-between mb-6">
             <button
               onClick={goToPrevStep}
               disabled={currentStep === 0}
@@ -2214,6 +2202,20 @@ const PatentAudit = () => {
               </button>
             )}
           </div>
+
+          {/* Progress Indicator */}
+          <div className="w-full flex justify-center items-center mb-6">
+            {renderProgress()}
+          </div>
+
+          {/* Step Content */}
+          <div className="w-full max-w-2xl mx-auto">
+            {renderCurrentStep()}
+            {renderComeBackLaterButton()}
+          </div>
+
+          {/* Document Preview */}
+          <div className="w-full max-w-2xl mx-auto mt-8">{renderDocumentPreview()}</div>
 
           {/* Save message */}
           {saveMessage && (
