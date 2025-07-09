@@ -6,7 +6,7 @@ import { PatentApplicationWizard } from './PatentAudit';
 export default function PatentBuddy() {
   return (
     <Routes>
-      <Route path="/" element={<PatentBuddyHome />} />
+      <Route index element={<PatentBuddyHome />} />
       <Route path="wizard/*" element={<PatentApplicationWizard />} />
     </Routes>
   );

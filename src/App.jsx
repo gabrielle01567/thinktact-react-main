@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import ErrorPage from './pages/ErrorPage';
 import Research from './pages/Research';
 import ClarityInfrastructure from './pages/ClarityInfrastructure';
-import PatentAudit from './pages/PatentAudit';
+
 import PatentAuditThanks from './pages/PatentAuditThanks';
 import PatentApplications from './pages/PatentApplications';
 import Login from './pages/Login';
