@@ -213,6 +213,7 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         conclusionType: parsedResults.conclusion?.type || "Unknown",
         keyFlaw: parsedResults.logicalFlaws?.length > 0 ? parsedResults.logicalFlaws[0] : "No major flaws detected",
         counterpoint: parsedResults.possibleCounter || "No counter argument provided",
+        methodOfReasoning: parsedResults.methodOfReasoning || "Unknown",
         assumptionsCount: (parsedResults.premiseSets?.implicit?.length || 0) + (parsedResults.unstatedAssumptions?.length || 0),
         originalArgument: argumentText,
         improvedArgument: parsedResults.improvedVersion || argumentText,
@@ -756,40 +757,13 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                     textColor="text-indigo-700"
                   />
                   <StatCard
-                    title="Hidden Assumptions"
-                    value={processedAnalysis?.assumptionsCount || 0}
-                    icon="🔍"
+                    title="Method of Reasoning"
+                    value={processedAnalysis?.methodOfReasoning || "Unknown"}
+                    icon="🧠"
                     color="bg-purple-50"
                     textColor="text-purple-700"
-                    assumptions={processedAnalysis?.argumentStructure?.unstatedAssumptions}
                   />
                 </div>
-
-                {/* Hidden Assumptions Section (duplicate, above counter argument) */}
-                {processedAnalysis?.argumentStructure?.unstatedAssumptions && 
-                 processedAnalysis.argumentStructure.unstatedAssumptions.length > 0 && (
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-purple-200 mb-2">
-                    <div className="flex items-center mb-4">
-                      <h3 className="text-lg font-semibold text-purple-800">Hidden Assumptions</h3>
-                      <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-                        {processedAnalysis?.argumentStructure?.unstatedAssumptions?.length || 0} found
-                      </span>
-                    </div>
-                    <div className="space-y-3">
-                      {processedAnalysis?.argumentStructure?.unstatedAssumptions?.map((assumption, index) => (
-                        <div key={index} className="p-3 bg-purple-50 rounded-md border border-purple-200">
-                          <div className="flex items-start">
-                            <span className="text-purple-600 font-medium mr-2">•</span>
-                            <SafeTextFormatter 
-                              text={assumption}
-                              className="text-purple-900"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Middle Row - Your Argument and Argument Flow */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -821,16 +795,42 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                   <ArgumentFlow structure={processedAnalysis?.argumentStructure || {}} />
                 </div>
 
-                {/* Counter Argument Section - above breakdown table */}
+                {/* Counter Argument Section - between argument structure and logic breakdown */}
                 {processedAnalysis?.counterpoint && (
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-indigo-200 mb-2">
-                    <div className="flex items-center mb-2">
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-indigo-200 mb-4">
+                    <div className="flex items-center mb-3">
                       <h3 className="text-lg font-semibold text-indigo-800">Counter Argument</h3>
                     </div>
                     <SafeTextFormatter 
                       text={processedAnalysis.counterpoint}
                       className="text-indigo-900"
                     />
+                  </div>
+                )}
+
+                {/* Hidden Assumptions Section - under counter argument */}
+                {processedAnalysis?.argumentStructure?.unstatedAssumptions && 
+                 processedAnalysis.argumentStructure.unstatedAssumptions.length > 0 && (
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-purple-200 mb-4">
+                    <div className="flex items-center mb-4">
+                      <h3 className="text-lg font-semibold text-purple-800">Hidden Assumptions</h3>
+                      <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                        {processedAnalysis?.argumentStructure?.unstatedAssumptions?.length || 0} found
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {processedAnalysis?.argumentStructure?.unstatedAssumptions?.map((assumption, index) => (
+                        <div key={index} className="p-3 bg-purple-50 rounded-md border border-purple-200">
+                          <div className="flex items-start">
+                            <span className="text-purple-600 font-medium mr-2">•</span>
+                            <SafeTextFormatter 
+                              text={assumption}
+                              className="text-purple-900"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import SafeTextFormatter from '../SafeTextFormatter';
 
 const ArgumentFlow = ({ structure = {} }) => {
   // Extract premises into an array
@@ -29,7 +30,10 @@ const ArgumentFlow = ({ structure = {} }) => {
         <div className="w-full sm:w-5/6 md:w-3/4 lg:w-2/3 mb-5">
           <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-center shadow-sm">
             <div className="text-sm text-pink-600 font-semibold mb-1">CONCLUSION</div>
-            <p className="text-gray-800 break-words">{structure?.conclusion || "No clear conclusion"}</p>
+            <SafeTextFormatter 
+              text={structure?.conclusion || "No clear conclusion"}
+              className="text-gray-800"
+            />
           </div>
         </div>
         
@@ -48,7 +52,10 @@ const ArgumentFlow = ({ structure = {} }) => {
                   <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-200 flex items-center justify-center mr-2 mt-0.5">
                     <span className="text-xs font-semibold text-indigo-700">{index+1}</span>
                   </div>
-                  <span className="break-words">{assumption}</span>
+                  <SafeTextFormatter 
+                    text={assumption}
+                    className="text-gray-700"
+                  />
                 </div>
               ))}
             </div>
@@ -64,7 +71,10 @@ const ArgumentFlow = ({ structure = {} }) => {
                 <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-200 flex items-center justify-center mr-2 mt-0.5">
                   <span className="text-xs font-semibold text-green-700">{index+1}</span>
                 </div>
-                <span className="break-words">{premise}</span>
+                <SafeTextFormatter 
+                  text={premise}
+                  className="text-green-900"
+                />
               </div>
             ))}
           </div>

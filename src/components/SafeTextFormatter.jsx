@@ -10,10 +10,15 @@ const SafeTextFormatter = ({ text, className = "", emphasisColor = "", maxLength
   // Sanitize input - remove any potential HTML tags
   const sanitizedText = text.replace(/<[^>]*>/g, '');
   
-  // Limit text length to prevent potential DoS
+  // Limit text length to prevent potential DoS - increase maxLength significantly
   if (!sanitizedText || sanitizedText.length > maxLength) {
     console.warn('SafeTextFormatter: text too long, truncating');
-    return <p className={className}>Text too long to display safely</p>;
+    return (
+      <div className={className}>
+        <p className="text-gray-600 italic mb-2">Text truncated for display (showing first 10,000 characters):</p>
+        <p>{sanitizedText.substring(0, 10000)}...</p>
+      </div>
+    );
   }
   
   // Define logical indicators that should be emphasized
