@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getPatentApplications, deletePatentApplication } from '../services/patentService.js';
+import { getPatentApplications, deletePatentApplication, getApplicationCount } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const PatentApplications = () => {
@@ -8,6 +8,8 @@ const PatentApplications = () => {
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [applicationCount, setApplicationCount] = useState(0);
+  const [applicationLimit] = useState(5);
 
   useEffect(() => {
     loadApplications();
@@ -22,8 +24,12 @@ const PatentApplications = () => {
 
     try {
       setIsLoading(true);
-      const data = await getPatentApplications();
-      setApplications(data);
+      const [applicationsData, countData] = await Promise.all([
+        getPatentApplications(),
+        getApplicationCount()
+      ]);
+      setApplications(applicationsData);
+      setApplicationCount(countData.count);
     } catch (error) {
       console.error('Error loading applications:', error);
       setError('Failed to load applications');
@@ -40,6 +46,9 @@ const PatentApplications = () => {
     try {
       await deletePatentApplication(applicationId);
       setApplications(applications.filter(app => app.id !== applicationId));
+      // Refresh the count after deletion
+      const countData = await getApplicationCount();
+      setApplicationCount(countData.count);
     } catch (error) {
       console.error('Error deleting application:', error);
       alert('Failed to delete application');
@@ -64,43 +73,79 @@ const PatentApplications = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Patent Applications</h1>
-              <p className="mt-2 text-gray-600">Manage your patent applications and track your progress</p>
+              <p className="mt-2 text-sm text-gray-600">
+                Manage your provisional patent applications
+              </p>
             </div>
-            <Link
-              to="/patent-audit"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Create New Application
-            </Link>
+            <div className="flex items-center space-x-4">
+              {/* Application Count Display */}
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">{applicationCount}</span> of <span className="font-medium">{applicationLimit}</span> applications
+              </div>
+              {/* Create New Application Button */}
+              {applicationCount < applicationLimit ? (
+                <Link
+                  to="/patent-audit"
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Create New Application
+                </Link>
+              ) : (
+                <div className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-500 bg-gray-100 cursor-not-allowed">
+                  Limit Reached
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Progress Bar for Application Limit */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
+              <span>Application Storage</span>
+              <span>{applicationCount}/{applicationLimit}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  applicationCount >= applicationLimit 
+                    ? 'bg-red-500' 
+                    : applicationCount >= applicationLimit * 0.8 
+                    ? 'bg-yellow-500' 
+                    : 'bg-green-500'
+                }`}
+                style={{ width: `${(applicationCount / applicationLimit) * 100}%` }}
+              ></div>
+            </div>
+            {applicationCount >= applicationLimit && (
+              <p className="mt-2 text-sm text-red-600">
+                You've reached the maximum limit. Delete an application to create a new one.
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Error Display */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">{error}</h3>
-              </div>
-            </div>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-700">{error}</p>
           </div>
         )}
 

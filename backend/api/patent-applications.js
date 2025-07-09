@@ -10,9 +10,35 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Check user's application count
+export const getUserApplicationCount = async (userId) => {
+  try {
+    const { count, error } = await supabase
+      .from('patent_applications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error getting user application count:', error);
+      throw error;
+    }
+    
+    return count || 0;
+  } catch (error) {
+    console.error('Error getting user application count:', error);
+    throw error;
+  }
+};
+
 // Save a new patent application
 export const savePatentApplication = async (userId, applicationData) => {
   try {
+    // Check if user has reached the 5-application limit
+    const currentCount = await getUserApplicationCount(userId);
+    if (currentCount >= 5) {
+      throw new Error('You have reached the maximum limit of 5 patent applications. Please delete an existing application before creating a new one.');
+    }
+
     const { data: application, error } = await supabase
       .from('patent_applications')
       .insert({

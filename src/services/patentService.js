@@ -10,6 +10,27 @@ const getAuthToken = () => {
   return token;
 };
 
+// Get application count and limit for the current user
+export const getApplicationCount = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/patent-applications/count`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error getting application count:', error);
+    throw error;
+  }
+};
+
 // Save a new patent application
 export const savePatentApplication = async (applicationData) => {
   try {

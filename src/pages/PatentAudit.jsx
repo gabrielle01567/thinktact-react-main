@@ -141,7 +141,12 @@ const PatentAudit = () => {
 
     } catch (error) {
       console.error('Error saving application:', error);
-      setSaveMessage('Error saving application. Please try again.');
+      // Check if it's a limit exceeded error
+      if (error.response?.data?.error?.includes('maximum limit of 5 patent applications')) {
+        setSaveMessage('You have reached the maximum limit of 5 applications. Please delete an existing application before creating a new one.');
+      } else {
+        setSaveMessage('Error saving application. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -869,17 +874,18 @@ const PatentAudit = () => {
                 </span>
               )}
               <button 
+                onClick={saveApplication}
                 className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
                   Object.values(completedSections).filter(Boolean).length === sections.length
                     ? 'text-white bg-green-600 hover:bg-green-700'
                     : 'text-gray-500 bg-gray-200 cursor-not-allowed'
                 }`}
-                disabled={Object.values(completedSections).filter(Boolean).length !== sections.length}
+                disabled={Object.values(completedSections).filter(Boolean).length !== sections.length || isSaving}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
-                {Object.values(completedSections).filter(Boolean).length === sections.length ? 'Complete' : `${Object.values(completedSections).filter(Boolean).length}/${sections.length} Complete`}
+                {isSaving ? 'Saving...' : (Object.values(completedSections).filter(Boolean).length === sections.length ? 'Complete' : `${Object.values(completedSections).filter(Boolean).length}/${sections.length} Complete`)}
               </button>
             </div>
           </div>

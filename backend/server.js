@@ -19,7 +19,7 @@ console.log('  RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET')
 console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
 
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
-import { savePatentApplication, updatePatentApplication, getPatentApplications, getPatentApplication, deletePatentApplication } from './api/patent-applications.js';
+import { savePatentApplication, updatePatentApplication, getPatentApplications, getPatentApplication, deletePatentApplication, getUserApplicationCount } from './api/patent-applications.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
@@ -977,6 +977,35 @@ app.delete('/api/analysis/delete', async (req, res) => {
 });
 
 // Patent Application endpoints
+app.get('/api/patent-applications/count', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const count = await getUserApplicationCount(user.id);
+    res.status(200).json({ success: true, count, limit: 5 });
+
+  } catch (error) {
+    console.error('Error getting application count:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
 app.post('/api/patent-applications/save', async (req, res) => {
   try {
     // Get user from token
@@ -1012,7 +1041,12 @@ app.post('/api/patent-applications/save', async (req, res) => {
 
   } catch (error) {
     console.error('Patent application save error:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    // Check if it's a limit exceeded error
+    if (error.message.includes('maximum limit of 5 patent applications')) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
   }
 });
 
