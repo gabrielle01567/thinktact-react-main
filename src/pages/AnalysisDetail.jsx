@@ -110,6 +110,7 @@ const AnalysisDetail = () => {
                 <SafeTextFormatter 
                   text={analysis.argumentText}
                   className="text-gray-800 leading-relaxed"
+                  maxLength={1000000}
                 />
               </div>
             </div>
@@ -168,6 +169,7 @@ const AnalysisDetail = () => {
                         <SafeTextFormatter 
                           text={assumption}
                           className="text-purple-900"
+                          maxLength={1000000}
                         />
                       </div>
                     </div>
