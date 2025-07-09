@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, TrendingUp, Users, FileText, AlertTriangle, CheckCircle, Clock, Eye } from 'lucide-react';
+import { Search, Filter, TrendingUp, Users, FileText, AlertTriangle, CheckCircle, Clock, Eye, Database, Wifi, WifiOff } from 'lucide-react';
+import patentSearchService from '../services/patentSearchService.js';
 
 const PatentSearch = () => {
   const [searchMode, setSearchMode] = useState('keyword');
@@ -12,49 +13,8 @@ const PatentSearch = () => {
     patentType: 'all',
     status: 'all'
   });
-
-  // Mock data for demonstration - in real implementation, this would come from USPTO API or similar
-  const mockSearchResults = [
-    {
-      id: 'US10123456',
-      title: 'System and Method for AI-Powered Content Generation',
-      inventors: ['John Smith', 'Jane Doe'],
-      assignee: 'TechCorp Inc.',
-      filingDate: '2023-01-15',
-      publicationDate: '2023-07-20',
-      status: 'Published',
-      abstract: 'A system for generating content using artificial intelligence...',
-      claims: 15,
-      citations: 8,
-      similarity: 0.85
-    },
-    {
-      id: 'US10123457',
-      title: 'Machine Learning Algorithm for Patent Analysis',
-      inventors: ['Alice Johnson'],
-      assignee: 'InnovateTech LLC',
-      filingDate: '2022-11-30',
-      publicationDate: '2023-06-15',
-      status: 'Published',
-      abstract: 'An improved machine learning approach for analyzing patent documents...',
-      claims: 12,
-      citations: 5,
-      similarity: 0.72
-    },
-    {
-      id: 'US10123458',
-      title: 'Automated Patent Search and Analysis Tool',
-      inventors: ['Bob Wilson', 'Carol Brown'],
-      assignee: 'PatentSolutions Corp.',
-      filingDate: '2023-03-10',
-      publicationDate: '2023-08-05',
-      status: 'Published',
-      abstract: 'A comprehensive tool for searching and analyzing patent databases...',
-      claims: 20,
-      citations: 12,
-      similarity: 0.68
-    }
-  ];
+    const [dataSource, setDataSource] = useState('USPTO');
+  const [apiStatus, setApiStatus] = useState('connected');
 
   const searchModes = [
     { key: 'keyword', label: 'Keyword Search', icon: Search, description: 'Search by invention description, technology, or concept' },
@@ -67,11 +27,42 @@ const PatentSearch = () => {
     if (!searchQuery.trim()) return;
     
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setSearchResults(mockSearchResults);
+    setApiStatus('connecting');
+    
+    try {
+      let results;
+      
+      switch (searchMode) {
+        case 'keyword':
+          results = await patentSearchService.searchByKeywords(searchQuery, filters);
+          break;
+        case 'inventor':
+          results = await patentSearchService.searchByInventor(searchQuery, filters);
+          break;
+        case 'patent':
+          results = await patentSearchService.searchByPatentNumber(searchQuery);
+          break;
+        case 'assignee':
+          results = await patentSearchService.searchByAssignee(searchQuery, filters);
+          break;
+        default:
+          results = await patentSearchService.searchByKeywords(searchQuery, filters);
+      }
+      
+      setSearchResults(results);
+      setDataSource(results[0]?.source || 'USPTO');
+      setApiStatus('connected');
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      setApiStatus('error');
+      // Fallback to enhanced mock data
+      const fallbackResults = await patentSearchService.getEnhancedMockData(searchQuery, filters);
+      setSearchResults(fallbackResults);
+      setDataSource('Mock Data (API Unavailable)');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const analyzePatentability = (patent) => {
@@ -214,8 +205,20 @@ const PatentSearch = () => {
           <h3 className="text-lg font-semibold text-gray-900">
             Search Results ({searchResults.length})
           </h3>
-          <div className="text-sm text-gray-600">
-            Sorted by relevance
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center text-sm text-gray-600">
+              {apiStatus === 'connected' ? (
+                <Wifi className="w-4 h-4 text-green-500 mr-1" />
+              ) : apiStatus === 'connecting' ? (
+                <Clock className="w-4 h-4 text-yellow-500 mr-1" />
+              ) : (
+                <WifiOff className="w-4 h-4 text-red-500 mr-1" />
+              )}
+              {dataSource}
+            </div>
+            <div className="text-sm text-gray-600">
+              Sorted by relevance
+            </div>
           </div>
         </div>
         
@@ -274,7 +277,19 @@ const PatentSearch = () => {
         <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Patent Analysis</h2>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Patent Analysis</h2>
+                <div className="flex items-center text-sm text-gray-600 mt-1">
+                  {apiStatus === 'connected' ? (
+                    <Wifi className="w-4 h-4 text-green-500 mr-1" />
+                  ) : apiStatus === 'connecting' ? (
+                    <Clock className="w-4 h-4 text-yellow-500 mr-1" />
+                  ) : (
+                    <WifiOff className="w-4 h-4 text-red-500 mr-1" />
+                  )}
+                  {dataSource}
+                </div>
+              </div>
               <button
                 onClick={() => setSelectedPatent(null)}
                 className="text-gray-400 hover:text-gray-600"
