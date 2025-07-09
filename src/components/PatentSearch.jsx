@@ -32,30 +32,33 @@ const PatentSearch = () => {
     setErrorMessage('');
     
     try {
-      let results;
+      let searchResponse;
       
       switch (searchMode) {
         case 'keyword':
-          results = await patentSearchService.searchByKeywords(searchQuery, filters);
+          searchResponse = await patentSearchService.searchByKeywords(searchQuery, filters);
           break;
         case 'inventor':
-          results = await patentSearchService.searchByInventor(searchQuery, filters);
+          searchResponse = await patentSearchService.searchByInventor(searchQuery, filters);
           break;
         case 'patent':
-          results = await patentSearchService.searchByPatentNumber(searchQuery);
+          searchResponse = await patentSearchService.searchByPatentNumber(searchQuery);
           break;
         case 'assignee':
-          results = await patentSearchService.searchByAssignee(searchQuery, filters);
+          searchResponse = await patentSearchService.searchByAssignee(searchQuery, filters);
           break;
         default:
-          results = await patentSearchService.searchByKeywords(searchQuery, filters);
+          searchResponse = await patentSearchService.searchByKeywords(searchQuery, filters);
       }
       
-      setSearchResults(results);
-      setDataSource(results[0]?.source || 'USPTO');
+      setSearchResults(searchResponse.results);
+      setDataSource(searchResponse.source);
       setApiStatus('connected');
       
-      if (results.length === 0) {
+      // Show fallback notification if USPTO failed and we're using Google Patents
+      if (searchResponse.fallbackUsed) {
+        setErrorMessage('USPTO API is currently unavailable. Using Google Patents data instead. Results may vary.');
+      } else if (searchResponse.results.length === 0) {
         setErrorMessage('No patents found matching your search criteria. Try different keywords or search terms.');
       }
       
@@ -203,7 +206,10 @@ const PatentSearch = () => {
   const renderSearchResults = () => {
     if (searchResults.length === 0 && !errorMessage && !isLoading) return null;
     
-    if (errorMessage) {
+    // Check if this is a fallback notification (not a real error)
+    const isFallbackNotification = errorMessage && errorMessage.includes('USPTO API is currently unavailable');
+    
+    if (errorMessage && !isFallbackNotification) {
       return (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
           <div className="flex items-center">
@@ -240,6 +246,23 @@ const PatentSearch = () => {
 
     return (
       <div className="space-y-4">
+        {/* Show fallback notification if present */}
+        {isFallbackNotification && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center">
+              <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2" />
+              <h3 className="text-sm font-medium text-yellow-900">Data Source Notice</h3>
+            </div>
+            <p className="text-yellow-700 mt-1 text-sm">{errorMessage}</p>
+            <button
+              onClick={() => setErrorMessage('')}
+              className="mt-2 text-sm text-yellow-600 hover:text-yellow-800 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">
             Search Results ({searchResults.length})

@@ -60,7 +60,8 @@ const PatentCitations = () => {
     
     try {
       // Get patent details and citations from real API
-      const [patentDetails] = await patentSearchService.searchByPatentNumber(patentNumber);
+      const patentResponse = await patentSearchService.searchByPatentNumber(patentNumber);
+      const patentDetails = patentResponse.results[0];
       const citations = await patentSearchService.getPatentCitations(patentNumber);
       
       if (!patentDetails) {
@@ -87,14 +88,19 @@ const PatentCitations = () => {
           innovationLevel: citations.forward.length > 8 ? 'High' : citations.forward.length > 3 ? 'Medium' : 'Low'
         },
         network: {
-          clusters: this.generateClustersFromCitations(citations),
-          keyConnections: this.generateConnectionsFromCitations(citations, patentDetails.assignee)
+          clusters: generateClustersFromCitations(citations),
+          keyConnections: generateConnectionsFromCitations(citations, patentDetails.assignee)
         }
       };
         
-        setCitationData(citationData);
-        setDataSource(patentDetails.source || 'USPTO');
-        setApiStatus('connected');
+      setCitationData(citationData);
+      setDataSource(patentResponse.source);
+      setApiStatus('connected');
+      
+      // Show fallback notification if USPTO failed and we're using Google Patents
+      if (patentResponse.fallbackUsed) {
+        setErrorMessage('USPTO API is currently unavailable. Using Google Patents data instead. Results may vary.');
+      }
         
     } catch (error) {
       console.error('Citation analysis error:', error);
@@ -409,21 +415,49 @@ const PatentCitations = () => {
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+        <div className={`border rounded-lg p-6 mb-6 ${
+          errorMessage.includes('USPTO API is currently unavailable') 
+            ? 'bg-yellow-50 border-yellow-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
           <div className="flex items-center">
-            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-            <h3 className="text-lg font-semibold text-red-900">Analysis Error</h3>
+            <AlertTriangle className={`w-5 h-5 mr-2 ${
+              errorMessage.includes('USPTO API is currently unavailable') 
+                ? 'text-yellow-500' 
+                : 'text-red-500'
+            }`} />
+            <h3 className={`text-lg font-semibold ${
+              errorMessage.includes('USPTO API is currently unavailable') 
+                ? 'text-yellow-900' 
+                : 'text-red-900'
+            }`}>
+              {errorMessage.includes('USPTO API is currently unavailable') 
+                ? 'Data Source Notice' 
+                : 'Analysis Error'}
+            </h3>
           </div>
-          <p className="text-red-700 mt-2">{errorMessage}</p>
+          <p className={`mt-2 ${
+            errorMessage.includes('USPTO API is currently unavailable') 
+              ? 'text-yellow-700' 
+              : 'text-red-700'
+          }`}>
+            {errorMessage}
+          </p>
           <div className="mt-4">
             <button
               onClick={() => {
                 setErrorMessage('');
-                setCitationData(null);
+                if (!errorMessage.includes('USPTO API is currently unavailable')) {
+                  setCitationData(null);
+                }
               }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className={`px-4 py-2 rounded-md transition-colors ${
+                errorMessage.includes('USPTO API is currently unavailable')
+                  ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                  : 'bg-red-600 text-white hover:bg-red-700'
+              }`}
             >
-              Try Again
+              {errorMessage.includes('USPTO API is currently unavailable') ? 'Dismiss' : 'Try Again'}
             </button>
           </div>
         </div>

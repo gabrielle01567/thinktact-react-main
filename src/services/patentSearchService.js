@@ -61,12 +61,17 @@ class PatentSearchService {
           const usptoResults = await this.searchUSPTO(query, filters);
           if (usptoResults && usptoResults.length > 0) {
             console.log('✅ USPTO API returned results, using USPTO data');
-            return this.formatUSPTOResults(usptoResults);
+            return {
+              results: this.formatUSPTOResults(usptoResults),
+              source: 'USPTO',
+              fallbackUsed: false
+            };
           } else {
             console.log('⚠️ USPTO API returned no results, trying Google Patents');
           }
         } catch (usptoError) {
           console.log('❌ USPTO API failed, falling back to Google Patents:', usptoError.message);
+          // Don't throw here, just log and continue to fallback
         }
       } else {
         console.log('🔑 No USPTO API key configured, using Google Patents');
@@ -77,12 +82,20 @@ class PatentSearchService {
       const googleResults = await this.searchGooglePatents(query, filters);
       if (googleResults && googleResults.length > 0) {
         console.log('✅ Google Patents returned results');
-        return this.formatGoogleResults(googleResults);
+        return {
+          results: this.formatGoogleResults(googleResults),
+          source: 'Google Patents',
+          fallbackUsed: hasUSPTOKey // true if we had USPTO key but it failed
+        };
       }
 
       // No results found from any API
       console.log('❌ No results found from any API');
-      return [];
+      return {
+        results: [],
+        source: hasUSPTOKey ? 'Google Patents' : 'Google Patents',
+        fallbackUsed: false
+      };
 
     } catch (error) {
       console.error('Error searching patents:', error);
@@ -113,7 +126,11 @@ class PatentSearchService {
         try {
           const usptoResult = await this.getUSPTODetail(cleanNumber);
           if (usptoResult) {
-            return [this.formatUSPTOResult(usptoResult)];
+            return {
+              results: [this.formatUSPTOResult(usptoResult)],
+              source: 'USPTO',
+              fallbackUsed: false
+            };
           }
         } catch (usptoError) {
           console.log('USPTO API failed for patent number lookup:', usptoError.message);
@@ -123,11 +140,19 @@ class PatentSearchService {
       // Fallback to Google Patents
       const googleResult = await this.getGooglePatentDetail(patentNumber);
       if (googleResult) {
-        return [this.formatGoogleResult(googleResult)];
+        return {
+          results: [this.formatGoogleResult(googleResult)],
+          source: 'Google Patents',
+          fallbackUsed: hasUSPTOKey
+        };
       }
 
       // No results found
-      return [];
+      return {
+        results: [],
+        source: hasUSPTOKey ? 'Google Patents' : 'Google Patents',
+        fallbackUsed: false
+      };
 
     } catch (error) {
       console.error('Error searching by patent number:', error);
