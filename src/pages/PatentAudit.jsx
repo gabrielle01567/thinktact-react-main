@@ -865,7 +865,7 @@ const PatentAudit = () => {
           console.error('Error loading application:', error);
           // If application not found, redirect to new application
           if (error.response?.status === 404) {
-            navigate('/patent-audit');
+            navigate('/patent-buddy/wizard');
           }
         } finally {
           setIsLoading(false);
@@ -931,7 +931,7 @@ const PatentAudit = () => {
         result = await savePatentApplication(applicationData);
         setSaveMessage('Application saved successfully!');
         // Redirect to the saved application
-        navigate(`/patent-audit/${result.application.id}`);
+        navigate(`/patent-buddy/wizard/${result.application.id}`);
       }
 
       // Clear save message after 3 seconds
