@@ -1,7 +1,14 @@
 import axios from 'axios';
-import { getAuthToken } from './authService.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+// Use the deployed backend URL
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
+
+// Get auth token from localStorage
+const getAuthToken = () => {
+  const token = localStorage.getItem('thinktact_token');
+  console.log('🔍 PatentService: Retrieved token:', token ? token.substring(0, 20) + '...' : 'null');
+  return token;
+};
 
 // Save a new patent application
 export const savePatentApplication = async (applicationData) => {
