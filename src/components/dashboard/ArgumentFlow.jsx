@@ -26,9 +26,10 @@ const ArgumentFlow = ({ structure = {} }) => {
     structure,
     premises,
     premisesLength: premises.length,
-    firstPremise: premises[0],
+    firstPremise: premises[0]?.substring(0, 200) + (premises[0]?.length > 200 ? '...' : ''),
     premiseType: typeof premises[0],
-    firstPremiseLength: premises[0]?.length || 0
+    firstPremiseLength: premises[0]?.length || 0,
+    allPremisesLength: premises.reduce((total, p) => total + (p?.length || 0), 0)
   });
   
   return (
@@ -45,7 +46,7 @@ const ArgumentFlow = ({ structure = {} }) => {
             <SafeTextFormatter 
               text={structure?.conclusion || "No clear conclusion"}
               className="text-gray-800"
-              maxLength={100000}
+              maxLength={500000}
             />
           </div>
         </div>
@@ -68,7 +69,7 @@ const ArgumentFlow = ({ structure = {} }) => {
                   <SafeTextFormatter 
                     text={assumption}
                     className="text-gray-700"
-                    maxLength={100000}
+                    maxLength={500000}
                   />
                 </div>
               ))}
@@ -88,7 +89,7 @@ const ArgumentFlow = ({ structure = {} }) => {
                 <SafeTextFormatter 
                   text={premise}
                   className="text-green-900"
-                  maxLength={100000}
+                  maxLength={500000}
                 />
               </div>
             ))}

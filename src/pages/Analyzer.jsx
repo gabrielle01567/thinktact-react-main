@@ -78,6 +78,15 @@ const Analyzer = () => {
 
   // Handle selecting a previous analysis
   const handleSelectAnalysis = (analysis) => {
+    console.log('handleSelectAnalysis called with:', {
+      analysisId: analysis.id,
+      argumentTextLength: analysis.argumentText?.length || 0,
+      analysisResults: analysis.analysisResults,
+      argumentStructure: analysis.analysisResults?.argumentStructure,
+      premises: analysis.analysisResults?.argumentStructure?.premise,
+      premiseLength: analysis.analysisResults?.argumentStructure?.premise?.length || 0
+    });
+    
     setArgumentText(analysis.argumentText);
     setProcessedAnalysis(analysis.analysisResults);
     setCurrentAnalysisId(analysis.id);

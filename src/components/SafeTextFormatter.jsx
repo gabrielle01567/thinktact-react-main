@@ -1,6 +1,11 @@
 import React from 'react';
 
 const SafeTextFormatter = ({ text, className = "", emphasisColor = "", maxLength = 1000000 }) => {
+  console.log('SafeTextFormatter called with:', {
+    textLength: text?.length || 0,
+    maxLength,
+    textPreview: text?.substring(0, 50) + '...'
+  });
   // Input validation - ensure text is a string and not too long
   if (typeof text !== 'string') {
     console.warn('SafeTextFormatter: text prop must be a string');
@@ -12,11 +17,15 @@ const SafeTextFormatter = ({ text, className = "", emphasisColor = "", maxLength
   
   // Limit text length to prevent potential DoS - use maxLength parameter
   if (!sanitizedText || sanitizedText.length > maxLength) {
-    console.warn('SafeTextFormatter: text too long, truncating');
+    console.warn('SafeTextFormatter: text too long, truncating', {
+      textLength: sanitizedText?.length || 0,
+      maxLength,
+      textPreview: sanitizedText?.substring(0, 100) + '...'
+    });
     return (
       <div className={className}>
-        <p className="text-gray-600 italic mb-2">Text truncated for display (showing first {Math.min(maxLength, 50000)} characters):</p>
-        <p>{sanitizedText.substring(0, Math.min(maxLength, 50000))}...</p>
+        <p className="text-gray-600 italic mb-2">Text truncated for display (showing first {maxLength} characters):</p>
+        <p>{sanitizedText.substring(0, maxLength)}...</p>
       </div>
     );
   }
