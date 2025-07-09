@@ -2351,6 +2351,20 @@ const PatentAudit = () => {
             >
               Back
             </button>
+            
+            {/* Save message - positioned between back and next buttons */}
+            {saveMessage && (
+              <div className="flex-1 mx-4 text-center">
+                <div className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  saveMessage.includes('Error') || saveMessage.includes('⚠️') 
+                    ? 'text-red-700 bg-red-100 border border-red-200' 
+                    : 'text-green-700 bg-green-100 border border-green-200'
+                }`}>
+                  {saveMessage}
+                </div>
+              </div>
+            )}
+            
             {currentStep === getWizardSteps().length - 1 ? (
               <button
                 onClick={saveApplication}
@@ -2384,11 +2398,6 @@ const PatentAudit = () => {
 
           {/* Document Preview */}
           <div className="w-full max-w-2xl mx-auto mt-8">{renderDocumentPreview()}</div>
-
-          {/* Save message */}
-          {saveMessage && (
-            <div className="mt-4 text-center text-green-700 font-medium">{saveMessage}</div>
-          )}
         </div>
       </div>
     </div>
