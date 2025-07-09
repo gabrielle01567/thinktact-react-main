@@ -37,7 +37,8 @@ export default async function handler(req, res) {
     }
 
     // Update last login
-    await updateUser(user.id, { last_login: new Date().toISOString() });
+    const updatedUser = await updateUser(user.id, { last_login: new Date().toISOString() });
+    console.log('🔄 last_login update result:', updatedUser);
 
     // Generate JWT token
     const token = generateToken(user);

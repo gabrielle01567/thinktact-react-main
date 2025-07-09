@@ -194,6 +194,7 @@ const AnalysisDetail = () => {
                             <SafeTextFormatter 
                               text={premise}
                               className="text-blue-900"
+                              maxLength={1000000}
                             />
                           </div>
                         </div>
