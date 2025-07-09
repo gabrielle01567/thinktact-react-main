@@ -722,47 +722,56 @@ const PatentAudit = () => {
       'Title': {
         title: 'Current Section: Title',
         description: 'The title should be brief but technically accurate, avoiding marketing language.',
-        link: 'Learn more about titles'
-      },
-      'Abstract': {
-        title: 'Current Section: Abstract',
-        description: 'Provide a concise overview of your invention and its key advantages.',
-        link: 'Learn more about abstracts'
-      },
-      'Field': {
-        title: 'Current Section: Field',
-        description: 'Define the technical area your invention belongs to. Be broad enough to encompass your invention.',
-        link: 'Learn more about field definitions'
-      },
-      'Background': {
-        title: 'Current Section: Background',
-        description: 'Describe the problem your invention solves and why existing solutions are inadequate.',
-        link: 'Learn more about background sections'
-      },
-      'Summary': {
-        title: 'Current Section: Summary',
-        description: 'Provide a concise overview of your invention and its key advantages.',
-        link: 'Learn more about summaries'
-      },
-      'Drawings': {
-        title: 'Current Section: Drawings',
-        description: 'Describe any figures or diagrams that illustrate your invention.',
-        link: 'Learn more about drawing descriptions'
-      },
-      'Detailed Description': {
-        title: 'Current Section: Detailed Description',
-        description: 'This is the most critical section. Provide complete details on how your invention works.',
-        link: 'Learn more about detailed descriptions'
+        link: 'USPTO Patent Application Guide',
+        url: 'https://www.uspto.gov/patents/basics/patent-process-overview'
       },
       'Cross-Reference to Related Applications (Optional)': {
         title: 'Current Section: Cross-Reference to Related Applications (Optional)',
         description: 'Needed only if you are claiming priority to an earlier U.S. or foreign patent application. Otherwise, leave blank.',
-        link: 'Learn more about cross-references'
+        link: 'USPTO Priority Claims Guide',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/priority-claims'
       },
       'Federally Sponsored Research or Development (Optional)': {
         title: 'Current Section: Federally Sponsored Research or Development (Optional)',
         description: 'Needed only if your invention was made with U.S. federal government support. Otherwise, leave blank.',
-        link: 'Learn more about federally sponsored research disclosures'
+        link: 'USPTO Federal Funding Disclosure',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/federally-sponsored-research'
+      },
+      'Abstract': {
+        title: 'Current Section: Abstract',
+        description: 'Provide a concise overview of your invention and its key advantages.',
+        link: 'USPTO Abstract Guidelines',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/abstract-guidelines'
+      },
+      'Field': {
+        title: 'Current Section: Field',
+        description: 'Define the technical area your invention belongs to. Be broad enough to encompass your invention.',
+        link: 'USPTO Field of Invention Guide',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/field-invention'
+      },
+      'Background': {
+        title: 'Current Section: Background',
+        description: 'Describe the problem your invention solves and why existing solutions are inadequate.',
+        link: 'USPTO Background Section Guide',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/background-invention'
+      },
+      'Summary': {
+        title: 'Current Section: Summary',
+        description: 'Provide a concise overview of your invention and its key advantages.',
+        link: 'USPTO Summary Guidelines',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/summary-invention'
+      },
+      'Drawings': {
+        title: 'Current Section: Drawings',
+        description: 'Describe any figures or diagrams that illustrate your invention.',
+        link: 'USPTO Drawing Requirements',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/drawing-requirements'
+      },
+      'Detailed Description': {
+        title: 'Current Section: Detailed Description',
+        description: 'This is the most critical section. Provide complete details on how your invention works.',
+        link: 'USPTO Detailed Description Guide',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/detailed-description'
       }
     };
     return helpContent[currentSection] || helpContent['Title'];
@@ -950,16 +959,114 @@ const PatentAudit = () => {
               </button>
             </div>
             {showDocumentPreview && (
-              <div className="bg-gray-50 rounded-md p-6 space-y-4">
-                <h4 className="text-xl font-semibold text-gray-900 text-center">PROVISIONAL PATENT APPLICATION</h4>
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-gray-700">{title || '[TITLE OF THE INVENTION]'}</h5>
-                  <p className="text-gray-600">ABSTRACT — {abstract ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-600">FIELD OF THE INVENTION — {field ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-600">BACKGROUND OF THE INVENTION — {background ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-600">SUMMARY OF THE INVENTION — {summary ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-600">BRIEF DESCRIPTION OF THE DRAWINGS — {drawings ? 'Completed' : 'Not yet completed'}</p>
-                  <p className="text-gray-600">DETAILED DESCRIPTION — {detailedDescription ? 'Completed' : 'Not yet completed'}</p>
+              <div className="bg-gray-50 rounded-md p-6 space-y-6 font-serif text-sm leading-relaxed">
+                {/* Header */}
+                <div className="text-center border-b-2 border-gray-300 pb-4">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">PROVISIONAL PATENT APPLICATION</h1>
+                  <p className="text-gray-600">United States Patent and Trademark Office</p>
+                </div>
+
+                {/* Title */}
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 mb-2">TITLE OF THE INVENTION</h2>
+                  <p className="text-gray-800 pl-4">{title || '[TITLE OF THE INVENTION]'}</p>
+                </div>
+
+                {/* Cross-Reference */}
+                {crossReference && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">CROSS-REFERENCE TO RELATED APPLICATIONS</h2>
+                    <p className="text-gray-800 pl-4">{crossReference}</p>
+                  </div>
+                )}
+
+                {/* Federal Research */}
+                {federalResearch && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">STATEMENT REGARDING FEDERALLY SPONSORED RESEARCH OR DEVELOPMENT</h2>
+                    <p className="text-gray-800 pl-4">{federalResearch}</p>
+                  </div>
+                )}
+
+                {/* Abstract */}
+                {abstract && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">ABSTRACT</h2>
+                    <p className="text-gray-800 pl-4">{abstract}</p>
+                  </div>
+                )}
+
+                {/* Field */}
+                {field && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">FIELD OF THE INVENTION</h2>
+                    <p className="text-gray-800 pl-4">{field}</p>
+                  </div>
+                )}
+
+                {/* Background */}
+                {background && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">BACKGROUND OF THE INVENTION</h2>
+                    <p className="text-gray-800 pl-4">{background}</p>
+                  </div>
+                )}
+
+                {/* Summary */}
+                {summary && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">SUMMARY OF THE INVENTION</h2>
+                    <p className="text-gray-800 pl-4">{summary}</p>
+                  </div>
+                )}
+
+                {/* Drawings */}
+                {drawings && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">BRIEF DESCRIPTION OF THE DRAWINGS</h2>
+                    <p className="text-gray-800 pl-4">{drawings}</p>
+                  </div>
+                )}
+
+                {/* Detailed Description */}
+                {detailedDescription && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">DETAILED DESCRIPTION OF THE INVENTION</h2>
+                    <p className="text-gray-800 pl-4">{detailedDescription}</p>
+                  </div>
+                )}
+
+                {/* Missing Sections Notice */}
+                {(!title || !abstract || !field || !background || !summary || !detailedDescription) && (
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-yellow-800">Incomplete Application</h3>
+                        <div className="mt-2 text-sm text-yellow-700">
+                          <p>The following required sections are missing:</p>
+                          <ul className="list-disc pl-5 mt-1 space-y-1">
+                            {!title && <li>Title of the Invention</li>}
+                            {!abstract && <li>Abstract</li>}
+                            {!field && <li>Field of the Invention</li>}
+                            {!background && <li>Background of the Invention</li>}
+                            {!summary && <li>Summary of the Invention</li>}
+                            {!detailedDescription && <li>Detailed Description of the Invention</li>}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="text-center text-gray-500 text-xs mt-8 pt-4 border-t border-gray-300">
+                  <p>This document is a draft and should be reviewed by a patent attorney before filing.</p>
+                  <p>Provisional applications do not require claims but must provide sufficient disclosure.</p>
                 </div>
               </div>
             )}
@@ -973,9 +1080,19 @@ const PatentAudit = () => {
           <div className="mb-8">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Help & Resources</h3>
             <div className="bg-white rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-2">{getSectionHelp().title}</h4>
-              <p className="text-sm text-gray-600 mb-4">{getSectionHelp().description}</p>
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-800">{getSectionHelp().link}</a>
+                          <h4 className="font-medium text-gray-900 mb-2">{getSectionHelp().title}</h4>
+            <p className="text-sm text-gray-600 mb-4">{getSectionHelp().description}</p>
+            <a 
+              href={getSectionHelp().url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              {getSectionHelp().link}
+              <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
             </div>
           </div>
 
