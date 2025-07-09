@@ -17,33 +17,79 @@ const PatentAudit = () => {
   const [wantsFederalResearch, setWantsFederalResearch] = useState(null);
 
   // 3. Build wizardSteps array dynamically based on answers
-  const wizardSteps = [
-    { key: 'Title', render: renderTitleSection },
-    { key: 'CrossReferenceGate', render: renderCrossReferenceGate },
-    ...(wantsCrossReference ? [{ key: 'CrossReference', render: renderCrossReferenceSection }] : []),
-    { key: 'FederalResearchGate', render: renderFederalResearchGate },
-    ...(wantsFederalResearch ? [{ key: 'FederalResearch', render: renderFederalResearchSection }] : []),
-    { key: 'Inventors', render: renderInventorsSection },
-    { key: 'Abstract', render: renderAbstractSection },
-    { key: 'Field', render: renderFieldSection },
-    { key: 'Background', render: renderBackgroundSection },
-    { key: 'Summary', render: renderSummarySection },
-    { key: 'Drawings', render: renderDrawingsSection },
-    { key: 'DetailedDescription', render: renderDetailedDescriptionSection },
-    { key: 'Review', render: renderReviewSection },
-  ];
+  const getWizardSteps = () => {
+    const steps = [
+      { key: 'Title' },
+      { key: 'CrossReferenceGate' },
+    ];
+    
+    if (wantsCrossReference === true) {
+      steps.push({ key: 'CrossReference' });
+    }
+    
+    steps.push({ key: 'FederalResearchGate' });
+    
+    if (wantsFederalResearch === true) {
+      steps.push({ key: 'FederalResearch' });
+    }
+    
+    steps.push(
+      { key: 'Inventors' },
+      { key: 'Abstract' },
+      { key: 'Field' },
+      { key: 'Background' },
+      { key: 'Summary' },
+      { key: 'Drawings' },
+      { key: 'DetailedDescription' },
+      { key: 'Review' }
+    );
+    
+    return steps;
+  };
+  
+
 
   // 4. Render only the current step
   const renderCurrentStep = () => {
-    if (wizardSteps[currentStep]) {
-      return wizardSteps[currentStep].render();
+    const currentStepData = getWizardSteps()[currentStep];
+    
+    if (!currentStepData) return null;
+    
+    switch (currentStepData.key) {
+      case 'Title':
+        return renderTitleSection();
+      case 'CrossReferenceGate':
+        return renderCrossReferenceGate();
+      case 'CrossReference':
+        return renderCrossReferenceSection();
+      case 'FederalResearchGate':
+        return renderFederalResearchGate();
+      case 'FederalResearch':
+        return renderFederalResearchSection();
+      case 'Inventors':
+        return renderInventorsSection();
+      case 'Abstract':
+        return renderAbstractSection();
+      case 'Field':
+        return renderFieldSection();
+      case 'Background':
+        return renderBackgroundSection();
+      case 'Summary':
+        return renderSummarySection();
+      case 'Drawings':
+        return renderDrawingsSection();
+      case 'DetailedDescription':
+        return renderDetailedDescriptionSection();
+      case 'Review':
+        return renderReviewSection();
+      default:
+        return <div>Unknown step</div>;
     }
-    return null;
   };
 
   // 5. Next/Back button logic
   const goToNextStep = () => {
-    if (currentStep < wizardSteps.length - 1) setCurrentStep(currentStep + 1);
+    if (currentStep < getWizardSteps().length - 1) setCurrentStep(currentStep + 1);
   };
   const goToPrevStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
@@ -52,7 +98,7 @@ const PatentAudit = () => {
   // 6. Progress indicator
   const renderProgress = () => (
     <div className="w-full flex justify-center items-center mb-6">
-      <span className="text-gray-700 font-medium">Step {currentStep + 1} of {wizardSteps.length}</span>
+      <span className="text-gray-700 font-medium">Step {currentStep + 1} of {getWizardSteps().length}</span>
     </div>
   );
 
@@ -1306,53 +1352,284 @@ const PatentAudit = () => {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-      {/* Progress Indicator */}
-      {renderProgress()}
+  // Add state for tracking sections that need review
+  const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
+  
+  // Helper function to check if a section is completed
+  const isSectionCompleted = (stepKey) => {
+    switch (stepKey) {
+      case 'Title':
+        return title.trim() !== '';
+      case 'CrossReference':
+        return wantsCrossReference === false || (wantsCrossReference === true && crossReference.trim() !== '');
+      case 'FederalResearch':
+        return wantsFederalResearch === false || (wantsFederalResearch === true && federalResearch.trim() !== '');
+      case 'Inventors':
+        return inventors.some(inv => inv.name.trim() && inv.address.trim());
+      case 'Abstract':
+        return abstract.trim() !== '';
+      case 'Field':
+        return field.trim() !== '';
+      case 'Background':
+        return background.trim() !== '';
+      case 'Summary':
+        return summary.trim() !== '';
+      case 'Drawings':
+        return drawings.trim() !== '';
+      case 'DetailedDescription':
+        return detailedDescription.trim() !== '';
+      default:
+        return false;
+    }
+  };
 
-      {/* Step Content */}
-      <div className="w-full max-w-2xl mx-auto">
-        {renderCurrentStep()}
+  // Helper function to get step display name
+  const getStepDisplayName = (stepKey) => {
+    switch (stepKey) {
+      case 'Title':
+        return 'Title of Invention';
+      case 'CrossReferenceGate':
+        return 'Cross-Reference (Optional)';
+      case 'CrossReference':
+        return 'Cross-Reference Details';
+      case 'FederalResearchGate':
+        return 'Federal Research (Optional)';
+      case 'FederalResearch':
+        return 'Federal Research Details';
+      case 'Inventors':
+        return 'Inventors';
+      case 'Abstract':
+        return 'Abstract';
+      case 'Field':
+        return 'Field of Invention';
+      case 'Background':
+        return 'Background';
+      case 'Summary':
+        return 'Summary';
+      case 'Drawings':
+        return 'Drawings';
+      case 'DetailedDescription':
+        return 'Detailed Description';
+      case 'Review':
+        return 'Review & Save';
+      default:
+        return stepKey;
+    }
+  };
+
+  // Helper function to check if step needs review
+  const needsReview = (stepKey) => {
+    return sectionsNeedingReview.has(stepKey);
+  };
+
+  // Mark section for review
+  const markForReview = (stepKey) => {
+    setSectionsNeedingReview(prev => new Set([...prev, stepKey]));
+  };
+
+  // Clear review mark when section is completed
+  const clearReviewMark = (stepKey) => {
+    setSectionsNeedingReview(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(stepKey);
+      return newSet;
+    });
+  };
+
+  // Render progress tracker sidebar
+  const renderProgressTracker = () => (
+    <div className="w-80 bg-gray-50 border-r border-gray-200 p-6 overflow-y-auto">
+      {/* Logo & Title */}
+      <div className="flex items-center space-x-3 mb-8">
+        <svg className="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span className="font-bold text-xl text-gray-900">Patent Buddy</span>
       </div>
 
-      {/* Document Preview */}
-      <div className="w-full max-w-2xl mx-auto">{renderDocumentPreview()}</div>
-
-      {/* Navigation Buttons */}
-      <div className="w-full max-w-2xl mx-auto flex justify-between mt-8">
-        <button
-          onClick={goToPrevStep}
-          disabled={currentStep === 0}
-          className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+      {/* Navigation */}
+      <nav className="space-y-1 mb-8">
+        <Link 
+          to="/patent-applications"
+          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
         >
-          Back
-        </button>
-        {currentStep === wizardSteps.length - 1 ? (
-          <button
-            onClick={saveApplication}
-            className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Draft'}
-          </button>
-        ) : (
-          <button
-            onClick={goToNextStep}
-            className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
-          >
-            Next
-          </button>
-        )}
+          <svg className="mr-3 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+          </svg>
+          My Applications
+        </Link>
+      </nav>
+
+      {/* Progress Tracker */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Application Progress</h3>
+        <div className="space-y-2">
+          {getWizardSteps().map((step, index) => {
+            const isCurrent = index === currentStep;
+            const isCompleted = isSectionCompleted(step.key);
+            const needsReviewFlag = needsReview(step.key);
+            
+            return (
+              <div
+                key={step.key}
+                className={`flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                  isCurrent
+                    ? 'border-blue-500 bg-blue-50'
+                    : isCompleted
+                    ? 'border-green-200 bg-green-50'
+                    : needsReviewFlag
+                    ? 'border-yellow-300 bg-yellow-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+                onClick={() => setCurrentStep(index)}
+              >
+                {/* Step Number */}
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  isCurrent
+                    ? 'bg-blue-500 text-white'
+                    : isCompleted
+                    ? 'bg-green-500 text-white'
+                    : needsReviewFlag
+                    ? 'bg-yellow-500 text-white'
+                    : 'bg-gray-300 text-gray-600'
+                }`}>
+                  {isCompleted ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+
+                {/* Step Info */}
+                <div className="ml-3 flex-1">
+                  <p className={`text-sm font-medium ${
+                    isCurrent ? 'text-blue-900' : isCompleted ? 'text-green-900' : needsReviewFlag ? 'text-yellow-900' : 'text-gray-700'
+                  }`}>
+                    {getStepDisplayName(step.key)}
+                  </p>
+                  {needsReviewFlag && (
+                    <p className="text-xs text-yellow-700 mt-1">Needs review</p>
+                  )}
+                </div>
+
+                {/* Status Icons */}
+                <div className="flex-shrink-0">
+                  {needsReviewFlag && !isCompleted && (
+                    <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Save message */}
-      {saveMessage && (
-        <div className="mt-4 text-center text-green-700 font-medium">{saveMessage}</div>
-      )}
+      {/* Progress Summary */}
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">Progress Summary</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Completed:</span>
+            <span className="font-medium text-green-600">
+              {getWizardSteps().filter(step => isSectionCompleted(step.key)).length}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Needs Review:</span>
+            <span className="font-medium text-yellow-600">
+              {sectionsNeedingReview.size}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Remaining:</span>
+            <span className="font-medium text-gray-600">
+              {getWizardSteps().length - getWizardSteps().filter(step => isSectionCompleted(step.key)).length}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-      {/* Help panel and document preview can be toggled as before */}
-      {/* ... existing code for help panel and preview ... */}
+  // Add "Come Back Later" button to each step
+  const renderComeBackLaterButton = () => (
+    <div className="mt-6 pt-4 border-t border-gray-200">
+      <button
+        onClick={() => {
+          markForReview(getWizardSteps()[currentStep].key);
+          goToNextStep();
+        }}
+        className="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+      >
+        Come Back Later
+      </button>
+    </div>
+  );
+
+  // Update the main return to include sidebar
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Left Sidebar - Progress Tracker */}
+      {renderProgressTracker()}
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-auto">
+        <div className="min-h-screen flex flex-col items-center justify-center p-8">
+          {/* Progress Indicator */}
+          {renderProgress()}
+
+          {/* Step Content */}
+          <div className="w-full max-w-2xl mx-auto">
+            {renderCurrentStep()}
+            {renderComeBackLaterButton()}
+          </div>
+
+          {/* Document Preview */}
+          <div className="w-full max-w-2xl mx-auto">{renderDocumentPreview()}</div>
+
+          {/* Navigation Buttons */}
+          <div className="w-full max-w-2xl mx-auto flex justify-between mt-8">
+            <button
+              onClick={goToPrevStep}
+              disabled={currentStep === 0}
+              className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Back
+            </button>
+            {currentStep === getWizardSteps().length - 1 ? (
+              <button
+                onClick={saveApplication}
+                className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Save Draft'}
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (isSectionCompleted(getWizardSteps()[currentStep].key)) {
+                    clearReviewMark(getWizardSteps()[currentStep].key);
+                  }
+                  goToNextStep();
+                }}
+                className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Next
+              </button>
+            )}
+          </div>
+
+          {/* Save message */}
+          {saveMessage && (
+            <div className="mt-4 text-center text-green-700 font-medium">{saveMessage}</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
