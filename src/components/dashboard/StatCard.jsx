@@ -32,7 +32,7 @@ const StatCard = ({ title, value, icon, color, textColor, assumptions }) => {
       
       {/* Tooltip */}
       {showTooltip && (
-        <div className={`absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-3 ${color} border border-gray-200 text-sm rounded-lg shadow-lg max-w-md whitespace-normal`}>
+        <div className={`absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-3 ${color} border border-gray-200 text-sm rounded-lg shadow-lg ${(title === 'Conclusion Type' || title === 'Logical Flaw' || title === 'Counter Argument') ? 'max-w-xl' : 'max-w-md'} whitespace-normal`}>
           <div className={`font-semibold mb-1 ${textColor}`}>{title}</div>
           {isHiddenAssumptions && assumptions && assumptions.length > 0 ? (
             <div className="text-gray-700 leading-relaxed">

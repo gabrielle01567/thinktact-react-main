@@ -104,7 +104,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
   if (!history || history.length === 0) {
     return (
       <div className="px-4 py-3">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analyses</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analysis</h3>
         <div className="text-gray-500 text-sm text-center py-4">
           No previous analyses yet
         </div>
@@ -114,7 +114,7 @@ const AnalysisHistory = ({ onSelectAnalysis, currentAnalysisId, refreshKey }) =>
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analyses</h3>
+      <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Analysis</h3>
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {history.map((analysis) => (
           <div
