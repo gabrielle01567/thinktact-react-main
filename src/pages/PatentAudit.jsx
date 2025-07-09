@@ -19,6 +19,7 @@ const PatentAudit = () => {
   // 3. Build wizardSteps array dynamically based on answers
   const getWizardSteps = () => {
     const steps = [
+      { key: 'Introduction' },
       { key: 'Title' },
       { key: 'CrossReferenceGate' },
     ];
@@ -56,6 +57,8 @@ const PatentAudit = () => {
     if (!currentStepData) return null;
     
     switch (currentStepData.key) {
+      case 'Introduction':
+        return renderIntroductionSection();
       case 'Title':
         return renderTitleSection();
       case 'CrossReferenceGate':
@@ -92,6 +95,8 @@ const PatentAudit = () => {
     const currentStepData = getWizardSteps()[currentStep];
     
     switch (currentStepData.key) {
+      case 'Introduction':
+        return true; // Introduction doesn't require validation
       case 'Title':
         return title.trim() !== '';
       case 'Inventors':
@@ -177,6 +182,114 @@ const PatentAudit = () => {
   }
 
   // Add missing render functions for each section
+  function renderIntroductionSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-8 mb-8">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Patent Buddy</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Your AI-powered assistant for creating comprehensive patent applications
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                What You Can Expect
+              </h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Step-by-step guidance through each section of your patent application</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>AI-powered suggestions and templates to help you write compelling content</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Real-time document preview as you build your application</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Save your progress and return anytime to continue working</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span>Professional formatting that meets USPTO requirements</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                How to Approach This Process
+              </h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">1.</span>
+                  <span><strong>Take your time:</strong> Quality patent applications require careful thought and detail</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">2.</span>
+                  <span><strong>Be thorough:</strong> Include all relevant technical details and background information</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">3.</span>
+                  <span><strong>Use the preview:</strong> Check how your application looks as you build it</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">4.</span>
+                  <span><strong>Save regularly:</strong> Your progress is automatically saved as you work</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">5.</span>
+                  <span><strong>Review carefully:</strong> The final review step helps ensure completeness</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+            <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            Important Notes
+          </h3>
+          <div className="text-blue-800 space-y-2">
+            <p><strong>This tool helps you create a draft patent application.</strong> While it provides comprehensive guidance and formatting, you should always have your final application reviewed by a qualified patent attorney or agent before filing with the USPTO.</p>
+            <p>The application will be saved as a draft that you can edit, review, and finalize before submission to the patent office.</p>
+          </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <button
+            onClick={goToNextStep}
+            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+          >
+            Get Started
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function renderTitleSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
@@ -1999,6 +2112,8 @@ const PatentAudit = () => {
   // Helper function to check if a section is completed
   const isSectionCompleted = (stepKey) => {
     switch (stepKey) {
+      case 'Introduction':
+        return true; // Introduction is always considered completed once viewed
       case 'Title':
         return title.trim() !== '';
       case 'CrossReference':
@@ -2027,6 +2142,8 @@ const PatentAudit = () => {
   // Helper function to get step display name
   const getStepDisplayName = (stepKey) => {
     switch (stepKey) {
+      case 'Introduction':
+        return 'Introduction';
       case 'Title':
         return 'Title of Invention';
       case 'CrossReferenceGate':
@@ -2256,7 +2373,7 @@ const PatentAudit = () => {
           {/* Step Content */}
           <div className="w-full max-w-2xl mx-auto">
             {renderCurrentStep()}
-            {renderComeBackLaterButton()}
+            {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderComeBackLaterButton()}
           </div>
 
           {/* Document Preview */}
