@@ -778,6 +778,19 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                   <ArgumentFlow structure={processedAnalysis?.argumentStructure || {}} />
                 </div>
 
+                {/* Counter Argument Section - above breakdown table */}
+                {processedAnalysis?.counterpoint && (
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-indigo-200 mb-2">
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-lg font-semibold text-indigo-800">Counter Argument</h3>
+                    </div>
+                    <SafeTextFormatter 
+                      text={processedAnalysis.counterpoint}
+                      className="text-indigo-900"
+                    />
+                  </div>
+                )}
+
                 {/* Bottom Row - Breakdown Table */}
                 <div>
                   <LogicBreakdownTable items={processedAnalysis?.breakdownItems || []} />
