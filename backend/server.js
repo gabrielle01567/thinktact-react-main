@@ -802,7 +802,23 @@ app.get('/api/analysis/history', async (req, res) => {
     });
   } catch (error) {
     console.error('Analysis history error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    if (error.message.includes('table does not exist')) {
+      res.status(500).json({ 
+        error: 'Analysis history table not found. Please contact support.',
+        details: error.message
+      });
+    } else if (error.message.includes('Database not configured')) {
+      res.status(500).json({ 
+        error: 'Database configuration error',
+        details: error.message
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Failed to retrieve analysis history',
+        details: error.message
+      });
+    }
   }
 });
 

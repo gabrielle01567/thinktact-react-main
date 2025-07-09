@@ -472,7 +472,7 @@ export const getAnalysisHistory = async (userId) => {
     const isInitialized = await waitForInitialization();
     if (!isInitialized) {
       console.error('❌ Supabase not initialized in getAnalysisHistory');
-      return [];
+      throw new Error('Database not configured');
     }
 
     const { data: analyses, error } = await supabase
@@ -484,7 +484,10 @@ export const getAnalysisHistory = async (userId) => {
     
     if (error) {
       console.error('Error getting analysis history:', error);
-      return [];
+      if (error.message.includes('relation "analysis_history" does not exist')) {
+        throw new Error('Analysis history table does not exist. Please contact support.');
+      }
+      throw new Error('Failed to retrieve analysis history');
     }
     
     // Transform the data to match frontend expectations
@@ -497,7 +500,7 @@ export const getAnalysisHistory = async (userId) => {
     }));
   } catch (error) {
     console.error('Error getting analysis history:', error);
-    return [];
+    throw error;
   }
 };
 
