@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { supabase } from './supabaseClient';
+import { supabase, isSupabaseAvailable } from './supabaseClient';
 
 // Use the deployed backend URL
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
@@ -158,6 +158,11 @@ export const deletePatentApplication = async (applicationId) => {
 export const uploadPatentImage = async (file, userId, applicationId) => {
   if (!file) throw new Error('No file provided');
   if (!userId || !applicationId) throw new Error('User ID and Application ID required');
+  
+  // Check if Supabase is available
+  if (!isSupabaseAvailable()) {
+    throw new Error('Image upload is not available. Please configure Supabase environment variables.');
+  }
 
   // Create a unique file path: userId/appId/timestamp_filename
   const timestamp = Date.now();

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { isSupabaseAvailable } from '../services/supabaseClient.js';
 
 const PatentAudit = () => {
   const { id: applicationId } = useParams();
@@ -426,32 +427,42 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Upload Drawing Images</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files);
-                    if (!files.length || !user || !applicationId) return;
-                    setUploading(true);
-                    setUploadError('');
-                    try {
-                      const uploaded = [];
-                      for (const file of files) {
-                        const img = await uploadPatentImage(file, user.id, applicationId || 'new');
-                        uploaded.push(img);
-                      }
-                      setImages(prev => [...prev, ...uploaded]);
-                    } catch (err) {
-                      setUploadError('Failed to upload image(s).');
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                  disabled={uploading}
-                  className="mb-2"
-                />
-                {uploadError && <div className="text-red-600 text-sm mb-2">{uploadError}</div>}
+                {isSupabaseAvailable() ? (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files);
+                        if (!files.length || !user || !applicationId) return;
+                        setUploading(true);
+                        setUploadError('');
+                        try {
+                          const uploaded = [];
+                          for (const file of files) {
+                            const img = await uploadPatentImage(file, user.id, applicationId || 'new');
+                            uploaded.push(img);
+                          }
+                          setImages(prev => [...prev, ...uploaded]);
+                        } catch (err) {
+                          setUploadError('Failed to upload image(s).');
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                      disabled={uploading}
+                      className="mb-2"
+                    />
+                    {uploadError && <div className="text-red-600 text-sm mb-2">{uploadError}</div>}
+                  </>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
+                    <p className="text-sm text-yellow-800">
+                      Image upload is not available. Please configure Supabase environment variables to enable this feature.
+                    </p>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-4 mt-2">
                   {images.map((img, idx) => (
                     <div key={img.url} className="relative w-24 h-24 border rounded overflow-hidden">
