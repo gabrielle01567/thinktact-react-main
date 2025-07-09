@@ -1935,9 +1935,9 @@ const PatentAudit = () => {
     return helpContent[currentStep] || helpContent['Title'];
   };
 
-  // Add a live document preview with watermark
+  // Add a live document preview in USPTO standard format
   const renderDocumentPreview = () => (
-    <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg mt-8 max-w-2xl mx-auto overflow-hidden" style={{ minHeight: 600 }}>
+    <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg mt-8 max-w-4xl mx-auto overflow-hidden" style={{ minHeight: 600 }}>
       {/* Watermark */}
       <div
         style={{
@@ -1967,90 +1967,132 @@ const PatentAudit = () => {
           ThinkTactAI
         </span>
       </div>
+      
       {/* Document Content */}
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="text-center border-b-2 border-gray-300 pb-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">PROVISIONAL PATENT APPLICATION</h1>
-          <p className="text-gray-600">United States Patent and Trademark Office</p>
-        </div>
-        {/* Title */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">TITLE OF THE INVENTION</h2>
-          <p className="text-gray-800 pl-4">{title || '[TITLE OF THE INVENTION]'}</p>
-        </div>
-        {/* Inventors */}
-        {inventors && inventors.length > 0 && inventors.some(inv => inv.name.trim()) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">INVENTORS</h2>
-            <ul className="pl-4 space-y-2">
-              {inventors.filter(inv => inv.name.trim()).map((inv, idx) => (
-                <li key={idx} className="text-gray-800">
-                  <span className="font-semibold">{inv.name}</span>
-                  {inv.citizenship && <span>, Citizenship: {inv.citizenship}</span>}
-                  {inv.residence && <span>, Residence: {inv.residence}</span>}
-                  {inv.address && <span>, Address: {inv.address}</span>}
-                </li>
-              ))}
-            </ul>
+      <div className="relative z-10" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt', lineHeight: '1.5' }}>
+        {/* USPTO Header */}
+        <div className="text-center mb-8">
+          <div className="text-sm text-gray-600 mb-2">UNITED STATES PATENT AND TRADEMARK OFFICE</div>
+          <div className="text-sm text-gray-600 mb-4">PROVISIONAL APPLICATION FOR PATENT</div>
+          <div className="text-xs text-gray-500 border-t border-gray-300 pt-2">
+            <div>Attorney Docket No.: [To be assigned]</div>
+            <div>Application No.: [To be assigned]</div>
+            <div>Filing Date: [To be assigned]</div>
           </div>
-        )}
-        {/* Cross-Reference */}
+        </div>
+
+        {/* Title Section */}
+        <div className="mb-6">
+          <div className="text-center font-bold text-lg mb-2" style={{ textTransform: 'uppercase' }}>
+            {title || '[TITLE OF THE INVENTION]'}
+          </div>
+          <div className="text-center text-sm text-gray-600 mb-4">
+            {inventors && inventors.length > 0 && inventors.some(inv => inv.name.trim()) && (
+              <span>
+                Inventor{inventors.filter(inv => inv.name.trim()).length > 1 ? 's' : ''}: {
+                  inventors.filter(inv => inv.name.trim()).map(inv => inv.name).join(', ')
+                }
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Cross-Reference Section */}
         {crossReference && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">CROSS-REFERENCE TO RELATED APPLICATIONS</h2>
-            <p className="text-gray-800 pl-4">{crossReference}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              CROSS-REFERENCE TO RELATED APPLICATIONS
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {crossReference}
+            </div>
           </div>
         )}
-        {/* Federal Research */}
+
+        {/* Federal Research Section */}
         {federalResearch && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">STATEMENT REGARDING FEDERALLY SPONSORED RESEARCH OR DEVELOPMENT</h2>
-            <p className="text-gray-800 pl-4">{federalResearch}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              STATEMENT REGARDING FEDERALLY SPONSORED RESEARCH OR DEVELOPMENT
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {federalResearch}
+            </div>
           </div>
         )}
-        {/* Abstract */}
+
+        {/* Abstract Section */}
         {abstract && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">ABSTRACT</h2>
-            <p className="text-gray-800 pl-4">{abstract}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              ABSTRACT
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {abstract}
+            </div>
           </div>
         )}
-        {/* Field */}
+
+        {/* Field of Invention Section */}
         {field && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">FIELD OF THE INVENTION</h2>
-            <p className="text-gray-800 pl-4">{field}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              FIELD OF THE INVENTION
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {field}
+            </div>
           </div>
         )}
-        {/* Background */}
+
+        {/* Background Section */}
         {background && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">BACKGROUND OF THE INVENTION</h2>
-            <p className="text-gray-800 pl-4">{background}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              BACKGROUND OF THE INVENTION
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {background}
+            </div>
           </div>
         )}
-        {/* Summary */}
+
+        {/* Summary Section */}
         {summary && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">SUMMARY OF THE INVENTION</h2>
-            <p className="text-gray-800 pl-4">{summary}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              SUMMARY OF THE INVENTION
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {summary}
+            </div>
           </div>
         )}
-        {/* Drawings */}
+
+        {/* Brief Description of Drawings Section */}
         {drawings && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">BRIEF DESCRIPTION OF THE DRAWINGS</h2>
-            <p className="text-gray-800 pl-4">{drawings}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              BRIEF DESCRIPTION OF THE DRAWINGS
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {drawings}
+            </div>
           </div>
         )}
-        {/* Detailed Description */}
+
+        {/* Detailed Description Section */}
         {detailedDescription && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2 mt-6">DETAILED DESCRIPTION OF THE INVENTION</h2>
-            <p className="text-gray-800 pl-4">{detailedDescription}</p>
+          <div className="mb-6">
+            <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
+              DETAILED DESCRIPTION OF THE INVENTION
+            </div>
+            <div className="pl-4" style={{ textAlign: 'justify' }}>
+              {detailedDescription}
+            </div>
           </div>
         )}
+
         {/* Missing Sections Notice */}
         {(!title || !abstract || !field || !background || !summary || !detailedDescription) && (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6">
@@ -2077,10 +2119,19 @@ const PatentAudit = () => {
             </div>
           </div>
         )}
-        {/* Footer */}
-        <div className="text-center text-gray-500 text-xs mt-8 pt-4 border-t border-gray-300">
-          <p>This document is a draft and should be reviewed by a patent attorney before filing.</p>
-          <p>Provisional applications do not require claims but must provide sufficient disclosure.</p>
+
+        {/* USPTO Footer */}
+        <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-300">
+          <div className="mb-2">
+            <strong>IMPORTANT NOTICE:</strong> This is a draft provisional patent application.
+          </div>
+          <div className="mb-2">
+            Provisional applications do not require claims but must provide sufficient disclosure 
+            to support any future non-provisional application.
+          </div>
+          <div>
+            This document should be reviewed by a qualified patent attorney or agent before filing with the USPTO.
+          </div>
         </div>
       </div>
     </div>
