@@ -229,6 +229,8 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
         },
         
         // For donut chart - we're not using this anymore
+        
+        // For donut chart - we're not using this anymore
         components: {
           necessaryAssumptions: parsedResults.necessaryAssumption ? 25 : 0,
           flaws: parsedResults.logicalFlaws?.length || 0,
@@ -272,6 +274,13 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       };
       
       setProcessedAnalysis(processed);
+      
+      // Debug logging for argument structure
+      console.log("🔍 Processed argument structure:", {
+        premise: processed.argumentStructure?.premise,
+        conclusion: processed.argumentStructure?.conclusion,
+        unstatedAssumptions: processed.argumentStructure?.unstatedAssumptions
+      });
       
       // Save analysis to history
       try {
@@ -374,24 +383,30 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
       
       // Explicit Premises
       const explicitSection = rawText.match(/Explicit Premises:(.+?)(?=\d+\.\s+|\n\n|$)/s);
+      console.log("🔍 Raw explicit section:", explicitSection ? explicitSection[1] : "Not found");
+      
       if (explicitSection) {
         // Look for numbered list items (1. item)
         const explicitList = explicitSection[1].match(/\d+\.\s+(.+?)(?=\d+\.\s+|$)/g);
+        console.log("🔍 Explicit list matches:", explicitList);
+        
         if (explicitList && explicitList.length > 0) {
           result.premiseSets.explicit = explicitList.map(item => 
             item.replace(/^\d+\.\s+/, '').trim()
           );
-          console.log("Extracted explicit premises:", result.premiseSets.explicit);
+          console.log("✅ Extracted explicit premises:", result.premiseSets.explicit);
         } else {
           // If no list format detected, check for line breaks and create a list
           const lines = explicitSection[1].trim().split('\n').filter(line => line.trim());
+          console.log("🔍 Lines from section:", lines);
+          
           if (lines.length > 0) {
             result.premiseSets.explicit = lines.map(line => line.trim());
-            console.log("Extracted premises from lines:", result.premiseSets.explicit);
+            console.log("✅ Extracted premises from lines:", result.premiseSets.explicit);
           } else {
             // Last resort: use the whole section as a single premise
             result.premiseSets.explicit = [explicitSection[1].trim()];
-            console.log("Using whole section as premise:", result.premiseSets.explicit);
+            console.log("✅ Using whole section as premise:", result.premiseSets.explicit);
           }
         }
       }

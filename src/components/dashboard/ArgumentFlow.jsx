@@ -9,6 +9,15 @@ const ArgumentFlow = ({ structure = {} }) => {
   // Extract unstated assumptions if available
   const unstatedAssumptions = structure?.unstatedAssumptions || [];
   
+  // Debug logging
+  console.log('ArgumentFlow Debug:', {
+    structure,
+    premises,
+    premisesLength: premises.length,
+    firstPremise: premises[0],
+    premiseType: typeof premises[0]
+  });
+  
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
