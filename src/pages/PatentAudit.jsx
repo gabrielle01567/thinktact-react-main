@@ -87,9 +87,52 @@ const PatentAudit = () => {
     }
   };
 
-  // 5. Next/Back button logic
+  // 5. Validation function for required fields
+  const validateCurrentStep = () => {
+    const currentStepData = getWizardSteps()[currentStep];
+    
+    switch (currentStepData.key) {
+      case 'Title':
+        return title.trim() !== '';
+      case 'Inventors':
+        return inventors.some(inv => inv.name.trim() !== '' && inv.address.trim() !== '');
+      case 'Abstract':
+        return abstract.trim() !== '';
+      case 'Field':
+        return field.trim() !== '';
+      case 'Background':
+        return background.trim() !== '';
+      case 'Summary':
+        return summary.trim() !== '';
+      case 'Drawings':
+        return drawings.trim() !== '';
+      case 'DetailedDescription':
+        return detailedDescription.trim() !== '';
+      case 'CrossReference':
+        return crossReference.trim() !== '';
+      case 'FederalResearch':
+        return federalResearch.trim() !== '';
+      default:
+        return true; // Gate questions and other non-required sections
+    }
+  };
+
+  // 6. Next/Back button logic with validation
   const goToNextStep = () => {
-    if (currentStep < getWizardSteps().length - 1) setCurrentStep(currentStep + 1);
+    if (currentStep < getWizardSteps().length - 1) {
+      // Check if current step has required fields that are incomplete
+      if (!validateCurrentStep()) {
+        // Mark current step as needing review
+        markForReview(getWizardSteps()[currentStep].key);
+        // Show a brief message to the user
+        setSaveMessage('⚠️ This section has required fields that need to be completed. It has been marked for review.');
+        setTimeout(() => setSaveMessage(''), 3000); // Clear message after 3 seconds
+      } else {
+        // Clear review mark if step is now complete
+        clearReviewMark(getWizardSteps()[currentStep].key);
+      }
+      setCurrentStep(currentStep + 1);
+    }
   };
   const goToPrevStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
@@ -102,7 +145,12 @@ const PatentAudit = () => {
     </div>
   );
 
-  // 7. Gate question renderers for optional sections
+  // 7. Helper function to render required field indicator
+  const renderRequiredIndicator = () => (
+    <span className="text-red-500 ml-1">*</span>
+  );
+
+  // 8. Gate question renderers for optional sections
   function renderCrossReferenceGate() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
@@ -137,7 +185,9 @@ const PatentAudit = () => {
         
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title{renderRequiredIndicator()}
+            </label>
             <input
               type="text"
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -215,7 +265,7 @@ const PatentAudit = () => {
   function renderInventorsSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventors</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventors{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">List all inventors who contributed to the conception of the invention. Each inventor must have made a significant contribution to the inventive concept.</p>
         
         <div className="space-y-6">
@@ -311,7 +361,7 @@ const PatentAudit = () => {
   function renderAbstractSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a concise summary of your invention (150 words or less). This should explain what your invention does and its key benefits.</p>
         <textarea
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -327,7 +377,7 @@ const PatentAudit = () => {
   function renderFieldSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of Invention</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of Invention{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the technical field to which your invention relates.</p>
         <textarea
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -343,7 +393,7 @@ const PatentAudit = () => {
   function renderBackgroundSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Background</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Background{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the current state of the art and the problems your invention solves.</p>
         <textarea
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -359,7 +409,7 @@ const PatentAudit = () => {
   function renderSummarySection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a brief summary of your invention, including its main features and advantages.</p>
         <textarea
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -436,7 +486,7 @@ const PatentAudit = () => {
 
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Drawings and Images</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Drawings and Images{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Upload drawings and images that accompany your patent application. You can provide custom names for each image.</p>
         
         {/* Text Description */}
@@ -626,7 +676,7 @@ const PatentAudit = () => {
   function renderDetailedDescriptionSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a detailed description of your invention, including how it works and how to make and use it.</p>
         <textarea
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -2190,12 +2240,7 @@ const PatentAudit = () => {
               </button>
             ) : (
               <button
-                onClick={() => {
-                  if (isSectionCompleted(getWizardSteps()[currentStep].key)) {
-                    clearReviewMark(getWizardSteps()[currentStep].key);
-                  }
-                  goToNextStep();
-                }}
+                onClick={goToNextStep}
                 className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
               >
                 Next
