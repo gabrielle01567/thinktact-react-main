@@ -2314,17 +2314,21 @@ const PatentAudit = () => {
     </div>
   );
 
-  // Add "Come Back Later" button to each step
-  const renderComeBackLaterButton = () => (
-    <div className="mt-6 pt-4 border-t border-gray-200">
+  // Add "Save Draft" button to each step
+  const renderSaveDraftButton = () => (
+    <div className="w-full max-w-2xl mx-auto mb-4">
       <button
-        onClick={() => {
-          markForReview(getWizardSteps()[currentStep].key);
-          goToNextStep();
+        onClick={async () => {
+          try {
+            await saveApplication();
+          } catch (error) {
+            console.error('Error saving draft:', error);
+          }
         }}
-        className="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+        disabled={isSaving}
+        className="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Come Back Later
+        {isSaving ? 'Saving Draft...' : 'Save Draft'}
       </button>
     </div>
   );
@@ -2365,6 +2369,9 @@ const PatentAudit = () => {
             )}
           </div>
 
+          {/* Save Draft Button */}
+          {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderSaveDraftButton()}
+
           {/* Progress Indicator */}
           <div className="w-full flex justify-center items-center mb-6">
             {renderProgress()}
@@ -2373,7 +2380,6 @@ const PatentAudit = () => {
           {/* Step Content */}
           <div className="w-full max-w-2xl mx-auto">
             {renderCurrentStep()}
-            {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderComeBackLaterButton()}
           </div>
 
           {/* Document Preview */}
