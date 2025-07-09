@@ -11,6 +11,7 @@ import Research from './pages/Research';
 import ClarityInfrastructure from './pages/ClarityInfrastructure';
 import PatentAudit from './pages/PatentAudit';
 import PatentAuditThanks from './pages/PatentAuditThanks';
+import PatentApplications from './pages/PatentApplications';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -37,7 +38,9 @@ function App() {
             <Route path="founder" element={<Founder />} />
             <Route path="research" element={<Research />} />
             <Route path="research/clarity-infrastructure" element={<ClarityInfrastructure />} />
+            <Route path="patent-applications" element={<PatentApplications />} />
             <Route path="patent-audit" element={<PatentAudit />} />
+            <Route path="patent-audit/:id" element={<PatentAudit />} />
             <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>

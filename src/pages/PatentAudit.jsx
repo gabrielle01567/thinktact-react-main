@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { savePatentApplication, updatePatentApplication, getPatentApplication } from '../services/patentService.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const PatentAudit = () => {
+  const { id: applicationId } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
   const [currentSection, setCurrentSection] = useState('Title');
   const [title, setTitle] = useState('');
   const [shortDescription, setShortDescription] = useState('');
@@ -9,6 +15,9 @@ const PatentAudit = () => {
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   // New state for other sections
   const [field, setField] = useState('');
@@ -47,6 +56,96 @@ const PatentAudit = () => {
     alternatives.trim(),
     boilerplate.trim()
   ].filter(Boolean).length;
+
+  // Load existing application data if editing
+  useEffect(() => {
+    const loadApplication = async () => {
+      if (applicationId && user) {
+        setIsLoading(true);
+        try {
+          const application = await getPatentApplication(applicationId);
+          
+          // Populate form fields
+          setTitle(application.title || '');
+          setShortDescription(application.shortDescription || '');
+          setField(application.field || '');
+          setBackground(application.background || '');
+          setSummary(application.summary || '');
+          setDrawings(application.drawings || '');
+          setDetailedDescription(application.detailedDescription || '');
+          setCritical(application.critical || '');
+          setAlternatives(application.alternatives || '');
+          setBoilerplate(application.boilerplate || '');
+          
+          // Set completion status
+          if (application.completedSections) {
+            setCompletedSections(application.completedSections);
+          }
+          
+        } catch (error) {
+          console.error('Error loading application:', error);
+          // If application not found, redirect to new application
+          if (error.response?.status === 404) {
+            navigate('/patent-audit');
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadApplication();
+  }, [applicationId, user, navigate]);
+
+  // Save application data
+  const saveApplication = async () => {
+    if (!user) {
+      setSaveMessage('Please log in to save your application');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveMessage('');
+
+    try {
+      const applicationData = {
+        title,
+        shortDescription,
+        field,
+        background,
+        summary,
+        drawings,
+        detailedDescription,
+        critical,
+        alternatives,
+        boilerplate,
+        completedSections,
+        status: Object.values(completedSections).filter(Boolean).length === sections.length ? 'complete' : 'draft'
+      };
+
+      let result;
+      if (applicationId) {
+        // Update existing application
+        result = await updatePatentApplication(applicationId, applicationData);
+        setSaveMessage('Application updated successfully!');
+      } else {
+        // Save new application
+        result = await savePatentApplication(applicationData);
+        setSaveMessage('Application saved successfully!');
+        // Redirect to the saved application
+        navigate(`/patent-audit/${result.application.id}`);
+      }
+
+      // Clear save message after 3 seconds
+      setTimeout(() => setSaveMessage(''), 3000);
+
+    } catch (error) {
+      console.error('Error saving application:', error);
+      setSaveMessage('Error saving application. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Helper function to render section content
   const renderSectionContent = () => {
@@ -736,6 +835,12 @@ const PatentAudit = () => {
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto bg-white">
         <div className="max-w-5xl mx-auto p-8">
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Loading application...</span>
+            </div>
+          )}
           {/* Header Strip */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
@@ -743,9 +848,26 @@ const PatentAudit = () => {
               <span className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-full">Draft</span>
             </div>
             <div className="flex space-x-3">
-              <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50">
-                Save Draft
+              <button 
+                onClick={saveApplication}
+                disabled={isSaving}
+                className={`px-4 py-2 text-sm font-medium rounded-md ${
+                  isSaving 
+                    ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                    : 'text-blue-600 bg-white border border-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                {isSaving ? 'Saving...' : 'Save Draft'}
               </button>
+              {saveMessage && (
+                <span className={`px-3 py-2 text-sm rounded-md ${
+                  saveMessage.includes('Error') 
+                    ? 'text-red-700 bg-red-100' 
+                    : 'text-green-700 bg-green-100'
+                }`}>
+                  {saveMessage}
+                </span>
+              )}
               <button 
                 className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
                   Object.values(completedSections).filter(Boolean).length === sections.length

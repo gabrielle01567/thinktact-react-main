@@ -19,6 +19,7 @@ console.log('  RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET')
 console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
 
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
+import { savePatentApplication, updatePatentApplication, getPatentApplications, getPatentApplication, deletePatentApplication } from './api/patent-applications.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
 import bcrypt from 'bcryptjs';
 
@@ -972,6 +973,182 @@ app.delete('/api/analysis/delete', async (req, res) => {
   } catch (error) {
     console.error('Analysis delete error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Patent Application endpoints
+app.post('/api/patent-applications/save', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const applicationData = req.body;
+
+    console.log('Saving patent application for user:', user.id);
+    console.log('Application data:', {
+      title: applicationData.title,
+      completedSections: applicationData.completedSections
+    });
+
+    const result = await savePatentApplication(user.id, applicationData);
+
+    console.log('Patent application saved successfully:', result);
+    res.status(200).json({ success: true, application: result });
+
+  } catch (error) {
+    console.error('Patent application save error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.put('/api/patent-applications/:id', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const { id } = req.params;
+    const applicationData = req.body;
+
+    console.log('Updating patent application:', id, 'for user:', user.id);
+
+    const result = await updatePatentApplication(user.id, id, applicationData);
+
+    console.log('Patent application updated successfully:', result);
+    res.status(200).json({ success: true, application: result });
+
+  } catch (error) {
+    console.error('Patent application update error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.get('/api/patent-applications', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const applications = await getPatentApplications(user.id);
+    
+    res.json({ 
+      success: true, 
+      applications: applications || []
+    });
+  } catch (error) {
+    console.error('Patent applications list error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.get('/api/patent-applications/:id', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const { id } = req.params;
+
+    const application = await getPatentApplication(user.id, id);
+    
+    res.json({ 
+      success: true, 
+      application: application
+    });
+  } catch (error) {
+    console.error('Patent application get error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.delete('/api/patent-applications/:id', async (req, res) => {
+  try {
+    // Get user from token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await findUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const { id } = req.params;
+
+    const result = await deletePatentApplication(user.id, id);
+    
+    res.json({ 
+      success: true, 
+      message: 'Patent application deleted successfully'
+    });
+  } catch (error) {
+    console.error('Patent application delete error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
