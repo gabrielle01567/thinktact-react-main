@@ -3,9 +3,20 @@ import SafeTextFormatter from '../SafeTextFormatter';
 
 const ArgumentFlow = ({ structure = {} }) => {
   // Extract premises into an array
-  const premises = Array.isArray(structure?.premise) 
+  let premises = Array.isArray(structure?.premise) 
     ? structure.premise 
     : [structure?.premise || "No clear premise"];
+  
+  // Handle case where premises might be a single long string that needs splitting
+  if (premises.length === 1 && typeof premises[0] === 'string' && premises[0].length > 500) {
+    console.log('Long premise detected, attempting to split:', premises[0].substring(0, 100) + '...');
+    // Try to split by common separators
+    const splitPremises = premises[0].split(/(?:\d+\.\s*|\n\s*\d+\.\s*|\n\s*•\s*|\n\s*-\s*)/).filter(p => p.trim());
+    if (splitPremises.length > 1) {
+      premises = splitPremises.map(p => p.trim()).filter(p => p.length > 0);
+      console.log('Split into', premises.length, 'premises');
+    }
+  }
   
   // Extract unstated assumptions if available
   const unstatedAssumptions = structure?.unstatedAssumptions || [];
@@ -16,7 +27,8 @@ const ArgumentFlow = ({ structure = {} }) => {
     premises,
     premisesLength: premises.length,
     firstPremise: premises[0],
-    premiseType: typeof premises[0]
+    premiseType: typeof premises[0],
+    firstPremiseLength: premises[0]?.length || 0
   });
   
   return (
@@ -33,6 +45,7 @@ const ArgumentFlow = ({ structure = {} }) => {
             <SafeTextFormatter 
               text={structure?.conclusion || "No clear conclusion"}
               className="text-gray-800"
+              maxLength={100000}
             />
           </div>
         </div>
@@ -55,6 +68,7 @@ const ArgumentFlow = ({ structure = {} }) => {
                   <SafeTextFormatter 
                     text={assumption}
                     className="text-gray-700"
+                    maxLength={100000}
                   />
                 </div>
               ))}
@@ -74,6 +88,7 @@ const ArgumentFlow = ({ structure = {} }) => {
                 <SafeTextFormatter 
                   text={premise}
                   className="text-green-900"
+                  maxLength={100000}
                 />
               </div>
             ))}
