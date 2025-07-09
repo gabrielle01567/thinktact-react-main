@@ -1969,12 +1969,12 @@ const PatentAudit = () => {
       </div>
       
       {/* Document Content */}
-      <div className="relative z-10" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt', lineHeight: '1.5' }}>
+      <div className="relative z-10" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt', lineHeight: '1.5', color: 'black' }}>
         {/* USPTO Header */}
         <div className="text-center mb-8">
-          <div className="text-sm text-gray-600 mb-2">UNITED STATES PATENT AND TRADEMARK OFFICE</div>
-          <div className="text-sm text-gray-600 mb-4">PROVISIONAL APPLICATION FOR PATENT</div>
-          <div className="text-xs text-gray-500 border-t border-gray-300 pt-2">
+          <div className="text-sm text-black mb-2">UNITED STATES PATENT AND TRADEMARK OFFICE</div>
+          <div className="text-sm text-black mb-4">PROVISIONAL APPLICATION FOR PATENT</div>
+          <div className="text-xs text-black border-t border-gray-300 pt-2">
             <div>Attorney Docket No.: [To be assigned]</div>
             <div>Application No.: [To be assigned]</div>
             <div>Filing Date: [To be assigned]</div>
@@ -1983,10 +1983,10 @@ const PatentAudit = () => {
 
         {/* Title Section */}
         <div className="mb-6">
-          <div className="text-center font-bold text-lg mb-2" style={{ textTransform: 'uppercase' }}>
+          <div className="text-center font-bold text-lg mb-2 text-black" style={{ textTransform: 'uppercase' }}>
             {title || '[TITLE OF THE INVENTION]'}
           </div>
-          <div className="text-center text-sm text-gray-600 mb-4">
+          <div className="text-center text-sm text-black mb-4">
             {inventors && inventors.length > 0 && inventors.some(inv => inv.name.trim()) && (
               <span>
                 Inventor{inventors.filter(inv => inv.name.trim()).length > 1 ? 's' : ''}: {
@@ -2121,7 +2121,7 @@ const PatentAudit = () => {
         )}
 
         {/* USPTO Footer */}
-        <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-300">
+        <div className="text-center text-xs text-black mt-8 pt-4 border-t border-gray-300">
           <div className="mb-2">
             <strong>IMPORTANT NOTICE:</strong> This is a draft provisional patent application.
           </div>
