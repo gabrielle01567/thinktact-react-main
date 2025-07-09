@@ -434,6 +434,26 @@ const PatentAudit = () => {
       setShowImageModal(true);
     };
 
+    // Handle ESC key to close modal
+    useEffect(() => {
+      const handleEscKey = (event) => {
+        if (event.key === 'Escape' && showImageModal) {
+          setShowImageModal(false);
+        }
+      };
+
+      if (showImageModal) {
+        document.addEventListener('keydown', handleEscKey);
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+      }
+
+      return () => {
+        document.removeEventListener('keydown', handleEscKey);
+        document.body.style.overflow = 'unset';
+      };
+    }, [showImageModal]);
+
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Drawings and Images</h2>
@@ -540,7 +560,14 @@ const PatentAudit = () => {
                     alt={image.name || `Image ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
                     onClick={() => openImageModal(image)}
+                    title="Click to enlarge"
                   />
+                  {/* Click indicator */}
+                  <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -567,24 +594,46 @@ const PatentAudit = () => {
 
         {/* Image Modal */}
         {showImageModal && selectedImage && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="max-w-4xl max-h-full p-4">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="max-w-6xl max-h-full p-4 relative">
               <div className="relative">
+                {/* Close button */}
                 <button
-                  onClick={() => setShowImageModal(false)}
-                  className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowImageModal(false);
+                  }}
+                  className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-3 rounded-full hover:bg-opacity-100 transition-all duration-200 z-10"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
+
+                {/* Zoom indicator */}
+                <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm z-10">
+                  Click outside to close • ESC to close
+                </div>
+
+                {/* Main image */}
                 <img
                   src={selectedImage.url}
                   alt={selectedImage.name || 'Selected image'}
-                  className="max-w-full max-h-[80vh] object-contain"
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
                 />
+
+                {/* Image info */}
                 <div className="mt-4 text-center text-white">
-                  <p className="font-medium">{selectedImage.name || 'Untitled Image'}</p>
+                  <p className="font-medium text-lg">{selectedImage.name || 'Untitled Image'}</p>
+                  {selectedImage.size && (
+                    <p className="text-sm text-gray-300 mt-1">
+                      {(selectedImage.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
