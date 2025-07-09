@@ -737,12 +737,12 @@ Avoid any special formatting characters, and use simple line breaks and numbers 
                   />
                 </div>
 
-                {/* Hidden Assumptions Section */}
+                {/* Hidden Assumptions Section (duplicate, above counter argument) */}
                 {processedAnalysis?.argumentStructure?.unstatedAssumptions && 
                  processedAnalysis.argumentStructure.unstatedAssumptions.length > 0 && (
-                  <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                  <div className="bg-white p-5 rounded-lg shadow-sm border border-purple-200 mb-2">
                     <div className="flex items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800">Hidden Assumptions</h3>
+                      <h3 className="text-lg font-semibold text-purple-800">Hidden Assumptions</h3>
                       <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
                         {processedAnalysis?.argumentStructure?.unstatedAssumptions?.length || 0} found
                       </span>
