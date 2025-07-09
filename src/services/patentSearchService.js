@@ -32,9 +32,9 @@ class PatentSearchService {
       return this.usptoApiKey;
     }
     
-    // Try to get from environment variable
-    if (typeof process !== 'undefined' && process.env && process.env.USPTO_API_KEY) {
-      return process.env.USPTO_API_KEY;
+    // Try to get from Vite environment variable (prefixed with VITE_)
+    if (import.meta.env && import.meta.env.VITE_USPTO_API_KEY) {
+      return import.meta.env.VITE_USPTO_API_KEY;
     }
     
     // Try to get from localStorage (if user has entered it)

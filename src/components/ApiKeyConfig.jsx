@@ -101,6 +101,22 @@ const ApiKeyConfig = () => {
               <li>4. Copy the key and paste it below</li>
             </ol>
           </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-green-900 mb-2">Environment Variable Setup (Recommended):</h3>
+            <p className="text-sm text-green-800 mb-2">
+              For better security, you can set your USPTO API key as an environment variable:
+            </p>
+            <ol className="text-sm text-green-800 space-y-1">
+              <li>1. Create a <code className="bg-green-100 px-1 rounded">.env</code> file in the project root</li>
+              <li>2. Add: <code className="bg-green-100 px-1 rounded">VITE_USPTO_API_KEY=your_api_key_here</code></li>
+              <li>3. Restart your development server</li>
+              <li>4. The API key will be automatically loaded</li>
+            </ol>
+            <p className="text-xs text-green-700 mt-2">
+              Note: Environment variables take precedence over locally stored keys
+            </p>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -190,17 +206,30 @@ const ApiKeyConfig = () => {
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h3 className="font-semibold text-gray-900 mb-2">Current Status:</h3>
-          <div className="flex items-center">
-            {patentSearchService.getUSPTOApiKey() ? (
-              <>
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                <span className="text-green-700">USPTO API key is configured and ready to use</span>
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2" />
-                <span className="text-yellow-700">No USPTO API key configured - using Google Patents as fallback</span>
-              </>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              {patentSearchService.getUSPTOApiKey() ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  <span className="text-green-700">USPTO API key is configured and ready to use</span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-yellow-700">No USPTO API key configured - using Google Patents as fallback</span>
+                </>
+              )}
+            </div>
+            
+            {/* Show source of API key */}
+            {patentSearchService.getUSPTOApiKey() && (
+              <div className="text-sm text-gray-600">
+                {import.meta.env && import.meta.env.VITE_USPTO_API_KEY ? (
+                  <span>✅ Using environment variable (VITE_USPTO_API_KEY)</span>
+                ) : (
+                  <span>✅ Using locally stored API key</span>
+                )}
+              </div>
             )}
           </div>
         </div>

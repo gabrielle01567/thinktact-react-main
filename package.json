@@ -16,7 +16,8 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "deploy": "npm run build && vercel --prod"
+    "deploy": "npm run build && vercel --prod",
+    "setup-uspto": "node setup-uspto-env.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.2",
