@@ -128,6 +128,342 @@ const PatentAudit = () => {
     );
   }
 
+  // Add missing render functions for each section
+  function renderTitleSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Title of the Invention</h2>
+        <p className="text-gray-600 mb-6">Provide a clear, concise title that accurately describes your invention. Avoid overly broad or vague titles.</p>
+        
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              placeholder='e.g., "System and Method for AI-Powered Content Generation"'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
+            <textarea
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows={3}
+              placeholder="A brief description to help you identify this invention in your documents"
+              value={shortDescription}
+              onChange={(e) => setShortDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-4">
+            <button
+              className="flex items-center justify-between w-full text-left font-medium text-blue-900"
+              onClick={() => setShowTips(!showTips)}
+            >
+              Tips for a Strong Title
+              <span>{showTips ? '▲' : '▼'}</span>
+            </button>
+            {showTips && (
+              <ul className="mt-2 space-y-2 text-sm text-blue-800">
+                <li>• Be specific about the technology area</li>
+                <li>• Include key technical features that make your invention unique</li>
+                <li>• Avoid marketing language or superlatives</li>
+                <li>• Keep it under 15 words if possible</li>
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderCrossReferenceSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
+        <p className="text-gray-600 mb-6">Provide the application number and filing date of the earlier application you are claiming priority to.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={4}
+          placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
+          value={crossReference}
+          onChange={(e) => setCrossReference(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderFederalResearchSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
+        <p className="text-gray-600 mb-6">Provide the contract or grant number and the government agency that supported this invention.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={4}
+          placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
+          value={federalResearch}
+          onChange={(e) => setFederalResearch(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderInventorsSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventors</h2>
+        <p className="text-gray-600 mb-6">List all inventors who contributed to the conception of the invention. Each inventor must have made a significant contribution to the inventive concept.</p>
+        
+        <div className="space-y-6">
+          {inventors.map((inventor, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Inventor {index + 1}</h3>
+                {inventors.length > 1 && (
+                  <button
+                    onClick={() => {
+                      const newInventors = inventors.filter((_, i) => i !== index);
+                      setInventors(newInventors);
+                    }}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="e.g., John Smith"
+                    value={inventor.name}
+                    onChange={(e) => {
+                      const newInventors = [...inventors];
+                      newInventors[index].name = e.target.value;
+                      setInventors(newInventors);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="e.g., 123 Main St, City, State, ZIP"
+                    value={inventor.address}
+                    onChange={(e) => {
+                      const newInventors = [...inventors];
+                      newInventors[index].address = e.target.value;
+                      setInventors(newInventors);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="e.g., United States"
+                    value={inventor.citizenship}
+                    onChange={(e) => {
+                      const newInventors = [...inventors];
+                      newInventors[index].citizenship = e.target.value;
+                      setInventors(newInventors);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="e.g., California"
+                    value={inventor.residence}
+                    onChange={(e) => {
+                      const newInventors = [...inventors];
+                      newInventors[index].residence = e.target.value;
+                      setInventors(newInventors);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          <button
+            onClick={() => setInventors([...inventors, { name: '', address: '', citizenship: '', residence: '' }])}
+            className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md"
+          >
+            + Add Another Inventor
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderAbstractSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract</h2>
+        <p className="text-gray-600 mb-6">Provide a concise summary of your invention (150 words or less). This should explain what your invention does and its key benefits.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={6}
+          placeholder="Describe your invention in a clear, concise manner..."
+          value={abstract}
+          onChange={(e) => setAbstract(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderFieldSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of Invention</h2>
+        <p className="text-gray-600 mb-6">Describe the technical field to which your invention relates.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={4}
+          placeholder="e.g., The present invention relates to artificial intelligence and machine learning systems, specifically to natural language processing and content generation."
+          value={field}
+          onChange={(e) => setField(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderBackgroundSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Background</h2>
+        <p className="text-gray-600 mb-6">Describe the current state of the art and the problems your invention solves.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={8}
+          placeholder="Describe the existing technology and the problems it has..."
+          value={background}
+          onChange={(e) => setBackground(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderSummarySection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary</h2>
+        <p className="text-gray-600 mb-6">Provide a brief summary of your invention, including its main features and advantages.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={6}
+          placeholder="Summarize your invention and its key features..."
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderDrawingsSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Brief Description of Drawings</h2>
+        <p className="text-gray-600 mb-6">Describe the drawings that accompany your patent application.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={4}
+          placeholder="e.g., FIG. 1 is a block diagram showing the overall system architecture..."
+          value={drawings}
+          onChange={(e) => setDrawings(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderDetailedDescriptionSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description</h2>
+        <p className="text-gray-600 mb-6">Provide a detailed description of your invention, including how it works and how to make and use it.</p>
+        <textarea
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          rows={12}
+          placeholder="Provide a detailed description of your invention..."
+          value={detailedDescription}
+          onChange={(e) => setDetailedDescription(e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  function renderReviewSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Review Your Application</h2>
+        <p className="text-gray-600 mb-6">Review all sections of your patent application before saving.</p>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Title</span>
+            <span className={title.trim() ? 'text-green-600' : 'text-red-600'}>
+              {title.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Inventors</span>
+            <span className={inventors.some(inv => inv.name.trim() && inv.address.trim()) ? 'text-green-600' : 'text-red-600'}>
+              {inventors.some(inv => inv.name.trim() && inv.address.trim()) ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Abstract</span>
+            <span className={abstract.trim() ? 'text-green-600' : 'text-red-600'}>
+              {abstract.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Field</span>
+            <span className={field.trim() ? 'text-green-600' : 'text-red-600'}>
+              {field.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Background</span>
+            <span className={background.trim() ? 'text-green-600' : 'text-red-600'}>
+              {background.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Summary</span>
+            <span className={summary.trim() ? 'text-green-600' : 'text-red-600'}>
+              {summary.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Drawings</span>
+            <span className={drawings.trim() ? 'text-green-600' : 'text-red-600'}>
+              {drawings.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Detailed Description</span>
+            <span className={detailedDescription.trim() ? 'text-green-600' : 'text-red-600'}>
+              {detailedDescription.trim() ? '✓' : '✗'}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const [title, setTitle] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [showTips, setShowTips] = useState(true);
