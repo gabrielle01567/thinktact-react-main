@@ -1010,19 +1010,29 @@ app.post('/api/patent-applications/save', async (req, res) => {
   try {
     // Get user from token
     const authHeader = req.headers.authorization;
+    console.log('🔍 Backend: Auth header:', authHeader ? authHeader.substring(0, 20) + '...' : 'null');
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('🔍 Backend: No token provided');
       return res.status(401).json({ error: 'No token provided' });
     }
 
     const token = authHeader.substring(7);
+    console.log('🔍 Backend: Token extracted:', token.substring(0, 20) + '...');
+    
     const decoded = verifyToken(token);
+    console.log('🔍 Backend: Token decoded:', decoded ? 'success' : 'failed');
     
     if (!decoded) {
+      console.log('🔍 Backend: Invalid token');
       return res.status(401).json({ error: 'Invalid token' });
     }
 
     const user = await findUserById(decoded.userId);
+    console.log('🔍 Backend: User found:', user ? 'yes' : 'no');
+    
     if (!user) {
+      console.log('🔍 Backend: User not found');
       return res.status(401).json({ error: 'User not found' });
     }
 

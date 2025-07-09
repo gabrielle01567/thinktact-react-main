@@ -35,6 +35,15 @@ export const getApplicationCount = async () => {
 export const savePatentApplication = async (applicationData) => {
   try {
     const token = getAuthToken();
+    console.log('🔍 PatentService: Attempting to save application');
+    console.log('🔍 PatentService: Token exists:', !!token);
+    console.log('🔍 PatentService: API URL:', `${API_BASE_URL}/patent-applications/save`);
+    console.log('🔍 PatentService: Application data:', {
+      title: applicationData.title,
+      status: applicationData.status,
+      completedSections: applicationData.completedSections
+    });
+    
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -46,9 +55,15 @@ export const savePatentApplication = async (applicationData) => {
       }
     });
 
+    console.log('🔍 PatentService: Save successful:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error saving patent application:', error);
+    console.error('🔍 PatentService: Save error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     throw error;
   }
 };
