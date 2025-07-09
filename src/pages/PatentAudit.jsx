@@ -14,6 +14,7 @@ const PatentAudit = () => {
   const [showTips, setShowTips] = useState(true);
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
+  const [showHelpPanel, setShowHelpPanel] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -813,8 +814,8 @@ const PatentAudit = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto bg-white">
-        <div className="max-w-5xl mx-auto p-8">
+      <div className={`overflow-auto bg-white ${showHelpPanel ? 'flex-1' : 'flex-1'}`}>
+        <div className={`mx-auto p-8 ${showHelpPanel ? 'max-w-5xl' : 'max-w-7xl'}`}>
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -861,6 +862,15 @@ const PatentAudit = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
                 {isSaving ? 'Saving...' : (Object.values(completedSections).filter(Boolean).length === sections.length ? 'Complete' : `${Object.values(completedSections).filter(Boolean).length}/${sections.length} Complete`)}
+              </button>
+              <button 
+                onClick={() => setShowHelpPanel(!showHelpPanel)}
+                className="px-4 py-2 text-sm font-medium rounded-md text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {showHelpPanel ? 'Hide Help' : 'Show Help'}
               </button>
             </div>
           </div>
@@ -952,52 +962,54 @@ const PatentAudit = () => {
       </div>
 
       {/* Help & Resources Panel */}
-      <div className="w-80 bg-blue-50 border-l border-gray-200 p-6">
-        <div className="mb-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Help & Resources</h3>
-          <div className="bg-white rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-2">{getSectionHelp().title}</h4>
-            <p className="text-sm text-gray-600 mb-4">{getSectionHelp().description}</p>
-            <a href="#" className="text-sm text-blue-600 hover:text-blue-800">{getSectionHelp().link}</a>
+      {showHelpPanel && (
+        <div className="w-80 bg-blue-50 border-l border-gray-200 p-6">
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Help & Resources</h3>
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">{getSectionHelp().title}</h4>
+              <p className="text-sm text-gray-600 mb-4">{getSectionHelp().description}</p>
+              <a href="#" className="text-sm text-blue-600 hover:text-blue-800">{getSectionHelp().link}</a>
+            </div>
           </div>
-        </div>
 
-        {/* Section Importance Chart */}
-        <div className="mb-8">
-          <h4 className="text-sm font-medium text-gray-900 mb-4">Section Importance</h4>
-          <div className="space-y-3">
-            {sections.map((section, index) => (
-              <div key={section} className="flex items-center">
-                <span className="w-32 text-sm text-gray-600">{section}</span>
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${
-                      section === 'Detailed Description'
-                        ? 'bg-red-500'
-                        : 'bg-green-500'
-                    }`}
-                    style={{ width: `${100 - index * 10}%` }}
-                  ></div>
+          {/* Section Importance Chart */}
+          <div className="mb-8">
+            <h4 className="text-sm font-medium text-gray-900 mb-4">Section Importance</h4>
+            <div className="space-y-3">
+              {sections.map((section, index) => (
+                <div key={section} className="flex items-center">
+                  <span className="w-32 text-sm text-gray-600">{section}</span>
+                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${
+                        section === 'Detailed Description'
+                          ? 'bg-red-500'
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${100 - index * 10}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Common Mistakes */}
+          <div className="bg-red-50 rounded-lg p-4">
+            <h4 className="font-medium text-red-900 mb-2">Common Mistakes</h4>
+            <ul className="space-y-2 text-sm text-red-800">
+              <li>• Including claims (not needed for provisionals)</li>
+              <li>• Being too vague</li>
+              <li>• Public disclosure before filing</li>
+              <li>• Focusing only on the problem</li>
+            </ul>
+            <a href="#" className="mt-4 text-sm text-blue-600 hover:text-blue-800 block">
+              View example applications
+            </a>
           </div>
         </div>
-
-        {/* Common Mistakes */}
-        <div className="bg-red-50 rounded-lg p-4">
-          <h4 className="font-medium text-red-900 mb-2">Common Mistakes</h4>
-          <ul className="space-y-2 text-sm text-red-800">
-            <li>• Including claims (not needed for provisionals)</li>
-            <li>• Being too vague</li>
-            <li>• Public disclosure before filing</li>
-            <li>• Focusing only on the problem</li>
-          </ul>
-          <a href="#" className="mt-4 text-sm text-blue-600 hover:text-blue-800 block">
-            View example applications
-          </a>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
