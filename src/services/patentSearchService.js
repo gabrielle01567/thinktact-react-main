@@ -57,22 +57,31 @@ class PatentSearchService {
       // Try USPTO first if API key is available
       if (hasUSPTOKey) {
         try {
+          console.log('🔍 Trying USPTO API first...');
           const usptoResults = await this.searchUSPTO(query, filters);
           if (usptoResults && usptoResults.length > 0) {
+            console.log('✅ USPTO API returned results, using USPTO data');
             return this.formatUSPTOResults(usptoResults);
+          } else {
+            console.log('⚠️ USPTO API returned no results, trying Google Patents');
           }
         } catch (usptoError) {
-          console.log('USPTO API failed:', usptoError.message);
+          console.log('❌ USPTO API failed, falling back to Google Patents:', usptoError.message);
         }
+      } else {
+        console.log('🔑 No USPTO API key configured, using Google Patents');
       }
 
       // Fallback to Google Patents
+      console.log('🔍 Trying Google Patents...');
       const googleResults = await this.searchGooglePatents(query, filters);
       if (googleResults && googleResults.length > 0) {
+        console.log('✅ Google Patents returned results');
         return this.formatGoogleResults(googleResults);
       }
 
       // No results found from any API
+      console.log('❌ No results found from any API');
       return [];
 
     } catch (error) {
@@ -170,31 +179,51 @@ class PatentSearchService {
       'X-API-Key': apiKey
     };
 
-    const response = await fetch(`${USPTO_ENDPOINTS.search}?${params}`, {
-      method: 'GET',
-      headers: headers,
-      mode: 'cors'
-    });
+    try {
+      console.log('🔍 Attempting USPTO API search:', query);
+      console.log('🔑 API Key configured:', apiKey ? 'Yes' : 'No');
+      
+      const response = await fetch(`${USPTO_ENDPOINTS.search}?${params}`, {
+        method: 'GET',
+        headers: headers,
+        mode: 'cors'
+      });
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('USPTO API key is invalid or expired');
-      } else if (response.status === 429) {
-        throw new Error('USPTO API rate limit exceeded. Please try again later.');
-      } else {
-        throw new Error(`USPTO API error: ${response.status} - ${response.statusText}`);
+      console.log('📡 USPTO API Response Status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('USPTO API key is invalid or expired');
+        } else if (response.status === 429) {
+          throw new Error('USPTO API rate limit exceeded. Please try again later.');
+        } else if (response.status === 0) {
+          throw new Error('USPTO API CORS error - API may not support browser requests');
+        } else {
+          throw new Error(`USPTO API error: ${response.status} - ${response.statusText}`);
+        }
       }
+
+      const data = await response.json();
+      console.log('✅ USPTO API search successful, results:', data.results?.length || 0);
+      
+      // Cache the results
+      this.cache.set(cacheKey, {
+        data: data.results || [],
+        timestamp: Date.now()
+      });
+
+      return data.results || [];
+    } catch (error) {
+      console.error('❌ USPTO API search failed:', error.message);
+      console.error('🔍 Full error details:', error);
+      
+      // Check if it's a CORS error
+      if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+        throw new Error('USPTO API CORS error - The USPTO API does not support direct browser requests. Please use Google Patents search instead.');
+      }
+      
+      throw error;
     }
-
-    const data = await response.json();
-    
-    // Cache the results
-    this.cache.set(cacheKey, {
-      data: data.results || [],
-      timestamp: Date.now()
-    });
-
-    return data.results || [];
   }
 
   // Get USPTO patent detail with API key support

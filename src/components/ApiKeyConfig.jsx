@@ -117,6 +117,17 @@ const ApiKeyConfig = () => {
               Note: Environment variables take precedence over locally stored keys
             </p>
           </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Important Note About USPTO API:</h3>
+            <p className="text-sm text-yellow-800 mb-2">
+              The USPTO API may have CORS restrictions that prevent direct browser requests. 
+              If you encounter "Failed to fetch" errors, the app will automatically fall back to Google Patents.
+            </p>
+            <p className="text-xs text-yellow-700">
+              This is normal behavior - Google Patents provides excellent patent data and is more reliable for web applications.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-4">

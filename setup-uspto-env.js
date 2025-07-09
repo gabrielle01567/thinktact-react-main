@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import readline from 'readline';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 console.log('🔧 USPTO API Key Environment Setup\n');
 
@@ -16,7 +21,6 @@ if (envExists) {
   console.log(fs.readFileSync(envPath, 'utf8'));
   console.log('─'.repeat(50));
   
-  const readline = require('readline');
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -35,7 +39,6 @@ if (envExists) {
 }
 
 function promptForApiKey() {
-  const readline = require('readline');
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
