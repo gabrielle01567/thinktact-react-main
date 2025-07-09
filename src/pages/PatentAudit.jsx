@@ -434,26 +434,6 @@ const PatentAudit = () => {
       setShowImageModal(true);
     };
 
-    // Handle ESC key to close modal
-    useEffect(() => {
-      const handleEscKey = (event) => {
-        if (event.key === 'Escape' && showImageModal) {
-          setShowImageModal(false);
-        }
-      };
-
-      if (showImageModal) {
-        document.addEventListener('keydown', handleEscKey);
-        // Prevent body scroll when modal is open
-        document.body.style.overflow = 'hidden';
-      }
-
-      return () => {
-        document.removeEventListener('keydown', handleEscKey);
-        document.body.style.overflow = 'unset';
-      };
-    }, [showImageModal]);
-
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Drawings and Images</h2>
@@ -1945,6 +1925,26 @@ const PatentAudit = () => {
 
   // Add state for tracking sections that need review
   const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
+
+  // Handle ESC key to close image modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showImageModal) {
+        setShowImageModal(false);
+      }
+    };
+
+    if (showImageModal) {
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showImageModal]);
   
   // Helper function to check if a section is completed
   const isSectionCompleted = (stepKey) => {
