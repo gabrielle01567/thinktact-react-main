@@ -109,8 +109,8 @@ const PatentAudit = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
         <p className="text-gray-600 mb-6">Are you claiming priority to an earlier U.S. or foreign patent application?</p>
         <div className="flex gap-4">
-          <button onClick={() => { setWantsCrossReference(true); goToNextStep(); }} className="px-4 py-2 bg-blue-600 text-white rounded">Yes</button>
-          <button onClick={() => { setWantsCrossReference(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded">No</button>
+          <button onClick={() => { setWantsCrossReference(true); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Yes</button>
+          <button onClick={() => { setWantsCrossReference(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">No</button>
         </div>
       </div>
     );
@@ -121,8 +121,8 @@ const PatentAudit = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
         <p className="text-gray-600 mb-6">Was this invention made with U.S. federal government support?</p>
         <div className="flex gap-4">
-          <button onClick={() => { setWantsFederalResearch(true); goToNextStep(); }} className="px-4 py-2 bg-blue-600 text-white rounded">Yes</button>
-          <button onClick={() => { setWantsFederalResearch(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded">No</button>
+          <button onClick={() => { setWantsFederalResearch(true); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Yes</button>
+          <button onClick={() => { setWantsFederalResearch(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">No</button>
         </div>
       </div>
     );
