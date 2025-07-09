@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, BarChart3, FileText, Target, Users, TrendingUp, Lightbulb, Shield, Clock, CheckCircle, Network } from 'lucide-react';
+import { Search, BarChart3, FileText, Target, Users, TrendingUp, Lightbulb, Shield, Clock, CheckCircle, Network, Settings } from 'lucide-react';
 
 export default function PatentBuddyHome() {
   const navigate = useNavigate();
@@ -192,7 +192,7 @@ export default function PatentBuddyHome() {
         </div>
 
         {/* Quick Actions */}
-        <div className="text-center">
+        <div className="text-center mb-16">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Ready to Get Started?</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -218,6 +218,25 @@ export default function PatentBuddyHome() {
               className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
             >
               Create Application
+            </button>
+          </div>
+        </div>
+
+        {/* Settings Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Configuration & Settings</h2>
+            <p className="text-gray-600">
+              Configure API keys and customize your patent search experience
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <button
+              onClick={() => navigate('/patent-buddy/api-config')}
+              className="flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+            >
+              <Settings className="w-5 h-5 mr-2" />
+              Configure USPTO API Key
             </button>
           </div>
         </div>
