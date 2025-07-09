@@ -82,7 +82,7 @@ const Navbar = () => {
             <Link to="/analyzer" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/analyzer')}`}>
               Analyzer
             </Link>
-            <Link to="/patent-audit" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/patent-audit')}`}>
+            <Link to="/patent-buddy" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/patent-buddy')}`}>
               Patent Buddy
             </Link>
             <Link to="/about" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${isActive('/about')}`}>
@@ -193,9 +193,9 @@ const Navbar = () => {
           <Link to="/analyzer" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/analyzer')}`}>
             Analyzer
           </Link>
-          <Link to="/patent-audit" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/patent-audit')}`}>
-            Patent Buddy
-          </Link>
+                      <Link to="/patent-buddy" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/patent-buddy')}`}>
+              Patent Buddy
+            </Link>
           <Link to="/about" className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/about')}`}>
             About
           </Link>

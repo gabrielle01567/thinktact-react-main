@@ -25,7 +25,7 @@ const Home = () => {
               Let's spot the problems before the government does.
             </h2>
             <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
-              <Link to="/patent-audit" 
+              <Link to="/patent-buddy" 
                 className="flex items-center justify-center rounded-md bg-pink-950 px-5 py-3 text-base font-semibold text-white shadow-md hover:bg-pink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-950 transition-colors">
                 Get My Patent Audit
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-2">
