@@ -25,6 +25,9 @@ import Profile from './pages/Profile';
 import VerifyEmailChange from './pages/VerifyEmailChange';
 import AnalysisDetail from './pages/AnalysisDetail';
 import PatentBuddy from './pages/PatentBuddy';
+import PatentSearch from './components/PatentSearch';
+import PatentAnalysis from './components/PatentAnalysis';
+import PatentCitations from './components/PatentCitations';
 import { PatentApplicationWizard } from './pages/PatentAudit';
 
 function App() {
@@ -43,6 +46,9 @@ function App() {
             <Route path="patent-applications" element={<PatentApplications />} />
             <Route path="patent-audit-thanks" element={<PatentAuditThanks />} />
             <Route path="patent-buddy" element={<PatentBuddy />} />
+            <Route path="patent-buddy/search" element={<PatentSearch />} />
+            <Route path="patent-buddy/analysis" element={<PatentAnalysis />} />
+            <Route path="patent-buddy/citations" element={<PatentCitations />} />
             <Route path="patent-buddy/wizard/*" element={<PatentApplicationWizard />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>
