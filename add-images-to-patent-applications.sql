@@ -8,6 +8,13 @@ ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]';
 -- Add comment to document the field
 COMMENT ON COLUMN patent_applications.images IS 'Array of uploaded image objects with filename, url, and metadata';
 
+-- Add abstract, cross_reference, federal_research, and inventors columns
+ALTER TABLE patent_applications
+ADD COLUMN IF NOT EXISTS abstract text,
+ADD COLUMN IF NOT EXISTS cross_reference text,
+ADD COLUMN IF NOT EXISTS federal_research text,
+ADD COLUMN IF NOT EXISTS inventors jsonb;
+
 -- Update the updated_at timestamp when images are modified
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
