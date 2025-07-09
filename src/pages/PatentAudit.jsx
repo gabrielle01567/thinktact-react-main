@@ -22,45 +22,57 @@ const PatentAudit = () => {
   const [saveMessage, setSaveMessage] = useState('');
 
   // New state for other sections
+  const [abstract, setAbstract] = useState('');
   const [field, setField] = useState('');
   const [background, setBackground] = useState('');
   const [summary, setSummary] = useState('');
   const [drawings, setDrawings] = useState('');
   const [detailedDescription, setDetailedDescription] = useState('');
-  const [critical, setCritical] = useState('');
-  const [alternatives, setAlternatives] = useState('');
-  const [boilerplate, setBoilerplate] = useState('');
+
+  // Add state for new optional sections
+  const [crossReference, setCrossReference] = useState('');
+  const [federalResearch, setFederalResearch] = useState('');
 
   // Completion status for each section
   const [completedSections, setCompletedSections] = useState({
     Title: false,
+    'Cross-Reference to Related Applications (Optional)': false,
+    'Federally Sponsored Research or Development (Optional)': false,
+    Abstract: false,
     Field: false,
     Background: false,
     Summary: false,
     Drawings: false,
-    'Detailed Description': false,
-    Critical: false,
-    Alternatives: false,
-    Boilerplate: false
+    'Detailed Description': false
   });
 
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
-  const sections = ['Title', 'Field', 'Background', 'Summary', 'Drawings', 'Detailed Description', 'Critical', 'Alternatives', 'Boilerplate'];
+  const sections = [
+    'Title',
+    'Cross-Reference to Related Applications (Optional)',
+    'Federally Sponsored Research or Development (Optional)',
+    'Abstract',
+    'Field',
+    'Background',
+    'Summary',
+    'Drawings',
+    'Detailed Description'
+  ];
   
   // Calculate actual completed sections
   const completedSectionsCount = [
     title.trim(),
+    crossReference.trim(),
+    federalResearch.trim(),
+    abstract.trim(),
     field.trim(),
     background.trim(),
     summary.trim(),
     drawings.trim(),
-    detailedDescription.trim(),
-    critical.trim(),
-    alternatives.trim(),
-    boilerplate.trim()
+    detailedDescription.trim()
   ].filter(Boolean).length;
 
   // Load existing application data if editing
@@ -74,15 +86,15 @@ const PatentAudit = () => {
           // Populate form fields
           setTitle(application.title || '');
           setShortDescription(application.shortDescription || '');
+          setAbstract(application.abstract || '');
           setField(application.field || '');
           setBackground(application.background || '');
           setSummary(application.summary || '');
           setDrawings(application.drawings || '');
           setDetailedDescription(application.detailedDescription || '');
-          setCritical(application.critical || '');
-          setAlternatives(application.alternatives || '');
-          setBoilerplate(application.boilerplate || '');
           setImages(application.images || []);
+          setCrossReference(application.crossReference || '');
+          setFederalResearch(application.federalResearch || '');
           
           // Set completion status
           if (application.completedSections) {
@@ -118,14 +130,14 @@ const PatentAudit = () => {
       const applicationData = {
         title,
         shortDescription,
+        crossReference,
+        federalResearch,
+        abstract,
         field,
         background,
         summary,
         drawings,
         detailedDescription,
-        critical,
-        alternatives,
-        boilerplate,
         images,
         completedSections,
         status: Object.values(completedSections).filter(Boolean).length === sections.length ? 'complete' : 'draft'
@@ -221,6 +233,118 @@ const PatentAudit = () => {
                   }`}
                 >
                   {completedSections.Title ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'Cross-Reference to Related Applications (Optional)':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications <span className="text-xs text-gray-500">(Optional)</span></h2>
+            <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. <span className="font-medium">If you are not claiming priority, you can leave this section blank.</span></p>
+            <textarea
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows={4}
+              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
+              value={crossReference}
+              onChange={(e) => setCrossReference(e.target.value)}
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications (Optional)': !prev['Cross-Reference to Related Applications (Optional)'] }))}
+                className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                  completedSections['Cross-Reference to Related Applications (Optional)']
+                    ? 'text-white bg-green-600 hover:bg-green-700'
+                    : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                }`}
+              >
+                {completedSections['Cross-Reference to Related Applications (Optional)'] ? 'Completed' : 'Mark as Complete'}
+              </button>
+            </div>
+          </div>
+        );
+      case 'Federally Sponsored Research or Development (Optional)':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development <span className="text-xs text-gray-500">(Optional)</span></h2>
+            <p className="text-gray-600 mb-6">If your invention was made with U.S. federal government support, you must disclose the contract or grant number and the government agency. <span className="font-medium">If your invention was not federally funded, you can leave this section blank.</span></p>
+            <textarea
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows={4}
+              placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
+              value={federalResearch}
+              onChange={(e) => setFederalResearch(e.target.value)}
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development (Optional)': !prev['Federally Sponsored Research or Development (Optional)'] }))}
+                className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                  completedSections['Federally Sponsored Research or Development (Optional)']
+                    ? 'text-white bg-green-600 hover:bg-green-700'
+                    : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                }`}
+              >
+                {completedSections['Federally Sponsored Research or Development (Optional)'] ? 'Completed' : 'Mark as Complete'}
+              </button>
+            </div>
+          </div>
+        );
+
+      case 'Abstract':
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract of the Invention</h2>
+            <p className="text-gray-600 mb-6">Provide a concise overview of your invention and its key advantages.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
+                <textarea
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={6}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
+                  value={abstract}
+                  onChange={(e) => setAbstract(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">Abstract Best Practices</h4>
+                <ul className="space-y-2 text-sm text-green-800">
+                  <li>• Keep it concise but comprehensive</li>
+                  <li>• Highlight key technical features</li>
+                  <li>• Mention advantages over prior art</li>
+                  <li>• Avoid overly technical jargon</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Abstract: !prev.Abstract }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Abstract
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Abstract ? (
                     <>
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -587,183 +711,6 @@ const PatentAudit = () => {
           </div>
         );
 
-      case 'Critical':
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Critical Elements and Novel Features</h2>
-            <p className="text-gray-600 mb-6">Identify the most important and novel aspects of your invention.</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Critical Elements</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={6}
-                  placeholder="Describe the critical, novel elements that make your invention unique and patentable..."
-                  value={critical}
-                  onChange={(e) => setCritical(e.target.value)}
-                />
-              </div>
-
-              <div className="bg-orange-50 rounded-lg p-4">
-                <h4 className="font-medium text-orange-900 mb-2">Critical Elements Focus</h4>
-                <ul className="space-y-2 text-sm text-orange-800">
-                  <li>• What makes your invention different from prior art?</li>
-                  <li>• Which elements are essential to the invention?</li>
-                  <li>• What would break if these elements were removed?</li>
-                  <li>• Focus on technical innovations, not obvious combinations</li>
-                </ul>
-              </div>
-
-              {/* Completion Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setCompletedSections(prev => ({ ...prev, Critical: !prev.Critical }))}
-                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                    completedSections.Critical
-                      ? 'text-white bg-green-600 hover:bg-green-700'
-                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                  }`}
-                >
-                  {completedSections.Critical ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'Alternatives':
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Alternative Embodiments</h2>
-            <p className="text-gray-600 mb-6">Describe alternative ways to implement your invention or variations of the core concept.</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alternative Implementations</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={8}
-                  placeholder="Describe alternative ways to implement your invention, different materials, methods, or configurations..."
-                  value={alternatives}
-                  onChange={(e) => setAlternatives(e.target.value)}
-                />
-              </div>
-
-              <div className="bg-indigo-50 rounded-lg p-4">
-                <h4 className="font-medium text-indigo-900 mb-2">Alternative Embodiments Tips</h4>
-                <ul className="space-y-2 text-sm text-indigo-800">
-                  <li>• Consider different materials or components</li>
-                  <li>• Describe variations in implementation</li>
-                  <li>• Include different use cases or applications</li>
-                  <li>• Show flexibility in your invention design</li>
-                </ul>
-              </div>
-
-              {/* Completion Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setCompletedSections(prev => ({ ...prev, Alternatives: !prev.Alternatives }))}
-                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                    completedSections.Alternatives
-                      ? 'text-white bg-green-600 hover:bg-green-700'
-                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                  }`}
-                >
-                  {completedSections.Alternatives ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'Boilerplate':
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Standard Language and Disclaimers</h2>
-            <p className="text-gray-600 mb-6">Include standard patent language, disclaimers, and legal boilerplate text.</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Boilerplate Text</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={8}
-                  placeholder="Include standard patent language such as: 'While the invention has been described with reference to specific embodiments...'"
-                  value={boilerplate}
-                  onChange={(e) => setBoilerplate(e.target.value)}
-                />
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-2">Standard Boilerplate Elements</h4>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li>• Disclaimer of specific embodiments</li>
-                  <li>• Statement about equivalents</li>
-                  <li>• Reservation of rights</li>
-                  <li>• Standard legal language</li>
-                </ul>
-              </div>
-
-              {/* Completion Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setCompletedSections(prev => ({ ...prev, Boilerplate: !prev.Boilerplate }))}
-                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                    completedSections.Boilerplate
-                      ? 'text-white bg-green-600 hover:bg-green-700'
-                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                  }`}
-                >
-                  {completedSections.Boilerplate ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -776,6 +723,11 @@ const PatentAudit = () => {
         title: 'Current Section: Title',
         description: 'The title should be brief but technically accurate, avoiding marketing language.',
         link: 'Learn more about titles'
+      },
+      'Abstract': {
+        title: 'Current Section: Abstract',
+        description: 'Provide a concise overview of your invention and its key advantages.',
+        link: 'Learn more about abstracts'
       },
       'Field': {
         title: 'Current Section: Field',
@@ -802,20 +754,15 @@ const PatentAudit = () => {
         description: 'This is the most critical section. Provide complete details on how your invention works.',
         link: 'Learn more about detailed descriptions'
       },
-      'Critical': {
-        title: 'Current Section: Critical Elements',
-        description: 'Identify the novel and essential aspects that make your invention patentable.',
-        link: 'Learn more about critical elements'
+      'Cross-Reference to Related Applications (Optional)': {
+        title: 'Current Section: Cross-Reference to Related Applications (Optional)',
+        description: 'Needed only if you are claiming priority to an earlier U.S. or foreign patent application. Otherwise, leave blank.',
+        link: 'Learn more about cross-references'
       },
-      'Alternatives': {
-        title: 'Current Section: Alternatives',
-        description: 'Describe different ways to implement your invention or variations.',
-        link: 'Learn more about alternative embodiments'
-      },
-      'Boilerplate': {
-        title: 'Current Section: Boilerplate',
-        description: 'Include standard patent language and legal disclaimers.',
-        link: 'Learn more about boilerplate language'
+      'Federally Sponsored Research or Development (Optional)': {
+        title: 'Current Section: Federally Sponsored Research or Development (Optional)',
+        description: 'Needed only if your invention was made with U.S. federal government support. Otherwise, leave blank.',
+        link: 'Learn more about federally sponsored research disclosures'
       }
     };
     return helpContent[currentSection] || helpContent['Title'];
@@ -1007,6 +954,7 @@ const PatentAudit = () => {
                 <h4 className="text-xl font-semibold text-gray-900 text-center">PROVISIONAL PATENT APPLICATION</h4>
                 <div className="space-y-2">
                   <h5 className="text-sm font-medium text-gray-700">{title || '[TITLE OF THE INVENTION]'}</h5>
+                  <p className="text-gray-600">ABSTRACT — {abstract ? 'Completed' : 'Not yet completed'}</p>
                   <p className="text-gray-600">FIELD OF THE INVENTION — {field ? 'Completed' : 'Not yet completed'}</p>
                   <p className="text-gray-600">BACKGROUND OF THE INVENTION — {background ? 'Completed' : 'Not yet completed'}</p>
                   <p className="text-gray-600">SUMMARY OF THE INVENTION — {summary ? 'Completed' : 'Not yet completed'}</p>

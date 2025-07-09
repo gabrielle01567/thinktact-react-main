@@ -11,14 +11,14 @@ BEGIN
             user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             title VARCHAR(255),
             short_description TEXT,
+            cross_reference TEXT, -- Optional. Only if claiming priority to another application
+            federal_research TEXT, -- Optional. Only if invention was federally funded
+            abstract TEXT,
             field TEXT,
             background TEXT,
             summary TEXT,
             drawings TEXT,
             detailed_description TEXT,
-            critical TEXT,
-            alternatives TEXT,
-            boilerplate TEXT,
             completed_sections JSONB DEFAULT '{}',
             status VARCHAR(50) DEFAULT 'draft',
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
