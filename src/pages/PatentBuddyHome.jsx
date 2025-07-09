@@ -1,10 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, BarChart3, FileText, Target, Users, TrendingUp, Lightbulb, Shield, Clock, CheckCircle, Network, Settings } from 'lucide-react';
+import { getApplicationCount } from '../services/patentService.js';
 
 export default function PatentBuddyHome() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [applicationCount, setApplicationCount] = useState(0);
+  const [applicationLimit] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadApplicationCount = async () => {
+      try {
+        const countData = await getApplicationCount();
+        setApplicationCount(countData.count);
+      } catch (error) {
+        console.error('Error loading application count:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadApplicationCount();
+  }, []);
+
+  const handleCreateApplication = () => {
+    if (applicationCount >= applicationLimit) {
+      alert('You have reached the maximum limit of 5 applications. Please delete an existing application before creating a new one.');
+      return;
+    }
+    navigate('/patent-buddy/wizard');
+  };
 
   const tools = [
     {
@@ -41,7 +68,7 @@ export default function PatentBuddyHome() {
       icon: FileText,
       color: 'purple',
       features: ['Interactive form wizard', 'Real-time validation', 'Document preview', 'Save and resume functionality'],
-      action: () => navigate('/patent-buddy/wizard')
+      action: handleCreateApplication
     }
   ];
 
@@ -112,7 +139,7 @@ export default function PatentBuddyHome() {
                 Start Patent Search
               </button>
               <button
-                onClick={() => navigate('/patent-buddy/wizard')}
+                onClick={handleCreateApplication}
                 className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-colors"
               >
                 Create Application
@@ -214,7 +241,7 @@ export default function PatentBuddyHome() {
               Citation Analysis
             </button>
             <button
-              onClick={() => navigate('/patent-buddy/wizard')}
+              onClick={handleCreateApplication}
               className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
             >
               Create Application
