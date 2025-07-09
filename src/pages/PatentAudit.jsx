@@ -49,6 +49,10 @@ const PatentAudit = () => {
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [imageNames, setImageNames] = useState({});
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const sections = [
     'Title',
@@ -115,6 +119,21 @@ const PatentAudit = () => {
 
     loadApplication();
   }, [applicationId, user, navigate]);
+
+  // Handle ESC key to close image modal
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && showImageModal) {
+        setShowImageModal(false);
+        setSelectedImage(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showImageModal]);
 
   // Save application data
   const saveApplication = async () => {
@@ -553,31 +572,126 @@ const PatentAudit = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Upload Drawing Images</label>
                 {isSupabaseAvailable() ? (
                   <>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={async (e) => {
-                        const files = Array.from(e.target.files);
-                        if (!files.length || !user || !applicationId) return;
-                        setUploading(true);
-                        setUploadError('');
-                        try {
-                          const uploaded = [];
-                          for (const file of files) {
-                            const img = await uploadPatentImage(file, user.id, applicationId || 'new');
-                            uploaded.push(img);
-                          }
-                          setImages(prev => [...prev, ...uploaded]);
-                        } catch (err) {
-                          setUploadError('Failed to upload image(s).');
-                        } finally {
-                          setUploading(false);
-                        }
-                      }}
-                      disabled={uploading}
-                      className="mb-2"
-                    />
+                    {/* File Selection */}
+                    <div className="mb-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          setSelectedFiles(files);
+                          // Initialize names for new files
+                          const newNames = {};
+                          files.forEach((file, index) => {
+                            const defaultName = `Figure ${images.length + index + 1}`;
+                            newNames[file.name] = defaultName;
+                          });
+                          setImageNames(prev => ({ ...prev, ...newNames }));
+                        }}
+                        className="hidden"
+                        id="file-input"
+                      />
+                      <label
+                        htmlFor="file-input"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Select Images
+                      </label>
+                    </div>
+
+                    {/* Selected Files with Names */}
+                    {selectedFiles.length > 0 && (
+                      <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Selected Images:</h4>
+                        <div className="space-y-3">
+                          {selectedFiles.map((file, index) => (
+                            <div key={file.name} className="flex items-center space-x-3">
+                              <div className="flex-shrink-0 w-16 h-16 border rounded overflow-hidden">
+                                <img 
+                                  src={URL.createObjectURL(file)} 
+                                  alt={file.name} 
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-600 mb-1">{file.name}</p>
+                                <input
+                                  type="text"
+                                  placeholder="Enter image name (e.g., Figure 1)"
+                                  value={imageNames[file.name] || ''}
+                                  onChange={(e) => setImageNames(prev => ({
+                                    ...prev,
+                                    [file.name]: e.target.value
+                                  }))}
+                                  className="w-full px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 flex space-x-2">
+                          <button
+                            onClick={async () => {
+                              if (!user || !applicationId) return;
+                              setUploading(true);
+                              setUploadError('');
+                              try {
+                                const uploaded = [];
+                                for (const file of selectedFiles) {
+                                  const img = await uploadPatentImage(file, user.id, applicationId || 'new');
+                                  // Add the custom name to the uploaded image
+                                  const namedImg = {
+                                    ...img,
+                                    name: imageNames[file.name] || file.name
+                                  };
+                                  uploaded.push(namedImg);
+                                }
+                                setImages(prev => [...prev, ...uploaded]);
+                                setSelectedFiles([]);
+                                setImageNames({});
+                              } catch (err) {
+                                setUploadError('Failed to upload image(s).');
+                              } finally {
+                                setUploading(false);
+                              }
+                            }}
+                            disabled={uploading}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                          >
+                            {uploading ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Upload Images
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedFiles([]);
+                              setImageNames({});
+                            }}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {uploadError && <div className="text-red-600 text-sm mb-2">{uploadError}</div>}
                   </>
                 ) : (
@@ -587,18 +701,41 @@ const PatentAudit = () => {
                     </p>
                   </div>
                 )}
-                <div className="flex flex-wrap gap-4 mt-2">
-                  {images.map((img, idx) => (
-                    <div key={img.url} className="relative w-24 h-24 border rounded overflow-hidden">
-                      <img src={img.url} alt={img.name} className="object-cover w-full h-full" />
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-xs"
-                        onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
-                      >✕</button>
+
+                {/* Uploaded Images */}
+                {images.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Uploaded Images:</h4>
+                    <div className="flex flex-wrap gap-4">
+                      {images.map((img, idx) => (
+                        <div key={img.url} className="relative w-24 h-24 border rounded overflow-hidden group cursor-pointer">
+                          <img 
+                            src={img.url} 
+                            alt={img.name} 
+                            className="object-cover w-full h-full group-hover:opacity-80 transition-opacity"
+                            onClick={() => {
+                              setSelectedImage(img);
+                              setShowImageModal(true);
+                            }}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                            {img.name}
+                          </div>
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 text-xs hover:bg-opacity-100 z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setImages(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Drawing Descriptions</label>
@@ -1130,6 +1267,44 @@ const PatentAudit = () => {
             <a href="#" className="mt-4 text-sm text-blue-600 hover:text-blue-800 block">
               View example applications
             </a>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
+      {showImageModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl max-h-full">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowImageModal(false);
+                setSelectedImage(null);
+              }}
+              className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 rounded-full p-2 hover:bg-opacity-100 transition-opacity"
+            >
+              <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Image container */}
+            <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
+              {/* Image */}
+              <div className="relative">
+                <img
+                  src={selectedImage.url}
+                  alt={selectedImage.name}
+                  className="max-w-full max-h-[80vh] object-contain"
+                />
+              </div>
+
+              {/* Image info */}
+              <div className="p-4 bg-gray-50 border-t">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{selectedImage.name}</h3>
+                <p className="text-sm text-gray-600">Click outside or press ESC to close</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
