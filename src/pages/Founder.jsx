@@ -14,17 +14,11 @@ const Founder = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="mx-auto max-w-md">
-              <div className="aspect-[4/5] overflow-hidden rounded-xl bg-gray-100">
-                {/* Placeholder for founder image - replace with actual image */}
-                <div className="h-full w-full bg-gradient-to-br from-pink-100 to-pink-300 flex items-center justify-center">
-                  <span className="text-pink-950 font-semibold text-lg">Founder</span>
-                </div>
-              </div>
+              {/* Placeholder for founder image - replace with actual image */}
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Founder</h2>
-              <p className="text-gray-600 mb-4 font-medium">Founder & CEO</p>
+              <p className="text-gray-600 mb-4 font-medium">A message from our founder and CEO</p>
               <div className="space-y-4 text-gray-600">
                 <p>
                   After years working in both tech and academia, I founded ThinkTactAI with a vision to bridge the gap 
