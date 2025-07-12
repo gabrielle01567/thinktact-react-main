@@ -17,13 +17,13 @@ const Founder = () => {
               <div className="aspect-[4/5] overflow-hidden rounded-xl bg-gray-100">
                 {/* Placeholder for founder image - replace with actual image */}
                 <div className="h-full w-full bg-gradient-to-br from-pink-100 to-pink-300 flex items-center justify-center">
-                  <span className="text-pink-950 font-semibold text-lg">Gabrielle Shand</span>
+                  <span className="text-pink-950 font-semibold text-lg">Founder</span>
                 </div>
               </div>
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Gabrielle Shand</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Founder</h2>
               <p className="text-gray-600 mb-4 font-medium">Founder & CEO</p>
               <div className="space-y-4 text-gray-600">
                 <p>
