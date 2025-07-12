@@ -18,8 +18,8 @@ const Founder = () => {
             </div>
             
             <div>
-              <p className="text-gray-600 mb-4 font-medium">A message from our founder and CEO</p>
-              <div className="space-y-4 text-gray-600">
+              <p className="text-gray-600 mb-4 font-medium text-center">A message from our founder and CEO</p>
+              <div className="space-y-4 text-gray-600 text-center">
                 <p>
                   After years working in both tech and academia, I founded ThinkTactAI with a vision to bridge the gap 
                   between powerful artificial intelligence and human critical thinking.
