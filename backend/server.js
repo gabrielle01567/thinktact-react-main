@@ -48,25 +48,35 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Robust startup and error logging for Supabase env vars and connection
+console.log('=== Backend Startup ===');
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL || '[MISSING]');
+console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '[LOADED]' : '[MISSING]');
+
+try {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ Missing Supabase credentials in environment variables');
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+  }
+} catch (err) {
+  console.error('❌ Backend startup error:', err);
+  process.exit(1);
+}
+
+// Health check endpoint for backend-Supabase connectivity
+app.get('/api/health', async (req, res) => {
   try {
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      supabaseUrl: !!process.env.SUPABASE_URL,
-      supabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      jwtSecret: !!process.env.JWT_SECRET,
-      resendKey: !!process.env.RESEND_API_KEY
-    });
-  } catch (error) {
-    console.error('Health check error:', error);
-    res.status(500).json({ 
-      status: 'error', 
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const { error } = await supabase.from('patent_applications').select('*').limit(1);
+    if (error) {
+      console.error('❌ Supabase health check error:', error);
+      return res.status(500).json({ healthy: false, error: error.message });
+    }
+    res.json({ healthy: true });
+  } catch (err) {
+    console.error('❌ Health check exception:', err);
+    res.status(500).json({ healthy: false, error: err.message });
   }
 });
 
