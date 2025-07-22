@@ -10,10 +10,27 @@ const PatentApplications = () => {
   const [error, setError] = useState('');
   const [applicationCount, setApplicationCount] = useState(0);
   const [applicationLimit] = useState(5);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
     loadApplications();
   }, []);
+
+  // Handle ESC key to close image modal
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && showImageModal) {
+        setShowImageModal(false);
+        setSelectedImage(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showImageModal]);
 
   const loadApplications = async () => {
     if (!user) {
@@ -69,6 +86,64 @@ const PatentApplications = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const openImageModal = (image) => {
+    setSelectedImage(image);
+    setShowImageModal(true);
+  };
+
+  const renderImagePreview = (images) => {
+    if (!images || images.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="text-center">
+            <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="mt-1 text-xs text-gray-500">No images</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-gray-700">Uploaded Images ({images.length})</h4>
+          {images.length > 3 && (
+            <span className="text-xs text-gray-500">+{images.length - 3} more</span>
+          )}
+        </div>
+        <div className="flex space-x-2">
+          {images.slice(0, 3).map((image, index) => (
+            <div key={index} className="relative group">
+              <img
+                src={image.url}
+                alt={image.name || `Image ${index + 1}`}
+                className="w-16 h-16 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                onClick={() => openImageModal(image)}
+                title="Click to enlarge"
+              />
+              {/* Click indicator */}
+              <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+        {images.length > 3 && (
+          <button
+            onClick={() => openImageModal(images[0])}
+            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+          >
+            View all {images.length} images
+          </button>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -198,6 +273,11 @@ const PatentApplications = () => {
                     </p>
                   )}
 
+                  {/* Image Preview Section */}
+                  <div className="mb-4">
+                    {renderImagePreview(application.images)}
+                  </div>
+
                   {/* Progress Bar */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
@@ -233,6 +313,54 @@ const PatentApplications = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Image Modal */}
+        {showImageModal && selectedImage && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="max-w-6xl max-h-full p-4 relative">
+              <div className="relative">
+                {/* Close button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowImageModal(false);
+                  }}
+                  className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-3 rounded-full hover:bg-opacity-100 transition-all duration-200 z-10"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                {/* Zoom indicator */}
+                <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm z-10">
+                  Click outside to close • ESC to close
+                </div>
+
+                {/* Main image */}
+                <img
+                  src={selectedImage.url}
+                  alt={selectedImage.name || 'Selected image'}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                />
+
+                {/* Image info */}
+                <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm z-10">
+                  <p className="font-medium">{selectedImage.name || 'Untitled'}</p>
+                  {selectedImage.size && (
+                    <p className="text-xs opacity-75">
+                      {(selectedImage.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
