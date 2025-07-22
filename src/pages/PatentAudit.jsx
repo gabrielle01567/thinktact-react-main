@@ -1046,7 +1046,7 @@ const PatentAudit = () => {
   }, [showImageModal]);
 
   // Save application data
-  const saveApplication = async () => {
+  const saveApplication = async (reloadAfterSave = true) => {
     if (!user) {
       setSaveMessage('Please log in to save your application');
       return;
@@ -1089,10 +1089,12 @@ const PatentAudit = () => {
         if (window.location.pathname !== `/patent-buddy/wizard/${applicationId}`) {
           navigate(`/patent-buddy/wizard/${applicationId}`);
         }
-        // Reload the application data to ensure it's fresh
-        setTimeout(() => {
-          loadApplication();
-        }, 1000);
+        // Only reload if requested (not on step navigation)
+        if (reloadAfterSave) {
+          setTimeout(() => {
+            loadApplication();
+          }, 1000);
+        }
       } else {
         // Save new application
         console.log('🔍 Creating new application (no applicationId found)');
@@ -1298,9 +1300,22 @@ const PatentAudit = () => {
                         }}
                       />
                     </div>
-                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., 123 Main St, City, State, ZIP"
+                        value={inventor.address}
+                        onChange={(e) => {
+                          const newInventors = [...inventors];
+                          newInventors[index].address = e.target.value;
+                          setInventors(newInventors);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
                       <input
                         type="text"
                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -1313,32 +1328,16 @@ const PatentAudit = () => {
                         }}
                       />
                     </div>
-                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Residence *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
                       <input
                         type="text"
                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., California, United States"
+                        placeholder="e.g., California"
                         value={inventor.residence}
                         onChange={(e) => {
                           const newInventors = [...inventors];
                           newInventors[index].residence = e.target.value;
-                          setInventors(newInventors);
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                      <textarea
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        rows={2}
-                        placeholder="Full mailing address"
-                        value={inventor.address}
-                        onChange={(e) => {
-                          const newInventors = [...inventors];
-                          newInventors[index].address = e.target.value;
                           setInventors(newInventors);
                         }}
                       />
@@ -1348,14 +1347,7 @@ const PatentAudit = () => {
               ))}
               
               <button
-                onClick={() => {
-                  setInventors([...inventors, {
-                    name: '',
-                    address: '',
-                    citizenship: '',
-                    residence: ''
-                  }]);
-                }}
+                onClick={() => setInventors([...inventors, { name: '', address: '', citizenship: '', residence: '' }])}
                 className="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors"
               >
                 + Add Another Inventor
@@ -2327,7 +2319,7 @@ const PatentAudit = () => {
                 key={step.key}
                 className={`flex items-center p-3 rounded-lg border-2 transition-all cursor-pointer ${
                   isCurrent
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-blue-600 bg-blue-600 text-white shadow-lg' // Strong blue highlight for current
                     : isCompleted
                     ? 'border-green-200 bg-green-50'
                     : needsReviewFlag
@@ -2338,7 +2330,7 @@ const PatentAudit = () => {
                   if (index !== currentStep) {
                     setIsSaving(true);
                     try {
-                      await saveApplication();
+                      await saveApplication(false); // Do not reload after save when navigating
                       setCurrentStep(index);
                     } finally {
                       setIsSaving(false);
@@ -2349,7 +2341,7 @@ const PatentAudit = () => {
                 {/* Step Number */}
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   isCurrent
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-white text-blue-600 border-2 border-blue-600' // White circle with blue border for current
                     : isCompleted
                     ? 'bg-green-500 text-white'
                     : needsReviewFlag
