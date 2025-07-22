@@ -12,7 +12,6 @@ const PatentAudit = () => {
     console.log('🔍 ApplicationId Debug:', {
       applicationId,
       hasApplicationId: !!applicationId,
-      urlParams: useParams(),
       currentPath: window.location.pathname,
       expectedPath: applicationId ? `/patent-buddy/wizard/${applicationId}` : '/patent-buddy/wizard'
     });
@@ -63,41 +62,52 @@ const PatentAudit = () => {
 
   // 4. Render only the current step
   const renderCurrentStep = () => {
-    const currentStepData = getWizardSteps()[currentStep];
-    
-    if (!currentStepData) return null;
-    
-    switch (currentStepData.key) {
-      case 'Introduction':
-        return renderIntroductionSection();
-      case 'Title':
-        return renderTitleSection();
-      case 'CrossReferenceGate':
-        return renderCrossReferenceGate();
-      case 'CrossReference':
-        return renderCrossReferenceSection();
-      case 'FederalResearchGate':
-        return renderFederalResearchGate();
-      case 'FederalResearch':
-        return renderFederalResearchSection();
-      case 'Inventors':
-        return renderInventorsSection();
-      case 'Abstract':
-        return renderAbstractSection();
-      case 'Field':
-        return renderFieldSection();
-      case 'Background':
-        return renderBackgroundSection();
-      case 'Summary':
-        return renderSummarySection();
-      case 'Drawings':
-        return renderDrawingsSection();
-      case 'DetailedDescription':
-        return renderDetailedDescriptionSection();
-      case 'Review':
-        return renderReviewSection();
-      default:
-        return <div>Unknown step</div>;
+    try {
+      const currentStepData = getWizardSteps()[currentStep];
+      
+      if (!currentStepData) {
+        console.log('🔍 No current step data found for step:', currentStep);
+        return <div>Loading...</div>;
+      }
+      
+      console.log('🔍 Rendering step:', currentStepData.key, 'at index:', currentStep);
+      
+      switch (currentStepData.key) {
+        case 'Introduction':
+          return renderIntroductionSection();
+        case 'Title':
+          return renderTitleSection();
+        case 'CrossReferenceGate':
+          return renderCrossReferenceGate();
+        case 'CrossReference':
+          return renderCrossReferenceSection();
+        case 'FederalResearchGate':
+          return renderFederalResearchGate();
+        case 'FederalResearch':
+          return renderFederalResearchSection();
+        case 'Inventors':
+          return renderInventorsSection();
+        case 'Abstract':
+          return renderAbstractSection();
+        case 'Field':
+          return renderFieldSection();
+        case 'Background':
+          return renderBackgroundSection();
+        case 'Summary':
+          return renderSummarySection();
+        case 'Drawings':
+          return renderDrawingsSection();
+        case 'DetailedDescription':
+          return renderDetailedDescriptionSection();
+        case 'Review':
+          return renderReviewSection();
+        default:
+          console.error('🔍 Unknown step:', currentStepData.key);
+          return <div>Unknown step: {currentStepData.key}</div>;
+      }
+    } catch (error) {
+      console.error('🔍 Error rendering current step:', error);
+      return <div>Error rendering step. Please refresh the page.</div>;
     }
   };
 
@@ -2431,75 +2441,105 @@ const PatentAudit = () => {
     </div>
   );
 
-  // Update the main return to include sidebar
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Sidebar - Progress Tracker */}
-      {renderProgressTracker()}
-
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="min-h-screen flex flex-col p-8">
-          {/* Navigation Buttons - Moved to top */}
-          <div className="w-full max-w-2xl mx-auto flex justify-between mb-6">
-            <button
-              onClick={goToPrevStep}
-              disabled={currentStep === 0}
-              className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-            >
-              Back
-            </button>
-            
-            {/* Save message - positioned between back and next buttons */}
-            {saveMessage && (
-              <div className="flex-1 mx-4 text-center">
-                <div className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  saveMessage.includes('Error') || saveMessage.includes('⚠️') 
-                    ? 'text-red-700 bg-red-100 border border-red-200' 
-                    : 'text-green-700 bg-green-100 border border-green-200'
-                }`}>
-                  {saveMessage}
-                </div>
-              </div>
-            )}
-            
-            {currentStep === getWizardSteps().length - 1 ? (
-              <button
-                onClick={saveApplication}
-                className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
-                disabled={isSaving}
-              >
-                {isSaving ? 'Saving...' : 'Save Draft'}
-              </button>
-            ) : (
-              <button
-                onClick={goToNextStep}
-                className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Next
-              </button>
-            )}
-          </div>
-
-          {/* Save Draft Button */}
-          {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderSaveDraftButton()}
-
-          {/* Progress Indicator */}
-          <div className="w-full flex justify-center items-center mb-6">
-            {renderProgress()}
-          </div>
-
-          {/* Step Content */}
-          <div className="w-full max-w-2xl mx-auto">
-            {renderCurrentStep()}
-          </div>
-
-          {/* Document Preview */}
-          <div className="w-full max-w-2xl mx-auto mt-8">{renderDocumentPreview()}</div>
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading patent application...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Update the main return to include sidebar
+  try {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        {/* Left Sidebar - Progress Tracker */}
+        {renderProgressTracker()}
+
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto">
+          <div className="min-h-screen flex flex-col p-8">
+            {/* Navigation Buttons - Moved to top */}
+            <div className="w-full max-w-2xl mx-auto flex justify-between mb-6">
+              <button
+                onClick={goToPrevStep}
+                disabled={currentStep === 0}
+                className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                Back
+              </button>
+              
+              {/* Save message - positioned between back and next buttons */}
+              {saveMessage && (
+                <div className="flex-1 mx-4 text-center">
+                  <div className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    saveMessage.includes('Error') || saveMessage.includes('⚠️') 
+                      ? 'text-red-700 bg-red-100 border border-red-200' 
+                      : 'text-green-700 bg-green-100 border border-green-200'
+                  }`}>
+                    {saveMessage}
+                  </div>
+                </div>
+              )}
+              
+              {currentStep === getWizardSteps().length - 1 ? (
+                <button
+                  onClick={saveApplication}
+                  className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save Draft'}
+                </button>
+              ) : (
+                <button
+                  onClick={goToNextStep}
+                  className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+
+            {/* Save Draft Button */}
+            {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderSaveDraftButton()}
+
+            {/* Progress Indicator */}
+            <div className="w-full flex justify-center items-center mb-6">
+              {renderProgress()}
+            </div>
+
+            {/* Step Content */}
+            <div className="w-full max-w-2xl mx-auto">
+              {renderCurrentStep()}
+            </div>
+
+            {/* Document Preview */}
+            <div className="w-full max-w-2xl mx-auto mt-8">{renderDocumentPreview()}</div>
+          </div>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('🔍 Error rendering PatentAudit component:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
+          <p className="text-gray-600 mb-4">There was an error loading the patent application wizard.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 // At the bottom, export the wizard as a named component
