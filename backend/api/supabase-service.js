@@ -6,89 +6,26 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-// Initialize Supabase client with error handling
-let supabase = null;
-let supabaseInitialized = false;
-let initializationPromise = null;
-
-// Initialize Supabase client
-const initializeSupabase = async () => {
-  try {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-
-    console.log('🔧 Supabase Configuration (Detailed):');
-    console.log('SUPABASE_URL:', supabaseUrl ? `Set (${supabaseUrl.substring(0, 20)}...)` : 'Not set');
-    console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `Set (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 10)}...)` : 'Not set');
-    console.log('SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_KEY ? `Set (${process.env.SUPABASE_SERVICE_KEY.substring(0, 10)}...)` : 'Not set');
-    console.log('JWT_SECRET:', jwtSecret ? 'Set' : 'Not set');
-    console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('❌ Missing Supabase environment variables');
-      console.error('SUPABASE_URL:', !!supabaseUrl);
-      console.error('SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-      console.error('SUPABASE_SERVICE_KEY:', !!process.env.SUPABASE_SERVICE_KEY);
-      console.warn('⚠️ Supabase not initialized - some features will not work');
-      return false;
-    }
-
-    console.log('🔧 Attempting to create Supabase client...');
-    supabase = createClient(supabaseUrl, supabaseServiceKey);
-    console.log('🔧 Supabase client created, testing connection...');
-    
-    // Test the connection by making a simple query
-    const { data, error } = await supabase.from('users').select('count').limit(1);
-    if (error) {
-      console.error('❌ Supabase connection test failed:', error);
-      console.error('❌ Error details:', error.message);
-      console.error('❌ Error code:', error.code);
-      console.warn('⚠️ Supabase not initialized - connection failed');
-      return false;
-    } else {
-      supabaseInitialized = true;
-      console.log('✅ Supabase client initialized successfully');
-      console.log('✅ Connection test data:', data);
-      return true;
-    }
-  } catch (error) {
-    console.error('❌ Error initializing Supabase:', error);
-    console.error('❌ Error details:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    console.warn('⚠️ Supabase not initialized - some features will not work');
-    return false;
+// Helper to get a fresh Supabase client every time
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
   }
-};
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
-// Initialize immediately and store the promise
-initializationPromise = initializeSupabase().then(result => {
-  console.log('✅ Initialization promise resolved with:', result);
-  return result;
-}).catch(error => {
-  console.error('❌ Failed to initialize Supabase:', error);
-  return false;
-});
-
-// Wait for initialization to complete
-const waitForInitialization = async () => {
-  if (initializationPromise) {
-    const result = await initializationPromise;
-    console.log('🔍 waitForInitialization result:', result, 'supabaseInitialized:', supabaseInitialized);
-    return result && supabaseInitialized;
-  }
-  return supabaseInitialized;
-};
+// Helper to get JWT secret every time
+function getJwtSecret() {
+  return process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+}
 
 // User management functions
 export const createUser = async (userData) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in createUser');
-      return { success: false, error: 'Database not configured' };
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     const { email, password, name, isVerified = false, isAdmin = false, securityQuestion, securityAnswer } = userData;
     
@@ -156,12 +93,8 @@ export const createUser = async (userData) => {
 
 export const findUserByEmail = async (email) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in findUserByEmail');
-      return null;
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     const { data: user, error } = await supabase
       .from('users')
@@ -202,12 +135,8 @@ export const findUserByEmail = async (email) => {
 
 export const findUserById = async (id) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in findUserById');
-      return null;
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     const { data: user, error } = await supabase
       .from('users')
@@ -246,6 +175,9 @@ export const findUserById = async (id) => {
 
 export const findUserByVerificationToken = async (token) => {
   try {
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -278,6 +210,9 @@ export const findUserByVerificationToken = async (token) => {
 
 export const findUserByResetToken = async (token) => {
   try {
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -316,6 +251,9 @@ export const findUserByResetToken = async (token) => {
 
 export const saveUser = async (userData) => {
   try {
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     const { data: user, error } = await supabase
       .from('users')
       .update({
@@ -346,16 +284,16 @@ export const saveUser = async (userData) => {
 };
 
 export const verifyPassword = async (user, password) => {
-  return bcrypt.compareSync(password, user.password);
+  return bcrypt.compareSync(password, user.password_hash);
 };
 
 export const generateToken = (user) => {
-  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+  const jwtSecret = getJwtSecret();
   return jwt.sign(
     { 
       userId: user.id, 
       email: user.email, 
-      isAdmin: user.isAdmin 
+      isAdmin: user.is_admin 
     },
     jwtSecret,
     { expiresIn: '7d' }
@@ -364,7 +302,7 @@ export const generateToken = (user) => {
 
 export const verifyToken = (token) => {
   try {
-    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+    const jwtSecret = getJwtSecret();
     return jwt.verify(token, jwtSecret);
   } catch (error) {
     return null;
@@ -396,6 +334,9 @@ export const verifyUserByToken = async (verificationToken) => {
       return { success: false, error: 'User is already verified' };
     }
     
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     // Update user to verified
     const { error } = await supabase
       .from('users')
@@ -417,7 +358,7 @@ export const verifyUserByToken = async (verificationToken) => {
         email: user.email,
         name: user.name,
         isVerified: true,
-        isAdmin: user.isAdmin
+        isAdmin: user.is_admin
       }
     };
   } catch (error) {
@@ -429,12 +370,8 @@ export const verifyUserByToken = async (verificationToken) => {
 // Analysis history functions
 export const saveAnalysis = async (userId, analysisData) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in saveAnalysis');
-      throw new Error('Database not configured');
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     const { data: analysis, error } = await supabase
       .from('analysis_history')
@@ -468,12 +405,8 @@ export const saveAnalysis = async (userId, analysisData) => {
 
 export const getAnalysisHistory = async (userId) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in getAnalysisHistory');
-      throw new Error('Database not configured');
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     const { data: analyses, error } = await supabase
       .from('analysis_history')
@@ -506,6 +439,9 @@ export const getAnalysisHistory = async (userId) => {
 
 export const deleteAnalysis = async (userId, analysisId) => {
   try {
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     const { error } = await supabase
       .from('analysis_history')
       .delete()
@@ -529,14 +465,8 @@ export const getAllUsers = async () => {
   try {
     console.log('🔍 getAllUsers called');
     
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    console.log('🔍 isInitialized:', isInitialized);
-    
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in getAllUsers');
-      return [];
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     console.log('🔍 Supabase client:', !!supabase);
     console.log('🔍 Attempting to query users...');
@@ -584,12 +514,8 @@ export const getAllUsers = async () => {
 
 export const updateUser = async (userId, updates) => {
   try {
-    // Wait for initialization to complete
-    const isInitialized = await waitForInitialization();
-    if (!isInitialized) {
-      console.error('❌ Supabase not initialized in updateUser');
-      throw new Error('Database not configured');
-    }
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
 
     // If trying to update blocked field, check if column exists first
     if (updates.hasOwnProperty('blocked')) {
@@ -648,6 +574,9 @@ export const updateUser = async (userId, updates) => {
 
 export const deleteUser = async (userId) => {
   try {
+    const supabase = getSupabaseClient();
+    const jwtSecret = getJwtSecret();
+
     const { error } = await supabase
       .from('users')
       .delete()
