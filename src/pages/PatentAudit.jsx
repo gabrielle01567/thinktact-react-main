@@ -945,9 +945,18 @@ const PatentAudit = () => {
   // Load existing application data if editing
   useEffect(() => {
     const loadApplication = async () => {
-      if (applicationId && user) {
+      console.log('🔍 Load Application Debug:', {
+        applicationId,
+        hasApplicationId: !!applicationId,
+        user: user?.id,
+        urlParams: useParams(),
+        currentUrl: window.location.pathname
+      });
+      
+      if (applicationId && user && applicationId !== 'undefined' && applicationId !== 'null') {
         setIsLoading(true);
         try {
+          console.log('🔍 Attempting to load application with ID:', applicationId);
           const application = await getPatentApplication(applicationId);
           
           // Populate form fields
@@ -1032,16 +1041,31 @@ const PatentAudit = () => {
         status: Object.values(completedSections).filter(Boolean).length === sections.length ? 'complete' : 'draft'
       };
 
+      console.log('🔍 Save Application Debug:', {
+        applicationId,
+        hasApplicationId: !!applicationId,
+        user: user.id,
+        applicationData: {
+          title: applicationData.title,
+          status: applicationData.status,
+          imagesCount: applicationData.images?.length || 0
+        }
+      });
+
       let result;
-      if (applicationId) {
+      if (applicationId && applicationId !== 'undefined' && applicationId !== 'null') {
         // Update existing application
+        console.log('🔍 Updating existing application with ID:', applicationId);
         result = await updatePatentApplication(applicationId, applicationData);
+        console.log('🔍 Update result:', result);
         setSaveMessage('Application updated successfully!');
         // Redirect to the updated application (if needed)
         // navigate(`/patent-audit/${result.id}`); // Uncomment if you want to redirect after update
       } else {
         // Save new application
+        console.log('🔍 Creating new application (no applicationId found)');
         result = await savePatentApplication(applicationData);
+        console.log('🔍 Save result:', result);
         setSaveMessage('Application saved successfully!');
         // Redirect to the saved application
         navigate(`/patent-buddy/wizard/${result.application.id}`);

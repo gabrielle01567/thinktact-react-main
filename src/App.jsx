@@ -50,7 +50,8 @@ function App() {
             <Route path="patent-buddy/analysis" element={<PatentAnalysis />} />
             <Route path="patent-buddy/citations" element={<PatentCitations />} />
             <Route path="patent-buddy/api-config" element={<ApiKeyConfig />} />
-            <Route path="patent-buddy/wizard/*" element={<PatentApplicationWizard />} />
+            <Route path="patent-buddy/wizard" element={<PatentApplicationWizard />} />
+            <Route path="patent-buddy/wizard/:id" element={<PatentApplicationWizard />} />
             <Route path="*" element={<ErrorPage />} />
           </Route>
           
