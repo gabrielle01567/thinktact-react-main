@@ -2206,8 +2206,12 @@ const PatentAudit = () => {
         return true; // Introduction is always considered completed once viewed
       case 'Title':
         return title.trim() !== '';
+      case 'CrossReferenceGate':
+        return wantsCrossReference !== null; // Mark as completed once answered
       case 'CrossReference':
         return wantsCrossReference === false || (wantsCrossReference === true && crossReference.trim() !== '');
+      case 'FederalResearchGate':
+        return wantsFederalResearch !== null; // Mark as completed once answered
       case 'FederalResearch':
         return wantsFederalResearch === false || (wantsFederalResearch === true && federalResearch.trim() !== '');
       case 'Inventors':
@@ -2408,6 +2412,7 @@ const PatentAudit = () => {
   const renderSaveDraftButton = () => (
     <div className="w-full max-w-2xl mx-auto mb-4">
       <button
+        type="button"
         onClick={async () => {
           try {
             await saveApplication();
@@ -2448,6 +2453,7 @@ const PatentAudit = () => {
             {/* Navigation Buttons - Moved to top */}
             <div className="w-full max-w-2xl mx-auto flex justify-between mb-6">
               <button
+                type="button"
                 onClick={goToPrevStep}
                 disabled={currentStep === 0}
                 className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
@@ -2470,6 +2476,7 @@ const PatentAudit = () => {
               
               {currentStep === getWizardSteps().length - 1 ? (
                 <button
+                  type="button"
                   onClick={saveApplication}
                   className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
                   disabled={isSaving}
@@ -2478,6 +2485,7 @@ const PatentAudit = () => {
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={goToNextStep}
                   className="px-6 py-2 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700"
                 >
