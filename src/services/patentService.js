@@ -58,7 +58,7 @@ export const savePatentApplication = async (applicationData) => {
 
     console.log('🔍 PatentService: Save successful:', response.data);
     // The backend returns { success: true, application: result }
-    return response.data;
+    return response.data; // Should include lastStep if backend returns it
   } catch (error) {
     console.error('🔍 PatentService: Save error details:', {
       status: error.response?.status,
@@ -98,7 +98,7 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
     console.log('🔍 PatentService: Update response', response.data);
 
     // The backend returns { success: true, application: result }
-    return response.data.application;
+    return response.data.application; // Should include lastStep if backend returns it
   } catch (error) {
     console.error('🔍 PatentService: Update error', {
       status: error.response?.status,

@@ -57,7 +57,8 @@ export const savePatentApplication = async (userId, applicationData) => {
         images: applicationData.images || [],
         completed_sections: applicationData.completedSections || {},
         status: applicationData.status || 'draft',
-        sections_needing_review: applicationData.sectionsNeedingReview || {}
+        sections_needing_review: applicationData.sectionsNeedingReview || {},
+        last_step: typeof applicationData.lastStep === 'number' ? applicationData.lastStep : 0 // Save lastStep
       })
       .select()
       .single();
@@ -89,6 +90,7 @@ export const savePatentApplication = async (userId, applicationData) => {
       completedSections: application.completed_sections,
       status: application.status,
       sectionsNeedingReview: application.sections_needing_review,
+      lastStep: typeof application.last_step === 'number' ? application.last_step : 0, // Return lastStep
       createdAt: application.created_at,
       updatedAt: application.updated_at
     };
@@ -120,6 +122,7 @@ export const updatePatentApplication = async (userId, applicationId, application
         completed_sections: applicationData.completedSections,
         status: applicationData.status,
         sections_needing_review: applicationData.sectionsNeedingReview || {},
+        last_step: typeof applicationData.lastStep === 'number' ? applicationData.lastStep : 0, // Save lastStep
         updated_at: new Date().toISOString()
       })
       .eq('id', applicationId)
@@ -154,6 +157,7 @@ export const updatePatentApplication = async (userId, applicationId, application
       completedSections: application.completed_sections,
       status: application.status,
       sectionsNeedingReview: application.sections_needing_review,
+      lastStep: typeof application.last_step === 'number' ? application.last_step : 0, // Return lastStep
       createdAt: application.created_at,
       updatedAt: application.updated_at
     };

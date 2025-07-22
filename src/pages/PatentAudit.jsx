@@ -936,6 +936,9 @@ const PatentAudit = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
 
+  // Track sections needing review (persisted)
+  const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
+
   const sections = [
     'Title',
     'Cross-Reference to Related Applications (Optional)',
@@ -1000,6 +1003,18 @@ const PatentAudit = () => {
         if (application.completedSections) {
           setCompletedSections(application.completedSections);
         }
+        // Restore sectionsNeedingReview from backend (array to Set)
+        if (application.sections_needing_review) {
+          setSectionsNeedingReview(new Set(application.sections_needing_review));
+        } else {
+          setSectionsNeedingReview(new Set());
+        }
+        // Restore lastStep from backend
+        if (typeof application.lastStep === 'number') {
+          setCurrentStep(application.lastStep);
+        } else {
+          setCurrentStep(0);
+        }
       } catch (error) {
         console.error('Error loading application:', error);
         if (error.response?.status === 404) {
@@ -1053,7 +1068,9 @@ const PatentAudit = () => {
         detailedDescription,
         images,
         completedSections,
-        status: completedSectionsCount >= 8 ? 'complete' : 'draft'
+        status: completedSectionsCount >= 8 ? 'complete' : 'draft',
+        sections_needing_review: Array.from(sectionsNeedingReview),
+        lastStep: currentStep, // Persist the current step
       };
       console.log('🔍 Save Application Debug:', {
         applicationId,
@@ -2182,29 +2199,6 @@ const PatentAudit = () => {
     </div>
   );
 
-  // Add state for tracking sections that need review
-  const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
-
-  // Handle ESC key to close image modal
-  useEffect(() => {
-    const handleEscKey = (event) => {
-      if (event.key === 'Escape' && showImageModal) {
-        setShowImageModal(false);
-      }
-    };
-
-    if (showImageModal) {
-      document.addEventListener('keydown', handleEscKey);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'unset';
-    };
-  }, [showImageModal]);
-  
   // Helper function to check if a section is completed
   const isSectionCompleted = (stepKey) => {
     switch (stepKey) {
