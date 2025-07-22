@@ -64,6 +64,10 @@ export const savePatentApplication = async (userId, applicationData) => {
       console.error('Error saving patent application:', error);
       throw error;
     }
+    if (!application) {
+      console.error('No application returned from insert. Possible RLS or quota issue.');
+      throw new Error('Patent application not saved. Possible RLS or quota issue.');
+    }
     
     return {
       id: application.id,
@@ -122,9 +126,9 @@ export const updatePatentApplication = async (userId, applicationId, application
       console.error('Error updating patent application:', error);
       throw error;
     }
-    
     if (!application) {
-      throw new Error('Patent application not found or unauthorized');
+      console.error('No application returned from update. Possible RLS or quota issue.');
+      throw new Error('Patent application not found or unauthorized (possible RLS or quota issue).');
     }
     
     return {
