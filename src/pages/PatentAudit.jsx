@@ -6,6 +6,17 @@ import { isSupabaseAvailable } from '../services/supabaseClient.js';
 
 const PatentAudit = () => {
   const { id: applicationId } = useParams();
+  
+  // Debug logging for applicationId
+  useEffect(() => {
+    console.log('🔍 ApplicationId Debug:', {
+      applicationId,
+      hasApplicationId: !!applicationId,
+      urlParams: useParams(),
+      currentPath: window.location.pathname,
+      expectedPath: applicationId ? `/patent-buddy/wizard/${applicationId}` : '/patent-buddy/wizard'
+    });
+  }, [applicationId]);
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -942,61 +953,61 @@ const PatentAudit = () => {
     detailedDescription.trim()
   ].filter(Boolean).length;
 
-  // Load existing application data if editing
-  useEffect(() => {
-    const loadApplication = async () => {
-      console.log('🔍 Load Application Debug:', {
-        applicationId,
-        hasApplicationId: !!applicationId,
-        user: user?.id,
-        urlParams: useParams(),
-        currentUrl: window.location.pathname
-      });
-      
-      if (applicationId && user && applicationId !== 'undefined' && applicationId !== 'null') {
-        setIsLoading(true);
-        try {
-          console.log('🔍 Attempting to load application with ID:', applicationId);
-          const application = await getPatentApplication(applicationId);
-          
-          // Populate form fields
-          setTitle(application.title || '');
-          setShortDescription(application.shortDescription || '');
-          setAbstract(application.abstract || '');
-          setField(application.field || '');
-          setBackground(application.background || '');
-          setSummary(application.summary || '');
-          setDrawings(application.drawings || '');
-          setDetailedDescription(application.detailedDescription || '');
-          setImages(application.images || []);
-          setCrossReference(application.crossReference || '');
-          setFederalResearch(application.federalResearch || '');
-          setInventors(application.inventors || [{
-            name: '',
-            address: '',
-            citizenship: '',
-            residence: ''
-          }]);
-          
-          // Set completion status
-          if (application.completedSections) {
-            setCompletedSections(application.completedSections);
-          }
-          
-        } catch (error) {
-          console.error('Error loading application:', error);
-          // If application not found, redirect to new application
-          if (error.response?.status === 404) {
-            navigate('/patent-buddy/wizard');
-          }
-        } finally {
-          setIsLoading(false);
+    // Load existing application data if editing
+  const loadApplication = async () => {
+    console.log('🔍 Load Application Debug:', {
+      applicationId,
+      hasApplicationId: !!applicationId,
+      user: user?.id,
+      urlParams: useParams(),
+      currentUrl: window.location.pathname
+    });
+    
+    if (applicationId && user && applicationId !== 'undefined' && applicationId !== 'null') {
+      setIsLoading(true);
+      try {
+        console.log('🔍 Attempting to load application with ID:', applicationId);
+        const application = await getPatentApplication(applicationId);
+        
+        // Populate form fields
+        setTitle(application.title || '');
+        setShortDescription(application.shortDescription || '');
+        setAbstract(application.abstract || '');
+        setField(application.field || '');
+        setBackground(application.background || '');
+        setSummary(application.summary || '');
+        setDrawings(application.drawings || '');
+        setDetailedDescription(application.detailedDescription || '');
+        setImages(application.images || []);
+        setCrossReference(application.crossReference || '');
+        setFederalResearch(application.federalResearch || '');
+        setInventors(application.inventors || [{
+          name: '',
+          address: '',
+          citizenship: '',
+          residence: ''
+        }]);
+        
+        // Set completion status
+        if (application.completedSections) {
+          setCompletedSections(application.completedSections);
         }
+        
+      } catch (error) {
+        console.error('Error loading application:', error);
+        // If application not found, redirect to new application
+        if (error.response?.status === 404) {
+          navigate('/patent-buddy/wizard');
+        }
+      } finally {
+        setIsLoading(false);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     loadApplication();
-  }, [applicationId, user, navigate]);
+  }, [applicationId, user]);
 
   // Handle ESC key to close image modal
   useEffect(() => {
@@ -1059,8 +1070,14 @@ const PatentAudit = () => {
         result = await updatePatentApplication(applicationId, applicationData);
         console.log('🔍 Update result:', result);
         setSaveMessage('Application updated successfully!');
-        // Redirect to the updated application (if needed)
-        // navigate(`/patent-audit/${result.id}`); // Uncomment if you want to redirect after update
+        // Ensure we're on the correct URL with the application ID
+        if (window.location.pathname !== `/patent-buddy/wizard/${applicationId}`) {
+          navigate(`/patent-buddy/wizard/${applicationId}`);
+        }
+        // Reload the application data to ensure it's fresh
+        setTimeout(() => {
+          loadApplication();
+        }, 1000);
       } else {
         // Save new application
         console.log('🔍 Creating new application (no applicationId found)');
