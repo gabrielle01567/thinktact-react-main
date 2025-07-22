@@ -1038,7 +1038,7 @@ const PatentAudit = () => {
         detailedDescription,
         images,
         completedSections,
-        status: Object.values(completedSections).filter(Boolean).length === sections.length ? 'complete' : 'draft'
+        status: completedSectionsCount >= 8 ? 'complete' : 'draft'
       };
 
       console.log('🔍 Save Application Debug:', {
@@ -1076,11 +1076,17 @@ const PatentAudit = () => {
 
     } catch (error) {
       console.error('Error saving application:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
       // Check if it's a limit exceeded error
       if (error.response?.data?.error?.includes('maximum limit of 5 patent applications')) {
         setSaveMessage('You have reached the maximum limit of 5 applications. Please delete an existing application before creating a new one.');
       } else {
-        setSaveMessage('Error saving application. Please try again.');
+        setSaveMessage(`Error saving application: ${error.response?.data?.error || error.message || 'Please try again.'}`);
       }
     } finally {
       setIsSaving(false);

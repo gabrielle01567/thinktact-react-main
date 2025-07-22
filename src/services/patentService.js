@@ -78,6 +78,16 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
       throw new Error('No authentication token found');
     }
 
+    console.log('🔍 PatentService: Updating application', {
+      applicationId,
+      url: `${API_BASE_URL}/patent-applications/${applicationId}`,
+      data: {
+        title: applicationData.title,
+        status: applicationData.status,
+        imagesCount: applicationData.images?.length || 0
+      }
+    });
+
     const response = await axios.put(`${API_BASE_URL}/patent-applications/${applicationId}`, applicationData, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -85,10 +95,16 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
       }
     });
 
+    console.log('🔍 PatentService: Update response', response.data);
+
     // The backend returns { success: true, application: result }
     return response.data.application;
   } catch (error) {
-    console.error('Error updating patent application:', error);
+    console.error('🔍 PatentService: Update error', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
     throw error;
   }
 };
