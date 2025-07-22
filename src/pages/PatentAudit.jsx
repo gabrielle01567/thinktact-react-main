@@ -6,6 +6,8 @@ import { isSupabaseAvailable } from '../services/supabaseClient.js';
 
 const PatentAudit = () => {
   const { id: applicationId } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Debug logging for applicationId
   useEffect(() => {
@@ -16,8 +18,6 @@ const PatentAudit = () => {
       expectedPath: applicationId ? `/patent-buddy/wizard/${applicationId}` : '/patent-buddy/wizard'
     });
   }, [applicationId]);
-  const { user } = useAuth();
-  const navigate = useNavigate();
   
   // 1. Replace currentSection with currentStep (index-based navigation)
   const [currentStep, setCurrentStep] = useState(0);
@@ -969,7 +969,6 @@ const PatentAudit = () => {
       applicationId,
       hasApplicationId: !!applicationId,
       user: user?.id,
-      urlParams: useParams(),
       currentUrl: window.location.pathname
     });
     
@@ -978,7 +977,7 @@ const PatentAudit = () => {
       try {
         console.log('🔍 Attempting to load application with ID:', applicationId);
         const application = await getPatentApplication(applicationId);
-        
+        console.log('🔍 Loaded application data:', application);
         // Populate form fields
         setTitle(application.title || '');
         setShortDescription(application.shortDescription || '');
@@ -997,15 +996,12 @@ const PatentAudit = () => {
           citizenship: '',
           residence: ''
         }]);
-        
         // Set completion status
         if (application.completedSections) {
           setCompletedSections(application.completedSections);
         }
-        
       } catch (error) {
         console.error('Error loading application:', error);
-        // If application not found, redirect to new application
         if (error.response?.status === 404) {
           navigate('/patent-buddy/wizard');
         }
@@ -1040,10 +1036,8 @@ const PatentAudit = () => {
       setSaveMessage('Please log in to save your application');
       return;
     }
-
     setIsSaving(true);
     setSaveMessage('');
-
     try {
       const applicationData = {
         title,
@@ -1061,18 +1055,12 @@ const PatentAudit = () => {
         completedSections,
         status: completedSectionsCount >= 8 ? 'complete' : 'draft'
       };
-
       console.log('🔍 Save Application Debug:', {
         applicationId,
         hasApplicationId: !!applicationId,
         user: user.id,
-        applicationData: {
-          title: applicationData.title,
-          status: applicationData.status,
-          imagesCount: applicationData.images?.length || 0
-        }
+        applicationData
       });
-
       let result;
       if (applicationId && applicationId !== 'undefined' && applicationId !== 'null') {
         // Update existing application
@@ -1095,12 +1083,14 @@ const PatentAudit = () => {
         console.log('🔍 Save result:', result);
         setSaveMessage('Application saved successfully!');
         // Redirect to the saved application
-        navigate(`/patent-buddy/wizard/${result.application.id}`);
+        if (result && result.application && result.application.id) {
+          navigate(`/patent-buddy/wizard/${result.application.id}`);
+        }
       }
-
+      // Log the backend response
+      console.log('🔍 Backend save response:', result);
       // Clear save message after 3 seconds
       setTimeout(() => setSaveMessage(''), 3000);
-
     } catch (error) {
       console.error('Error saving application:', error);
       console.error('Error details:', {
@@ -1108,8 +1098,6 @@ const PatentAudit = () => {
         response: error.response?.data,
         status: error.response?.status
       });
-      
-      // Check if it's a limit exceeded error
       if (error.response?.data?.error?.includes('maximum limit of 5 patent applications')) {
         setSaveMessage('You have reached the maximum limit of 5 applications. Please delete an existing application before creating a new one.');
       } else {
