@@ -1,18 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing Supabase credentials in environment variables');
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+  }
+  return createClient(supabaseUrl, supabaseServiceKey);
 }
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Check user's application count
 export const getUserApplicationCount = async (userId) => {
   try {
+    const supabase = getSupabaseClient();
     const { count, error } = await supabase
       .from('patent_applications')
       .select('*', { count: 'exact', head: true })
@@ -33,6 +33,7 @@ export const getUserApplicationCount = async (userId) => {
 // Save a new patent application
 export const savePatentApplication = async (userId, applicationData) => {
   try {
+    const supabase = getSupabaseClient();
     // Check if user has reached the 5-application limit
     const currentCount = await getUserApplicationCount(userId);
     if (currentCount >= 5) {
@@ -55,7 +56,8 @@ export const savePatentApplication = async (userId, applicationData) => {
         detailed_description: applicationData.detailedDescription || '',
         images: applicationData.images || [],
         completed_sections: applicationData.completedSections || {},
-        status: applicationData.status || 'draft'
+        status: applicationData.status || 'draft',
+        sections_needing_review: applicationData.sectionsNeedingReview || {}
       })
       .select()
       .single();
@@ -86,6 +88,7 @@ export const savePatentApplication = async (userId, applicationData) => {
       images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
+      sectionsNeedingReview: application.sections_needing_review,
       createdAt: application.created_at,
       updatedAt: application.updated_at
     };
@@ -98,6 +101,7 @@ export const savePatentApplication = async (userId, applicationData) => {
 // Update an existing patent application
 export const updatePatentApplication = async (userId, applicationId, applicationData) => {
   try {
+    const supabase = getSupabaseClient();
     const { data: application, error } = await supabase
       .from('patent_applications')
       .update({
@@ -115,6 +119,7 @@ export const updatePatentApplication = async (userId, applicationId, application
         images: applicationData.images || [],
         completed_sections: applicationData.completedSections,
         status: applicationData.status,
+        sections_needing_review: applicationData.sectionsNeedingReview || {},
         updated_at: new Date().toISOString()
       })
       .eq('id', applicationId)
@@ -148,6 +153,7 @@ export const updatePatentApplication = async (userId, applicationId, application
       images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
+      sectionsNeedingReview: application.sections_needing_review,
       createdAt: application.created_at,
       updatedAt: application.updated_at
     };
@@ -160,6 +166,7 @@ export const updatePatentApplication = async (userId, applicationId, application
 // Get all patent applications for a user
 export const getPatentApplications = async (userId) => {
   try {
+    const supabase = getSupabaseClient();
     const { data: applications, error } = await supabase
       .from('patent_applications')
       .select('*')
@@ -188,6 +195,7 @@ export const getPatentApplications = async (userId) => {
       images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
+      sectionsNeedingReview: application.sections_needing_review,
       createdAt: application.created_at,
       updatedAt: application.updated_at
     }));
@@ -200,6 +208,7 @@ export const getPatentApplications = async (userId) => {
 // Get a specific patent application
 export const getPatentApplication = async (userId, applicationId) => {
   try {
+    const supabase = getSupabaseClient();
     const { data: application, error } = await supabase
       .from('patent_applications')
       .select('*')
@@ -233,6 +242,7 @@ export const getPatentApplication = async (userId, applicationId) => {
       images: application.images || [],
       completedSections: application.completed_sections,
       status: application.status,
+      sectionsNeedingReview: application.sections_needing_review,
       createdAt: application.created_at,
       updatedAt: application.updated_at
     };
@@ -245,6 +255,7 @@ export const getPatentApplication = async (userId, applicationId) => {
 // Delete a patent application
 export const deletePatentApplication = async (userId, applicationId) => {
   try {
+    const supabase = getSupabaseClient();
     const { error } = await supabase
       .from('patent_applications')
       .delete()
