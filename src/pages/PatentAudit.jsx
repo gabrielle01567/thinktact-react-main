@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -13,6 +13,226 @@ const PatentAudit = () => {
   const getResidencesForCitizenship = (citizenship) => {
     return citizenshipData[citizenship]?.residences || [];
   };
+
+  // Address autocomplete functions
+  const searchAddress = async (query, inventorIndex) => {
+    if (!query || query.length < 3) {
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
+      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: false }));
+      return;
+    }
+
+    setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: true }));
+    setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
+
+    try {
+      // Use OpenStreetMap Nominatim API for address search (free and no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=${getCountryCode(inventors[inventorIndex]?.citizenship)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Address search failed');
+      }
+
+      const data = await response.json();
+      
+      // Format the suggestions
+      const suggestions = data.map(item => ({
+        id: item.place_id,
+        display: formatAddress(item),
+        full: item.display_name,
+        lat: item.lat,
+        lon: item.lon,
+        address: item.address
+      }));
+
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: suggestions }));
+    } catch (error) {
+      console.error('Address search error:', error);
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
+      
+      // Show error message to user
+      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
+    } finally {
+      setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: false }));
+    }
+  };
+
+  const formatAddress = (item) => {
+    const address = item.address;
+    let formatted = '';
+    
+    if (address.house_number && address.road) {
+      formatted += `${address.house_number} ${address.road}`;
+    } else if (address.road) {
+      formatted += address.road;
+    }
+    
+    if (address.city || address.town || address.village) {
+      if (formatted) formatted += ', ';
+      formatted += address.city || address.town || address.village;
+    }
+    
+    if (address.state) {
+      if (formatted) formatted += ', ';
+      formatted += address.state;
+    }
+    
+    if (address.postcode) {
+      if (formatted) formatted += ' ';
+      formatted += address.postcode;
+    }
+    
+    if (address.country) {
+      if (formatted) formatted += ', ';
+      formatted += address.country;
+    }
+    
+    return formatted || item.display_name;
+  };
+
+  const getCountryCode = (citizenship) => {
+    const countryCodes = {
+      'United States': 'us',
+      'Canada': 'ca',
+      'United Kingdom': 'gb',
+      'Germany': 'de',
+      'France': 'fr',
+      'Japan': 'jp',
+      'Australia': 'au',
+      'China': 'cn',
+      'India': 'in',
+      'Brazil': 'br',
+      'Mexico': 'mx',
+      'South Korea': 'kr',
+      'Italy': 'it',
+      'Spain': 'es',
+      'Netherlands': 'nl',
+      'Switzerland': 'ch',
+      'Sweden': 'se',
+      'Norway': 'no',
+      'Denmark': 'dk',
+      'Finland': 'fi',
+      'Ireland': 'ie',
+      'Belgium': 'be',
+      'Austria': 'at',
+      'Poland': 'pl',
+      'Czech Republic': 'cz',
+      'Hungary': 'hu',
+      'Greece': 'gr',
+      'Portugal': 'pt',
+      'New Zealand': 'nz',
+      'Singapore': 'sg',
+      'Israel': 'il',
+      'United Arab Emirates': 'ae',
+      'Saudi Arabia': 'sa',
+      'Turkey': 'tr',
+      'Iran': 'ir',
+      'Egypt': 'eg',
+      'South Africa': 'za',
+      'Nigeria': 'ng',
+      'Kenya': 'ke',
+      'Ethiopia': 'et',
+      'Morocco': 'ma',
+      'Algeria': 'dz',
+      'Tunisia': 'tn',
+      'Libya': 'ly',
+      'Sudan': 'sd',
+      'Chad': 'td',
+      'Niger': 'ne',
+      'Mali': 'ml',
+      'Burkina Faso': 'bf',
+      'Senegal': 'sn',
+      'Guinea': 'gn',
+      'Sierra Leone': 'sl',
+      'Liberia': 'lr',
+      'Ivory Coast': 'ci',
+      'Ghana': 'gh',
+      'Togo': 'tg',
+      'Benin': 'bj',
+      'Cameroon': 'cm',
+      'Central African Republic': 'cf',
+      'Equatorial Guinea': 'gq',
+      'Gabon': 'ga',
+      'Republic of the Congo': 'cg',
+      'Democratic Republic of the Congo': 'cd',
+      'Angola': 'ao',
+      'Zambia': 'zm',
+      'Zimbabwe': 'zw',
+      'Botswana': 'bw',
+      'Namibia': 'na',
+      'Lesotho': 'ls',
+      'Eswatini': 'sz',
+      'Madagascar': 'mg',
+      'Mauritius': 'mu',
+      'Seychelles': 'sc',
+      'Comoros': 'km',
+      'Djibouti': 'dj',
+      'Eritrea': 'er',
+      'Somalia': 'so'
+    };
+    
+    return countryCodes[citizenship] || '';
+  };
+
+  const selectAddress = (inventorIndex, suggestion) => {
+    const newInventors = [...inventors];
+    newInventors[inventorIndex].address = suggestion.display;
+    setInventors(newInventors);
+    setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: false }));
+  };
+
+  const handleAddressInput = (inventorIndex, value) => {
+    const newInventors = [...inventors];
+    newInventors[inventorIndex].address = value;
+    setInventors(newInventors);
+    
+    // Debounce the search
+    clearTimeout(addressSearchTimeout.current);
+    addressSearchTimeout.current = setTimeout(() => {
+      searchAddress(value, inventorIndex);
+    }, 300);
+  };
+
+  const handleAddressKeyDown = (inventorIndex, event) => {
+    const suggestions = addressSuggestions[inventorIndex] || [];
+    const currentIndex = parseInt(event.target.getAttribute('data-selected-index') || '-1');
+    
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        const nextIndex = currentIndex < suggestions.length - 1 ? currentIndex + 1 : 0;
+        event.target.setAttribute('data-selected-index', nextIndex.toString());
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : suggestions.length - 1;
+        event.target.setAttribute('data-selected-index', prevIndex.toString());
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (currentIndex >= 0 && suggestions[currentIndex]) {
+          selectAddress(inventorIndex, suggestions[currentIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: false }));
+        break;
+    }
+  };
+
+  // Ref for debouncing address search
+  const addressSearchTimeout = useRef(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (addressSearchTimeout.current) {
+        clearTimeout(addressSearchTimeout.current);
+      }
+    };
+  }, []);
 
   // Citizenship and Residence Data
   const citizenshipData = {
@@ -1032,19 +1252,94 @@ const PatentAudit = () => {
                     }}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="e.g., 123 Main St, City, State, ZIP"
-                    value={inventor.address}
-                    onChange={(e) => {
-                      const newInventors = [...inventors];
-                      newInventors[index].address = e.target.value;
-                      setInventors(newInventors);
-                    }}
-                  />
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address *
+                    {inventor.citizenship && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        (Auto-complete for {inventor.citizenship})
+                      </span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                      placeholder="Start typing to search for address..."
+                      value={inventor.address}
+                      data-inventor-index={index}
+                      onChange={(e) => handleAddressInput(index, e.target.value)}
+                      onKeyDown={(e) => handleAddressKeyDown(index, e)}
+                      onFocus={() => {
+                        if (inventor.address && inventor.address.length >= 3) {
+                          setShowAddressDropdown(prev => ({ ...prev, [index]: true }));
+                        }
+                      }}
+                      onBlur={() => {
+                        // Delay hiding dropdown to allow for clicks
+                        setTimeout(() => {
+                          setShowAddressDropdown(prev => ({ ...prev, [index]: false }));
+                        }, 200);
+                      }}
+                    />
+                    {isAddressLoading[index] && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                      </div>
+                    )}
+                    {!isAddressLoading[index] && inventor.address && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Address Suggestions Dropdown */}
+                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {addressSuggestions[index].map((suggestion, suggestionIndex) => (
+                        <div
+                          key={suggestion.id}
+                          className={`px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 ${
+                            suggestionIndex === parseInt(document.querySelector(`input[data-inventor-index="${index}"]`)?.getAttribute('data-selected-index') || '-1') 
+                              ? 'bg-blue-50 border-blue-200' 
+                              : ''
+                          }`}
+                          onClick={() => selectAddress(index, suggestion)}
+                        >
+                          <div className="font-medium text-sm text-gray-900">{suggestion.display}</div>
+                          <div className="text-xs text-gray-500 truncate">{suggestion.full}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* No results message */}
+                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length === 0 && inventor.address.length >= 3 && !isAddressLoading[index] && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No addresses found. You can continue typing or enter manually.
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Error message */}
+                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length === 0 && inventor.address.length >= 3 && !isAddressLoading[index] && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-red-300 rounded-md shadow-lg">
+                      <div className="px-4 py-2 text-sm text-red-600">
+                        Address search temporarily unavailable. Please enter your address manually.
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Help text */}
+                  {inventor.citizenship && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      Address autocomplete is available for {inventor.citizenship}. Start typing to search.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1543,6 +1838,11 @@ const PatentAudit = () => {
   const [previewMode, setPreviewMode] = useState('standard'); // 'standard' or 'uspto'
   const [showPageNumbers, setShowPageNumbers] = useState(true);
   const [showHelpPanel, setShowHelpPanel] = useState(true);
+  
+  // Address autocomplete states
+  const [addressSuggestions, setAddressSuggestions] = useState({});
+  const [showAddressDropdown, setShowAddressDropdown] = useState({});
+  const [isAddressLoading, setIsAddressLoading] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
