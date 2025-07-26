@@ -9,6 +9,603 @@ const PatentAudit = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Helper function to get residences for a citizenship
+  const getResidencesForCitizenship = (citizenship) => {
+    return citizenshipData[citizenship]?.residences || [];
+  };
+
+  // Citizenship and Residence Data
+  const citizenshipData = {
+    'United States': {
+      type: 'country',
+      residences: [
+        'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 
+        'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 
+        'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 
+        'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 
+        'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 
+        'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 
+        'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 
+        'Wisconsin', 'Wyoming', 'District of Columbia', 'Puerto Rico', 'U.S. Virgin Islands', 
+        'Guam', 'American Samoa', 'Northern Mariana Islands'
+      ]
+    },
+    'Canada': {
+      type: 'country',
+      residences: [
+        'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 
+        'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 
+        'Quebec', 'Saskatchewan', 'Yukon'
+      ]
+    },
+    'United Kingdom': {
+      type: 'country',
+      residences: [
+        'England', 'Scotland', 'Wales', 'Northern Ireland', 'Channel Islands', 'Isle of Man'
+      ]
+    },
+    'Germany': {
+      type: 'country',
+      residences: [
+        'Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hesse', 
+        'Lower Saxony', 'Mecklenburg-Vorpommern', 'North Rhine-Westphalia', 'Rhineland-Palatinate', 
+        'Saarland', 'Saxony', 'Saxony-Anhalt', 'Schleswig-Holstein', 'Thuringia'
+      ]
+    },
+    'France': {
+      type: 'country',
+      residences: [
+        'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Bretagne', 'Centre-Val de Loire', 
+        'Corse', 'Grand Est', 'Hauts-de-France', 'Île-de-France', 'Normandie', 'Nouvelle-Aquitaine', 
+        'Occitanie', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'
+      ]
+    },
+    'Japan': {
+      type: 'country',
+      residences: [
+        'Hokkaido', 'Tohoku', 'Kanto', 'Chubu', 'Kansai', 'Chugoku', 'Shikoku', 'Kyushu', 'Okinawa'
+      ]
+    },
+    'Australia': {
+      type: 'country',
+      residences: [
+        'New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia', 
+        'Tasmania', 'Australian Capital Territory', 'Northern Territory'
+      ]
+    },
+    'China': {
+      type: 'country',
+      residences: [
+        'Beijing', 'Tianjin', 'Hebei', 'Shanxi', 'Inner Mongolia', 'Liaoning', 'Jilin', 
+        'Heilongjiang', 'Shanghai', 'Jiangsu', 'Zhejiang', 'Anhui', 'Fujian', 'Jiangxi', 
+        'Shandong', 'Henan', 'Hubei', 'Hunan', 'Guangdong', 'Guangxi', 'Hainan', 'Chongqing', 
+        'Sichuan', 'Guizhou', 'Yunnan', 'Tibet', 'Shaanxi', 'Gansu', 'Qinghai', 'Ningxia', 'Xinjiang'
+      ]
+    },
+    'India': {
+      type: 'country',
+      residences: [
+        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 
+        'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 
+        'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 
+        'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 
+        'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 
+        'Ladakh', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep', 
+        'Puducherry', 'Andaman and Nicobar Islands'
+      ]
+    },
+    'Brazil': {
+      type: 'country',
+      residences: [
+        'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal', 
+        'Espírito Santo', 'Goiás', 'Maranhão', 'Mato Grosso', 'Mato Grosso do Sul', 
+        'Minas Gerais', 'Pará', 'Paraíba', 'Paraná', 'Pernambuco', 'Piauí', 'Rio de Janeiro', 
+        'Rio Grande do Norte', 'Rio Grande do Sul', 'Rondônia', 'Roraima', 'Santa Catarina', 
+        'São Paulo', 'Sergipe', 'Tocantins'
+      ]
+    },
+    'Mexico': {
+      type: 'country',
+      residences: [
+        'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 
+        'Chihuahua', 'Coahuila', 'Colima', 'Ciudad de México', 'Durango', 'Guanajuato', 
+        'Guerrero', 'Hidalgo', 'Jalisco', 'México', 'Michoacán', 'Morelos', 'Nayarit', 
+        'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 
+        'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+      ]
+    },
+    'South Korea': {
+      type: 'country',
+      residences: [
+        'Seoul', 'Busan', 'Daegu', 'Incheon', 'Gwangju', 'Daejeon', 'Ulsan', 'Sejong', 
+        'Gyeonggi', 'Gangwon', 'North Chungcheong', 'South Chungcheong', 'North Jeolla', 
+        'South Jeolla', 'North Gyeongsang', 'South Gyeongsang', 'Jeju'
+      ]
+    },
+    'Italy': {
+      type: 'country',
+      residences: [
+        'Abruzzo', 'Basilicata', 'Calabria', 'Campania', 'Emilia-Romagna', 'Friuli-Venezia Giulia', 
+        'Lazio', 'Liguria', 'Lombardia', 'Marche', 'Molise', 'Piemonte', 'Puglia', 'Sardegna', 
+        'Sicilia', 'Toscana', 'Trentino-Alto Adige', 'Umbria', 'Valle d\'Aosta', 'Veneto'
+      ]
+    },
+    'Spain': {
+      type: 'country',
+      residences: [
+        'Andalucía', 'Aragón', 'Asturias', 'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 
+        'Cataluña', 'Comunidad Valenciana', 'Extremadura', 'Galicia', 'Islas Baleares', 
+        'Islas Canarias', 'La Rioja', 'Madrid', 'Murcia', 'Navarra', 'País Vasco', 'Ceuta', 'Melilla'
+      ]
+    },
+    'Netherlands': {
+      type: 'country',
+      residences: [
+        'Drenthe', 'Flevoland', 'Friesland', 'Gelderland', 'Groningen', 'Limburg', 
+        'Noord-Brabant', 'Noord-Holland', 'Overijssel', 'Utrecht', 'Zeeland', 'Zuid-Holland'
+      ]
+    },
+    'Switzerland': {
+      type: 'country',
+      residences: [
+        'Aargau', 'Appenzell Ausserrhoden', 'Appenzell Innerrhoden', 'Basel-Landschaft', 
+        'Basel-Stadt', 'Bern', 'Fribourg', 'Genève', 'Glarus', 'Graubünden', 'Jura', 
+        'Luzern', 'Neuchâtel', 'Nidwalden', 'Obwalden', 'Sankt Gallen', 'Schaffhausen', 
+        'Schwyz', 'Solothurn', 'Thurgau', 'Ticino', 'Uri', 'Valais', 'Vaud', 'Zug', 'Zürich'
+      ]
+    },
+    'Sweden': {
+      type: 'country',
+      residences: [
+        'Blekinge', 'Dalarna', 'Gotland', 'Gävleborg', 'Halland', 'Jämtland', 'Jönköping', 
+        'Kalmar', 'Kronoberg', 'Norrbotten', 'Örebro', 'Östergötland', 'Skåne', 'Södermanland', 
+        'Stockholm', 'Uppsala', 'Värmland', 'Västerbotten', 'Västernorrland', 'Västmanland', 'Västra Götaland'
+      ]
+    },
+    'Norway': {
+      type: 'country',
+      residences: [
+        'Agder', 'Innlandet', 'Møre og Romsdal', 'Nordland', 'Oslo', 'Rogaland', 
+        'Troms og Finnmark', 'Trøndelag', 'Vestfold og Telemark', 'Viken'
+      ]
+    },
+    'Denmark': {
+      type: 'country',
+      residences: [
+        'Capital Region', 'Central Jutland', 'North Jutland', 'Region Zealand', 'Southern Denmark'
+      ]
+    },
+    'Finland': {
+      type: 'country',
+      residences: [
+        'Åland Islands', 'Central Finland', 'Central Ostrobothnia', 'Kainuu', 'Kymenlaakso', 
+        'Lapland', 'North Karelia', 'Northern Ostrobothnia', 'Northern Savonia', 'Ostrobothnia', 
+        'Päijänne Tavastia', 'Pirkanmaa', 'Satakunta', 'South Karelia', 'Southern Ostrobothnia', 
+        'Southern Savonia', 'Southwest Finland', 'Tavastia Proper', 'Uusimaa'
+      ]
+    },
+    'Ireland': {
+      type: 'country',
+      residences: [
+        'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway', 'Kerry', 'Kildare', 
+        'Kilkenny', 'Laois', 'Leitrim', 'Limerick', 'Longford', 'Louth', 'Mayo', 'Meath', 
+        'Monaghan', 'Offaly', 'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath', 'Wexford', 'Wicklow'
+      ]
+    },
+    'Belgium': {
+      type: 'country',
+      residences: [
+        'Antwerp', 'East Flanders', 'Flemish Brabant', 'Hainaut', 'Liège', 'Limburg', 
+        'Luxembourg', 'Namur', 'Walloon Brabant', 'West Flanders'
+      ]
+    },
+    'Austria': {
+      type: 'country',
+      residences: [
+        'Burgenland', 'Carinthia', 'Lower Austria', 'Salzburg', 'Styria', 'Tyrol', 
+        'Upper Austria', 'Vienna', 'Vorarlberg'
+      ]
+    },
+    'Poland': {
+      type: 'country',
+      residences: [
+        'Greater Poland', 'Kuyavian-Pomeranian', 'Lesser Poland', 'Łódź', 'Lower Silesian', 
+        'Lublin', 'Lubusz', 'Masovian', 'Opole', 'Podkarpackie', 'Podlaskie', 'Pomeranian', 
+        'Silesian', 'Świętokrzyskie', 'Warmian-Masurian', 'West Pomeranian'
+      ]
+    },
+    'Czech Republic': {
+      type: 'country',
+      residences: [
+        'Central Bohemian', 'Hradec Králové', 'Karlovy Vary', 'Liberec', 'Moravian-Silesian', 
+        'Olomouc', 'Pardubice', 'Pilsen', 'Prague', 'South Bohemian', 'South Moravian', 'Ústí nad Labem', 'Vysočina', 'Zlín'
+      ]
+    },
+    'Hungary': {
+      type: 'country',
+      residences: [
+        'Bács-Kiskun', 'Baranya', 'Békés', 'Borsod-Abaúj-Zemplén', 'Csongrád', 'Fejér', 
+        'Győr-Moson-Sopron', 'Hajdú-Bihar', 'Heves', 'Jász-Nagykun-Szolnok', 'Komárom-Esztergom', 
+        'Nógrád', 'Pest', 'Somogy', 'Szabolcs-Szatmár-Bereg', 'Tolna', 'Vas', 'Veszprém', 'Zala'
+      ]
+    },
+    'Greece': {
+      type: 'country',
+      residences: [
+        'Attica', 'Central Greece', 'Central Macedonia', 'Crete', 'East Macedonia and Thrace', 
+        'Epirus', 'Ionian Islands', 'North Aegean', 'Peloponnese', 'South Aegean', 'Thessaly', 'West Greece', 'West Macedonia'
+      ]
+    },
+    'Portugal': {
+      type: 'country',
+      residences: [
+        'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Évora', 'Faro', 
+        'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal', 'Viana do Castelo', 'Vila Real', 'Viseu', 'Azores', 'Madeira'
+      ]
+    },
+    'New Zealand': {
+      type: 'country',
+      residences: [
+        'Auckland', 'Bay of Plenty', 'Canterbury', 'Gisborne', 'Hawke\'s Bay', 'Manawatu-Wanganui', 
+        'Marlborough', 'Nelson', 'Northland', 'Otago', 'Southland', 'Taranaki', 'Tasman', 'Waikato', 'Wellington', 'Westland'
+      ]
+    },
+    'Singapore': {
+      type: 'country',
+      residences: [
+        'Central Region', 'East Region', 'North Region', 'North-East Region', 'West Region'
+      ]
+    },
+    'Israel': {
+      type: 'country',
+      residences: [
+        'Central District', 'Haifa District', 'Jerusalem District', 'Northern District', 
+        'Southern District', 'Tel Aviv District'
+      ]
+    },
+    'United Arab Emirates': {
+      type: 'country',
+      residences: [
+        'Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'
+      ]
+    },
+    'Saudi Arabia': {
+      type: 'country',
+      residences: [
+        'Al Bahah', 'Al Hudud ash Shamaliyah', 'Al Jawf', 'Al Madinah', 'Al Qasim', 'Ar Riyad', 
+        'Ash Sharqiyah', 'Asir', 'Ha\'il', 'Jazan', 'Makkah', 'Najran', 'Tabuk'
+      ]
+    },
+    'Turkey': {
+      type: 'country',
+      residences: [
+        'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Amasya', 'Ankara', 'Antalya', 'Artvin', 
+        'Aydın', 'Balıkesir', 'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 
+        'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 
+        'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Isparta', 'Mersin', 
+        'İstanbul', 'İzmir', 'Kars', 'Kastamonu', 'Kayseri', 'Kırklareli', 'Kırşehir', 'Kocaeli', 
+        'Konya', 'Kütahya', 'Malatya', 'Manisa', 'Kahramanmaraş', 'Mardin', 'Muğla', 'Muş', 'Nevşehir', 
+        'Niğde', 'Ordu', 'Rize', 'Sakarya', 'Samsun', 'Siirt', 'Sinop', 'Sivas', 'Tekirdağ', 'Tokat', 
+        'Trabzon', 'Tunceli', 'Şanlıurfa', 'Uşak', 'Van', 'Yozgat', 'Zonguldak', 'Aksaray', 'Bayburt', 
+        'Karaman', 'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan', 'Iğdır', 'Yalova', 'Karabük', 
+        'Kilis', 'Osmaniye', 'Düzce'
+      ]
+    },
+    'Iran': {
+      type: 'country',
+      residences: [
+        'Alborz', 'Ardabil', 'Bushehr', 'Chaharmahal and Bakhtiari', 'East Azerbaijan', 
+        'Fars', 'Gilan', 'Golestan', 'Hamadan', 'Hormozgan', 'Ilam', 'Isfahan', 'Kerman', 
+        'Kermanshah', 'Khorasan, North', 'Khorasan, Razavi', 'Khorasan, South', 'Kohgiluyeh and Boyer-Ahmad', 
+        'Kurdistan', 'Lorestan', 'Markazi', 'Mazandaran', 'Qazvin', 'Qom', 'Semnan', 'Sistan and Baluchestan', 
+        'Tehran', 'West Azerbaijan', 'Yazd', 'Zanjan'
+      ]
+    },
+    'Egypt': {
+      type: 'country',
+      residences: [
+        'Alexandria', 'Aswan', 'Asyut', 'Beheira', 'Beni Suef', 'Cairo', 'Dakahlia', 'Damietta', 
+        'Faiyum', 'Gharbia', 'Giza', 'Ismailia', 'Kafr El Sheikh', 'Luxor', 'Matruh', 'Minya', 
+        'Monufia', 'New Valley', 'North Sinai', 'Port Said', 'Qalyubia', 'Qena', 'Red Sea', 
+        'Sharqia', 'Sohag', 'South Sinai', 'Suez'
+      ]
+    },
+    'South Africa': {
+      type: 'country',
+      residences: [
+        'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 
+        'Northern Cape', 'North West', 'Western Cape'
+      ]
+    },
+    'Nigeria': {
+      type: 'country',
+      residences: [
+        'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 
+        'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Federal Capital Territory', 
+        'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 
+        'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 
+        'Taraba', 'Yobe', 'Zamfara'
+      ]
+    },
+    'Kenya': {
+      type: 'country',
+      residences: [
+        'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo Marakwet', 'Embu', 'Garissa', 'Homa Bay', 
+        'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 
+        'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera', 
+        'Marsabit', 'Meru', 'Migori', 'Mombasa', 'Murang\'a', 'Nairobi', 'Nakuru', 'Nandi', 
+        'Narok', 'Nyamira', 'Nyandarua', 'Nyeri', 'Samburu', 'Siaya', 'Taita Taveta', 'Tana River', 
+        'Tharaka Nithi', 'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'
+      ]
+    },
+    'Ethiopia': {
+      type: 'country',
+      residences: [
+        'Addis Ababa', 'Afar', 'Amhara', 'Benishangul-Gumuz', 'Dire Dawa', 'Gambela', 'Harari', 
+        'Oromia', 'Somali', 'Southern Nations, Nationalities, and Peoples', 'Tigray'
+      ]
+    },
+    'Morocco': {
+      type: 'country',
+      residences: [
+        'Béni Mellal-Khénifra', 'Casablanca-Settat', 'Dakhla-Oued Ed-Dahab', 'Drâa-Tafilalet', 
+        'Fès-Meknès', 'Guelmim-Oued Noun', 'Laâyoune-Sakia El Hamra', 'Marrakech-Safi', 
+        'Oriental', 'Rabat-Salé-Kénitra', 'Souss-Massa', 'Tanger-Tétouan-Al Hoceïma'
+      ]
+    },
+    'Algeria': {
+      type: 'country',
+      residences: [
+        'Adrar', 'Aïn Defla', 'Aïn Témouchent', 'Algiers', 'Annaba', 'Batna', 'Béchar', 'Béjaïa', 
+        'Biskra', 'Blida', 'Bordj Bou Arréridj', 'Bouira', 'Boumerdès', 'Chlef', 'Constantine', 
+        'Djelfa', 'El Bayadh', 'El Oued', 'El Tarf', 'Ghardaïa', 'Guelma', 'Illizi', 'Jijel', 
+        'Khenchela', 'Laghouat', 'Mascara', 'Médéa', 'Mila', 'Mostaganem', 'M\'Sila', 'Naâma', 
+        'Oran', 'Ouargla', 'Oum El Bouaghi', 'Relizane', 'Saïda', 'Sétif', 'Sidi Bel Abbès', 
+        'Skikda', 'Souk Ahras', 'Tamanghasset', 'Tébessa', 'Tiaret', 'Tindouf', 'Tipaza', 
+        'Tissemsilt', 'Tizi Ouzou', 'Tlemcen'
+      ]
+    },
+    'Tunisia': {
+      type: 'country',
+      residences: [
+        'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan', 
+        'Kasserine', 'Kébili', 'Kef', 'Mahdia', 'Manouba', 'Médenine', 'Monastir', 'Nabeul', 
+        'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan'
+      ]
+    },
+    'Libya': {
+      type: 'country',
+      residences: [
+        'Al Butnan', 'Al Jabal al Akhdar', 'Al Jabal al Gharbi', 'Al Jafarah', 'Al Jufrah', 
+        'Al Kufrah', 'Al Marj', 'Al Marqab', 'Al Wahat', 'An Nuqat al Khams', 'Az Zawiyah', 
+        'Benghazi', 'Darnah', 'Ghat', 'Misratah', 'Murzuq', 'Sabha', 'Surt', 'Tarabulus', 'Wadi al Hayat', 'Wadi ash Shati\''
+      ]
+    },
+    'Sudan': {
+      type: 'country',
+      residences: [
+        'Al Jazirah', 'Al Qadarif', 'Blue Nile', 'Central Darfur', 'East Darfur', 'Gedaref', 
+        'Gezerira', 'Kassala', 'Khartoum', 'North Darfur', 'North Kordofan', 'Northern', 'Red Sea', 
+        'River Nile', 'Sennar', 'South Darfur', 'South Kordofan', 'West Darfur', 'West Kordofan', 'White Nile'
+      ]
+    },
+    'Chad': {
+      type: 'country',
+      residences: [
+        'Bahr el Gazel', 'Batha', 'Borkou', 'Chari-Baguirmi', 'Ennedi-Est', 'Ennedi-Ouest', 
+        'Guéra', 'Hadjer-Lamis', 'Kanem', 'Lac', 'Logone Occidental', 'Logone Oriental', 
+        'Mandoul', 'Mayo-Kebbi Est', 'Mayo-Kebbi Ouest', 'Moyen-Chari', 'Ouaddaï', 'Salamat', 
+        'Sila', 'Tandjilé', 'Tibesti', 'Ville de N\'Djamena', 'Wadi Fira'
+      ]
+    },
+    'Niger': {
+      type: 'country',
+      residences: [
+        'Agadez', 'Diffa', 'Dosso', 'Maradi', 'Niamey', 'Tahoua', 'Tillabéri', 'Zinder'
+      ]
+    },
+    'Mali': {
+      type: 'country',
+      residences: [
+        'Bamako', 'Gao', 'Kayes', 'Kidal', 'Koulikoro', 'Mopti', 'Ségou', 'Sikasso', 'Tombouctou'
+      ]
+    },
+    'Burkina Faso': {
+      type: 'country',
+      residences: [
+        'Boucle du Mouhoun', 'Cascades', 'Centre', 'Centre-Est', 'Centre-Nord', 'Centre-Ouest', 
+        'Centre-Sud', 'Est', 'Hauts-Bassins', 'Nord', 'Plateau-Central', 'Sahel', 'Sud-Ouest'
+      ]
+    },
+    'Senegal': {
+      type: 'country',
+      residences: [
+        'Dakar', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack', 'Kédougou', 'Kolda', 'Louga', 
+        'Matam', 'Saint-Louis', 'Sédhiou', 'Tambacounda', 'Thiès', 'Ziguinchor'
+      ]
+    },
+    'Guinea': {
+      type: 'country',
+      residences: [
+        'Boké', 'Conakry', 'Faranah', 'Kankan', 'Kindia', 'Labé', 'Mamou', 'Nzérékoré'
+      ]
+    },
+    'Sierra Leone': {
+      type: 'country',
+      residences: [
+        'Eastern', 'Northern', 'Southern', 'Western Area'
+      ]
+    },
+    'Liberia': {
+      type: 'country',
+      residences: [
+        'Bomi', 'Bong', 'Gbarpolu', 'Grand Bassa', 'Grand Cape Mount', 'Grand Gedeh', 
+        'Grand Kru', 'Lofa', 'Margibi', 'Maryland', 'Montserrado', 'Nimba', 'River Cess', 'River Gee', 'Sinoe'
+      ]
+    },
+    'Ivory Coast': {
+      type: 'country',
+      residences: [
+        'Abidjan', 'Bas-Sassandra', 'Comoé', 'Denguélé', 'Gôh-Djiboua', 'Lacs', 'Lagunes', 
+        'Montagnes', 'Sassandra-Marahoué', 'Savanes', 'Vallée du Bandama', 'Woroba', 'Yamoussoukro', 'Zanzan'
+      ]
+    },
+    'Ghana': {
+      type: 'country',
+      residences: [
+        'Ahafo', 'Ashanti', 'Bono', 'Bono East', 'Central', 'Eastern', 'Greater Accra', 
+        'North East', 'Northern', 'Oti', 'Savannah', 'Upper East', 'Upper West', 'Volta', 'Western', 'Western North'
+      ]
+    },
+    'Togo': {
+      type: 'country',
+      residences: [
+        'Centrale', 'Kara', 'Maritime', 'Plateaux', 'Savanes'
+      ]
+    },
+    'Benin': {
+      type: 'country',
+      residences: [
+        'Alibori', 'Atacora', 'Atlantique', 'Borgou', 'Collines', 'Couffo', 'Donga', 'Littoral', 'Mono', 'Ouémé', 'Plateau', 'Zou'
+      ]
+    },
+    'Cameroon': {
+      type: 'country',
+      residences: [
+        'Adamawa', 'Centre', 'East', 'Far North', 'Littoral', 'North', 'North-West', 'South', 'South-West', 'West'
+      ]
+    },
+    'Central African Republic': {
+      type: 'country',
+      residences: [
+        'Bamingui-Bangoran', 'Bangui', 'Basse-Kotto', 'Haute-Kotto', 'Haut-Mbomou', 'Kémo', 
+        'Lobaye', 'Mambéré-Kadéï', 'Mbomou', 'Nana-Grébizi', 'Nana-Mambéré', 'Ombella-M\'Poko', 
+        'Ouaka', 'Ouham', 'Ouham-Pendé', 'Sangha-Mbaéré', 'Vakaga'
+      ]
+    },
+    'Equatorial Guinea': {
+      type: 'country',
+      residences: [
+        'Annobón', 'Bioko Norte', 'Bioko Sur', 'Centro Sur', 'Kié-Ntem', 'Litoral', 'Wele-Nzas'
+      ]
+    },
+    'Gabon': {
+      type: 'country',
+      residences: [
+        'Estuaire', 'Haut-Ogooué', 'Moyen-Ogooué', 'Ngounié', 'Nyanga', 'Ogooué-Ivindo', 'Ogooué-Lolo', 'Ogooué-Maritime', 'Woleu-Ntem'
+      ]
+    },
+    'Republic of the Congo': {
+      type: 'country',
+      residences: [
+        'Bouenza', 'Brazzaville', 'Cuvette', 'Cuvette-Ouest', 'Kouilou', 'Lékoumou', 'Likouala', 'Niari', 'Plateaux', 'Pointe-Noire', 'Pool', 'Sangha'
+      ]
+    },
+    'Democratic Republic of the Congo': {
+      type: 'country',
+      residences: [
+        'Bas-Uélé', 'Équateur', 'Haut-Katanga', 'Haut-Lomami', 'Haut-Uélé', 'Ituri', 'Kasaï', 
+        'Kasaï-Central', 'Kasaï-Oriental', 'Kinshasa', 'Kongo Central', 'Kwango', 'Kwilu', 
+        'Lomami', 'Lualaba', 'Mai-Ndombe', 'Maniema', 'Mongala', 'Nord-Kivu', 'Nord-Ubangi', 
+        'Sankuru', 'Sud-Kivu', 'Sud-Ubangi', 'Tanganyika', 'Tshopo', 'Tshuapa'
+      ]
+    },
+    'Angola': {
+      type: 'country',
+      residences: [
+        'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango', 'Cuanza Norte', 'Cuanza Sul', 
+        'Cunene', 'Huambo', 'Huíla', 'Luanda', 'Lunda Norte', 'Lunda Sul', 'Malanje', 'Moxico', 'Namibe', 'Uíge', 'Zaire'
+      ]
+    },
+    'Zambia': {
+      type: 'country',
+      residences: [
+        'Central', 'Copperbelt', 'Eastern', 'Luapula', 'Lusaka', 'Muchinga', 'Northern', 'North-Western', 'Southern', 'Western'
+      ]
+    },
+    'Zimbabwe': {
+      type: 'country',
+      residences: [
+        'Bulawayo', 'Harare', 'Manicaland', 'Mashonaland Central', 'Mashonaland East', 
+        'Mashonaland West', 'Masvingo', 'Matabeleland North', 'Matabeleland South', 'Midlands'
+      ]
+    },
+    'Botswana': {
+      type: 'country',
+      residences: [
+        'Central', 'Chobe', 'Francistown', 'Gaborone', 'Ghanzi', 'Jwaneng', 'Kgalagadi', 
+        'Kgatleng', 'Kweneng', 'Lobatse', 'North East', 'North West', 'Selibe Phikwe', 'South East', 'Southern'
+      ]
+    },
+    'Namibia': {
+      type: 'country',
+      residences: [
+        'Erongo', 'Hardap', 'Karas', 'Kavango East', 'Kavango West', 'Khomas', 'Kunene', 
+        'Ohangwena', 'Omaheke', 'Omusati', 'Oshana', 'Oshikoto', 'Otjozondjupa', 'Zambezi'
+      ]
+    },
+    'Lesotho': {
+      type: 'country',
+      residences: [
+        'Berea', 'Butha-Buthe', 'Leribe', 'Mafeteng', 'Maseru', 'Mohale\'s Hoek', 'Mokhotlong', 'Qacha\'s Nek', 'Quthing', 'Thaba-Tseka'
+      ]
+    },
+    'Eswatini': {
+      type: 'country',
+      residences: [
+        'Hhohho', 'Lubombo', 'Manzini', 'Shiselweni'
+      ]
+    },
+    'Madagascar': {
+      type: 'country',
+      residences: [
+        'Alaotra-Mangoro', 'Amoron\'i Mania', 'Analamanga', 'Analanjirofo', 'Androy', 'Anosy', 
+        'Atsimo-Andrefana', 'Atsimo-Atsinanana', 'Atsinanana', 'Betsiboka', 'Boeny', 'Bongolava', 
+        'Diana', 'Haute Matsiatra', 'Ihorombe', 'Itasy', 'Melaky', 'Menabe', 'Sava', 'Sofia', 'Vakinankaratra', 'Vatovavy-Fitovinany'
+      ]
+    },
+    'Mauritius': {
+      type: 'country',
+      residences: [
+        'Agalega Islands', 'Black River', 'Cargados Carajos', 'Flacq', 'Grand Port', 'Moka', 'Pamplemousses', 'Plaines Wilhems', 'Port Louis', 'Rivière du Rempart', 'Rodrigues Island', 'Savanne'
+      ]
+    },
+    'Seychelles': {
+      type: 'country',
+      residences: [
+        'Anse aux Pins', 'Anse Boileau', 'Anse Etoile', 'Anse Royale', 'Anse Volbert', 'Au Cap', 'Baie Lazare', 'Baie Sainte Anne', 'Beau Vallon', 'Bel Air', 'Bel Ombre', 'Cascade', 'Glacis', 'Grand Anse Mahe', 'Grand Anse Praslin', 'La Digue', 'La Riviere Anglaise', 'Les Mamelles', 'Mont Buxton', 'Mont Fleuri', 'Plaisance', 'Pointe La Rue', 'Port Glaud', 'Roche Caiman', 'Saint Louis', 'Takamaka'
+      ]
+    },
+    'Comoros': {
+      type: 'country',
+      residences: [
+        'Anjouan', 'Grande Comore', 'Mohéli'
+      ]
+    },
+    'Djibouti': {
+      type: 'country',
+      residences: [
+        'Ali Sabieh', 'Arta', 'Dikhil', 'Djibouti', 'Obock', 'Tadjourah'
+      ]
+    },
+    'Eritrea': {
+      type: 'country',
+      residences: [
+        'Anseba', 'Debub', 'Debubawi K\'eyih Bahri', 'Gash-Barka', 'Ma\'akel', 'Semenawi K\'eyih Bahri'
+      ]
+    },
+    'Somalia': {
+      type: 'country',
+      residences: [
+        'Awdal', 'Bakool', 'Banaadir', 'Bari', 'Bay', 'Galguduud', 'Gedo', 'Hiran', 'Jubbada Dhexe', 'Jubbada Hoose', 'Mudug', 'Nugaal', 'Sanaag', 'Shabeellaha Dhexe', 'Shabeellaha Hoose', 'Sool', 'Togdheer', 'Woqooyi Galbeed'
+      ]
+    },
+    'Other': {
+      type: 'other',
+      residences: ['Other']
+    }
+  };
+  
   // Debug logging for applicationId
   useEffect(() => {
     console.log('🔍 ApplicationId Debug:', {
@@ -450,32 +1047,87 @@ const PatentAudit = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Citizenship
+                    <span className="text-xs text-gray-500 ml-1">
+                      ({Object.keys(citizenshipData).length} countries)
+                    </span>
+                  </label>
+                  <select
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="e.g., United States"
                     value={inventor.citizenship}
                     onChange={(e) => {
                       const newInventors = [...inventors];
                       newInventors[index].citizenship = e.target.value;
+                      // Reset residence when citizenship changes
+                      newInventors[index].residence = '';
                       setInventors(newInventors);
                     }}
-                  />
+                  >
+                    <option value="">Select Citizenship</option>
+                    {/* Popular countries first */}
+                    <optgroup label="Popular Countries">
+                      {['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Japan', 'Australia', 'China', 'India', 'Brazil'].map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="All Countries">
+                      {Object.keys(citizenshipData)
+                        .filter(country => !['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Japan', 'Australia', 'China', 'India', 'Brazil'].includes(country))
+                        .map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="e.g., California"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Residence
+                    {inventor.citizenship && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({getResidencesForCitizenship(inventor.citizenship).length} options)
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    className={`w-full rounded-md shadow-sm focus:ring-blue-500 ${
+                      !inventor.citizenship 
+                        ? 'border-gray-300 bg-gray-50 text-gray-500' 
+                        : 'border-gray-300 focus:border-blue-500'
+                    }`}
                     value={inventor.residence}
                     onChange={(e) => {
                       const newInventors = [...inventors];
                       newInventors[index].residence = e.target.value;
                       setInventors(newInventors);
                     }}
-                  />
+                    disabled={!inventor.citizenship}
+                  >
+                    <option value="">
+                      {inventor.citizenship ? 'Select Residence' : 'Select Citizenship First'}
+                    </option>
+                    {inventor.citizenship && citizenshipData[inventor.citizenship] && 
+                      citizenshipData[inventor.citizenship].residences.map((residence) => (
+                        <option key={residence} value={residence}>
+                          {residence}
+                        </option>
+                      ))
+                    }
+                  </select>
+                  {inventor.citizenship && !inventor.residence && inventor.citizenship !== 'Other' && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      Please select a residence for {inventor.citizenship}
+                    </p>
+                  )}
+                  {inventor.citizenship === 'Other' && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      For "Other" citizenship, you may specify residence in the address field
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
