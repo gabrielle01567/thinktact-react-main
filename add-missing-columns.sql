@@ -14,7 +14,8 @@ ADD COLUMN IF NOT EXISTS drawings TEXT,
 ADD COLUMN IF NOT EXISTS detailed_description TEXT,
 ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]',
 ADD COLUMN IF NOT EXISTS completed_sections JSONB DEFAULT '{}',
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft';
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft',
+ADD COLUMN IF NOT EXISTS sections_needing_review JSONB;
 
 -- Add comments to document the fields
 COMMENT ON COLUMN patent_applications.inventors IS 'Array of inventor objects with name, address, citizenship, and residence';
@@ -29,12 +30,13 @@ COMMENT ON COLUMN patent_applications.detailed_description IS 'Detailed descript
 COMMENT ON COLUMN patent_applications.images IS 'Array of uploaded image objects with filename, url, and metadata';
 COMMENT ON COLUMN patent_applications.completed_sections IS 'JSON object tracking completion status of each section';
 COMMENT ON COLUMN patent_applications.status IS 'Application status: draft or complete';
+COMMENT ON COLUMN patent_applications.sections_needing_review IS 'JSON object tracking sections that need review';
 
 -- Verify all columns were added
 SELECT column_name, data_type, is_nullable, column_default 
 FROM information_schema.columns 
 WHERE table_name = 'patent_applications' 
-AND column_name IN ('inventors', 'abstract', 'cross_reference', 'federal_research', 'field', 'background', 'summary', 'drawings', 'detailed_description', 'images', 'completed_sections', 'status')
+AND column_name IN ('inventors', 'abstract', 'cross_reference', 'federal_research', 'field', 'background', 'summary', 'drawings', 'detailed_description', 'images', 'completed_sections', 'status', 'sections_needing_review')
 ORDER BY column_name;
 
 RAISE NOTICE '✅ All missing columns added to patent_applications table successfully'; 

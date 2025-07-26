@@ -1,0 +1,2 @@
+ALTER TABLE patent_applications
+ADD COLUMN IF NOT EXISTS last_step INTEGER DEFAULT 0; 
