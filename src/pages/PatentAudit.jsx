@@ -1149,28 +1149,17 @@ const PatentAudit = () => {
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
-            <textarea
-              rows={3}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={shortDescription}
-              onChange={(e) => setShortDescription(e.target.value)}
-              placeholder="A brief description to help you identify this invention in your documents"
-            />
-            
-            {/* Title Generation Help Section */}
-            <div className="mt-3">
-              <button
-                onClick={() => setShowTitleGenerationPopup(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Get Help with Title Creation
-              </button>
-            </div>
+          {/* Title Generation Help Section */}
+          <div className="mt-3">
+            <button
+              onClick={() => setShowTitleGenerationPopup(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Get Help with Title Creation
+            </button>
           </div>
 
 
@@ -1847,7 +1836,6 @@ const PatentAudit = () => {
   }
 
   const [title, setTitle] = useState('');
-  const [shortDescription, setShortDescription] = useState('');
   const [showTips, setShowTips] = useState(true);
   
   // Title generation states
