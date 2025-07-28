@@ -1735,12 +1735,7 @@ const PatentAudit = () => {
   const [federalResearch, setFederalResearch] = useState('');
   
   // Add state for inventors
-  const [inventors, setInventors] = useState([{
-    name: '',
-    address: '',
-    citizenship: '',
-    residence: ''
-  }]);
+  const [inventors, setInventors] = useState([]);
   
   // Inventor popup states
   const [showInventorPopup, setShowInventorPopup] = useState(false);
@@ -1836,12 +1831,7 @@ const PatentAudit = () => {
         setImages(application.images || []);
         setCrossReference(application.crossReference || '');
         setFederalResearch(application.federalResearch || '');
-        setInventors(application.inventors || [{
-          name: '',
-          address: '',
-          citizenship: '',
-          residence: ''
-        }]);
+        setInventors(application.inventors || []);
         // Set completion status
         if (application.completedSections) {
           setCompletedSections(application.completedSections);
@@ -3077,26 +3067,26 @@ const PatentAudit = () => {
             repeating-linear-gradient(
               45deg,
               transparent,
-              transparent 200px,
-              rgba(37, 99, 235, 0.03) 200px,
-              rgba(37, 99, 235, 0.03) 400px
+              transparent 150px,
+              rgba(37, 99, 235, 0.08) 150px,
+              rgba(37, 99, 235, 0.08) 300px
             ),
             repeating-linear-gradient(
               -45deg,
               transparent,
-              transparent 200px,
-              rgba(29, 78, 216, 0.02) 200px,
-              rgba(29, 78, 216, 0.02) 400px
+              transparent 150px,
+              rgba(29, 78, 216, 0.06) 150px,
+              rgba(29, 78, 216, 0.06) 300px
             ),
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 300px,
-              rgba(59, 130, 246, 0.015) 300px,
-              rgba(59, 130, 246, 0.015) 600px
+              transparent 250px,
+              rgba(59, 130, 246, 0.05) 250px,
+              rgba(59, 130, 246, 0.05) 500px
             )
           `,
-          backgroundSize: '400px 400px, 400px 400px, 600px 600px',
+          backgroundSize: '300px 300px, 300px 300px, 500px 500px',
           backgroundPosition: '0 0, 0 0, 0 0'
         }}
       />
@@ -3119,11 +3109,11 @@ const PatentAudit = () => {
       >
         <span
           style={{
-            fontSize: '80px',
+            fontSize: '120px',
             color: '#2563eb',
-            opacity: 0.08,
+            opacity: 0.15,
             fontWeight: 900,
-            letterSpacing: '8px',
+            letterSpacing: '12px',
             userSelect: 'none',
             whiteSpace: 'nowrap'
           }}
@@ -3132,11 +3122,11 @@ const PatentAudit = () => {
         </span>
         <span
           style={{
-            fontSize: '60px',
+            fontSize: '90px',
             color: '#1d4ed8',
-            opacity: 0.06,
+            opacity: 0.12,
             fontWeight: 700,
-            letterSpacing: '6px',
+            letterSpacing: '8px',
             userSelect: 'none',
             whiteSpace: 'nowrap'
           }}
@@ -3145,11 +3135,11 @@ const PatentAudit = () => {
         </span>
         <span
           style={{
-            fontSize: '40px',
+            fontSize: '70px',
             color: '#3b82f6',
-            opacity: 0.04,
+            opacity: 0.10,
             fontWeight: 600,
-            letterSpacing: '4px',
+            letterSpacing: '6px',
             userSelect: 'none',
             whiteSpace: 'nowrap'
           }}
@@ -3164,7 +3154,7 @@ const PatentAudit = () => {
           key={i}
           style={{
             position: 'absolute',
-            top: `${i * 400}px`,
+            top: `${i * 350}px`,
             left: '50%',
             transform: 'translateX(-50%) rotate(-25deg)',
             pointerEvents: 'none',
@@ -3173,16 +3163,16 @@ const PatentAudit = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px'
+            gap: '15px'
           }}
         >
           <span
             style={{
-              fontSize: '40px',
+              fontSize: '60px',
               color: '#2563eb',
-              opacity: 0.04,
+              opacity: 0.08,
               fontWeight: 700,
-              letterSpacing: '4px',
+              letterSpacing: '6px',
               userSelect: 'none',
               whiteSpace: 'nowrap'
             }}
@@ -3191,11 +3181,11 @@ const PatentAudit = () => {
           </span>
           <span
             style={{
-              fontSize: '30px',
+              fontSize: '45px',
               color: '#1d4ed8',
-              opacity: 0.03,
+              opacity: 0.06,
               fontWeight: 600,
-              letterSpacing: '3px',
+              letterSpacing: '4px',
               userSelect: 'none',
               whiteSpace: 'nowrap'
             }}
@@ -3211,8 +3201,8 @@ const PatentAudit = () => {
           key={`diagonal-${i}`}
           style={{
             position: 'absolute',
-            top: `${i * 300 + 100}px`,
-            left: `${i * 200}px`,
+            top: `${i * 280 + 100}px`,
+            left: `${i * 180}px`,
             transform: 'rotate(15deg)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -3220,16 +3210,16 @@ const PatentAudit = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px'
+            gap: '10px'
           }}
         >
           <span
             style={{
-              fontSize: '35px',
+              fontSize: '50px',
               color: '#3b82f6',
-              opacity: 0.025,
+              opacity: 0.06,
               fontWeight: 600,
-              letterSpacing: '3px',
+              letterSpacing: '4px',
               userSelect: 'none',
               whiteSpace: 'nowrap'
             }}
@@ -3245,8 +3235,8 @@ const PatentAudit = () => {
           key={`reverse-${i}`}
           style={{
             position: 'absolute',
-            top: `${i * 350 + 150}px`,
-            right: `${i * 180}px`,
+            top: `${i * 320 + 150}px`,
+            right: `${i * 160}px`,
             transform: 'rotate(-15deg)',
             pointerEvents: 'none',
             zIndex: 0,
@@ -3254,16 +3244,16 @@ const PatentAudit = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px'
+            gap: '10px'
           }}
         >
           <span
             style={{
-              fontSize: '32px',
+              fontSize: '45px',
               color: '#2563eb',
-              opacity: 0.02,
+              opacity: 0.05,
               fontWeight: 500,
-              letterSpacing: '2px',
+              letterSpacing: '3px',
               userSelect: 'none',
               whiteSpace: 'nowrap'
             }}
