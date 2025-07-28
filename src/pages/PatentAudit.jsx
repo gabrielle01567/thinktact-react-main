@@ -1900,6 +1900,9 @@ const PatentAudit = () => {
   const [generatedTitles, setGeneratedTitles] = useState([]);
   const [showGeneratedTitles, setShowGeneratedTitles] = useState(false);
   const [titleGenerationError, setTitleGenerationError] = useState('');
+  
+  // Premium feature popup state
+  const [showPremiumPopup, setShowPremiumPopup] = useState(false);
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState('standard'); // 'standard' or 'uspto'
@@ -4029,18 +4032,10 @@ const PatentAudit = () => {
               {/* Export Options */}
               <div className="flex justify-center mb-4 space-x-4">
                 <button
-                  onClick={() => {
-                    const element = document.createElement('a');
-                    const file = new Blob([generateUSPTOFormatText()], {type: 'text/plain'});
-                    element.href = URL.createObjectURL(file);
-                    element.download = `${title || 'patent-application'}.txt`;
-                    document.body.appendChild(element);
-                    element.click();
-                    document.body.removeChild(element);
-                  }}
+                  onClick={() => setShowPremiumPopup(true)}
                   className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
                 >
-                  Export as Text
+                  Export as PDF
                 </button>
                 
                 {previewMode === 'uspto' && (
@@ -4060,6 +4055,46 @@ const PatentAudit = () => {
             </div>
           </div>
         </div>
+
+        {/* Premium Feature Popup */}
+        {showPremiumPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md mx-4 shadow-xl">
+              <div className="text-center">
+                {/* Premium Icon */}
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 mb-6">
+                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Premium Feature</h3>
+                
+                <p className="text-gray-600 mb-6">
+                  PDF export functionality is a premium feature that will be available after the beta period. 
+                  This will allow you to download your patent applications as professional PDF documents.
+                </p>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-blue-900 mb-2">Coming Soon Features:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Professional PDF formatting</li>
+                    <li>• USPTO-compliant layouts</li>
+                    <li>• High-quality document export</li>
+                    <li>• Print-ready files</li>
+                  </ul>
+                </div>
+                
+                <button
+                  onClick={() => setShowPremiumPopup(false)}
+                  className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Back to Patent Buddy
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   } catch (error) {
