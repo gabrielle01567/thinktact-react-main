@@ -1702,6 +1702,7 @@ const PatentAudit = () => {
   const [generatedTitles, setGeneratedTitles] = useState([]);
   const [showTitleGenerationPopup, setShowTitleGenerationPopup] = useState(false);
   const [titleGenerationError, setTitleGenerationError] = useState('');
+  const [titleValidation, setTitleValidation] = useState({ isValid: true, issues: [] });
   const [titleGenerationInput, setTitleGenerationInput] = useState('');
   
   // Premium feature popup state
@@ -1743,14 +1744,16 @@ const PatentAudit = () => {
   
   // Inventor popup states
   const [showInventorPopup, setShowInventorPopup] = useState(false);
-  const [inventorPopupStep, setInventorPopupStep] = useState(1); // 1: name, 2: address, 3: citizenship
+  const [inventorPopupStep, setInventorPopupStep] = useState(1); // 1: name, 2: address, 3: citizenship, 4: residence
   const [newInventor, setNewInventor] = useState({
     name: '',
     address: '',
     addressType: '', // 'business' or 'home'
     citizenship: '',
     multipleCitizenship: false,
-    citizenships: []
+    citizenships: [],
+    residence: '',
+    residenceDifferentFromCitizenship: false
   });
   const [citizenshipSearch, setCitizenshipSearch] = useState('');
 
@@ -1888,42 +1891,126 @@ const PatentAudit = () => {
     };
   }, [showImageModal]);
 
-  // Format title with proper punctuation
+    // Format title with proper punctuation and structure
   const formatTitle = (titleText) => {
     if (!titleText || titleText.trim() === '') return titleText;
-    
+
     let formatted = titleText.trim();
-    
+
     // Remove extra spaces
     formatted = formatted.replace(/\s+/g, ' ');
-    
+
     // Ensure proper capitalization for patent titles
     // Convert to title case but preserve certain words in lowercase
     const lowerCaseWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'up', 'via', 'with'];
-    
+
     formatted = formatted.toLowerCase().split(' ').map((word, index) => {
       // Always capitalize first and last word
       if (index === 0 || index === formatted.split(' ').length - 1) {
         return word.charAt(0).toUpperCase() + word.slice(1);
       }
-      
+
       // Capitalize if it's not in the lowercase list or if it's a technical term
       if (!lowerCaseWords.includes(word) || word.length > 3) {
         return word.charAt(0).toUpperCase() + word.slice(1);
       }
-      
+
       return word;
     }).join(' ');
-    
+
     // Ensure proper punctuation at the end
     if (!formatted.endsWith('.') && !formatted.endsWith('!') && !formatted.endsWith('?')) {
       formatted = formatted + '.';
     }
-    
+
     // Remove any double punctuation
     formatted = formatted.replace(/[.!?]+$/, '.');
-    
+
     return formatted;
+  };
+
+  // Validate title structure and spelling
+  const validateTitle = (titleText) => {
+    const issues = [];
+    
+    if (!titleText || titleText.trim() === '') {
+      return { isValid: false, issues: ['Title cannot be empty'] };
+    }
+
+    // Check minimum length
+    if (titleText.trim().length < 10) {
+      issues.push('Title should be at least 10 characters long');
+    }
+
+    // Check for proper capitalization
+    const words = titleText.trim().split(' ');
+    const firstWord = words[0];
+    const lastWord = words[words.length - 1];
+    
+    if (firstWord && firstWord.charAt(0) !== firstWord.charAt(0).toUpperCase()) {
+      issues.push('First word should be capitalized');
+    }
+    
+    if (lastWord && lastWord.charAt(0) !== lastWord.charAt(0).toUpperCase()) {
+      issues.push('Last word should be capitalized');
+    }
+
+    // Check for common spelling mistakes in patent titles
+    const commonMistakes = {
+      'invention': 'invention',
+      'system': 'system',
+      'method': 'method',
+      'apparatus': 'apparatus',
+      'device': 'device',
+      'process': 'process',
+      'technology': 'technology',
+      'artificial intelligence': 'artificial intelligence',
+      'machine learning': 'machine learning',
+      'blockchain': 'blockchain',
+      'internet of things': 'internet of things',
+      'iot': 'IoT',
+      'ai': 'AI',
+      'ml': 'ML'
+    };
+
+    const lowerTitle = titleText.toLowerCase();
+    for (const [mistake, correction] of Object.entries(commonMistakes)) {
+      if (lowerTitle.includes(mistake) && !titleText.includes(correction)) {
+        issues.push(`Consider using "${correction}" instead of "${mistake}"`);
+      }
+    }
+
+    // Check for proper punctuation
+    if (!titleText.endsWith('.') && !titleText.endsWith('!') && !titleText.endsWith('?')) {
+      issues.push('Title should end with proper punctuation');
+    }
+
+    // Check for excessive punctuation
+    if (titleText.match(/[.!?]{2,}/)) {
+      issues.push('Remove excessive punctuation marks');
+    }
+
+    // Check for patent title conventions
+    const patentConventions = [
+      'System and Method for',
+      'Apparatus for',
+      'Method of',
+      'Device for',
+      'Process for'
+    ];
+
+    const hasConvention = patentConventions.some(convention => 
+      titleText.toLowerCase().includes(convention.toLowerCase())
+    );
+
+    if (!hasConvention && titleText.length > 20) {
+      issues.push('Consider using patent title conventions like "System and Method for" or "Apparatus for"');
+    }
+
+    return {
+      isValid: issues.length === 0,
+      issues: issues
+    };
   };
 
   // Save application data
@@ -2017,12 +2104,48 @@ const PatentAudit = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   type="text"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className={`w-full rounded-md shadow-sm focus:ring-blue-500 ${
+                    titleValidation.isValid 
+                      ? 'border-gray-300 focus:border-blue-500' 
+                      : 'border-red-300 focus:border-red-500'
+                  }`}
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={(e) => setTitle(formatTitle(e.target.value))}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    const validation = validateTitle(e.target.value);
+                    setTitleValidation(validation);
+                  }}
+                  onBlur={(e) => {
+                    const formatted = formatTitle(e.target.value);
+                    setTitle(formatted);
+                    const validation = validateTitle(formatted);
+                    setTitleValidation(validation);
+                  }}
                   placeholder='e.g., "System and Method for AI-Powered Content Generation"'
                 />
+                {!titleValidation.isValid && titleValidation.issues.length > 0 && (
+                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <h4 className="text-sm font-medium text-red-800 mb-2">Title Structure Issues:</h4>
+                    <ul className="space-y-1">
+                      {titleValidation.issues.map((issue, index) => (
+                        <li key={index} className="text-sm text-red-700 flex items-start">
+                          <span className="mr-2">•</span>
+                          {issue}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {titleValidation.isValid && title.trim() && (
+                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-sm text-green-800">Title structure looks good!</span>
+                    </div>
+                  </div>
+                )}
               </div>
               
 
@@ -3483,7 +3606,9 @@ const PatentAudit = () => {
       addressType: '',
       citizenship: '',
       multipleCitizenship: false,
-      citizenships: []
+      citizenships: [],
+      residence: '',
+      residenceDifferentFromCitizenship: false
     });
     setCitizenshipSearch('');
   };
@@ -3497,7 +3622,9 @@ const PatentAudit = () => {
       addressType: '',
       citizenship: '',
       multipleCitizenship: false,
-      citizenships: []
+      citizenships: [],
+      residence: '',
+      residenceDifferentFromCitizenship: false
     });
     setCitizenshipSearch('');
   };
@@ -3508,12 +3635,28 @@ const PatentAudit = () => {
     } else if (inventorPopupStep === 2 && newInventor.address.trim() && newInventor.addressType) {
       setInventorPopupStep(3);
     } else if (inventorPopupStep === 3) {
+      // Check if we need to ask about residence
+      if (newInventor.multipleCitizenship || !newInventor.citizenship) {
+        setInventorPopupStep(4);
+      } else {
+        // Single citizenship - ask if residence is different
+        setInventorPopupStep(4);
+      }
+    } else if (inventorPopupStep === 4) {
       // Add the inventor
+      let residence = '';
+      if (newInventor.residenceDifferentFromCitizenship) {
+        residence = newInventor.residence;
+      } else {
+        // Use citizenship as residence
+        residence = newInventor.multipleCitizenship ? newInventor.citizenships[0] : newInventor.citizenship;
+      }
+      
       const inventorToAdd = {
         name: newInventor.name.trim(),
         address: newInventor.address.trim(),
         citizenship: newInventor.multipleCitizenship ? newInventor.citizenships.join(', ') : newInventor.citizenship,
-        residence: newInventor.addressType === 'home' ? 'Home' : 'Business'
+        residence: residence
       };
       setInventors([...inventors, inventorToAdd]);
       handleCloseInventorPopup();
@@ -3991,7 +4134,7 @@ const PatentAudit = () => {
                 {/* Step Indicator */}
                 <div className="flex justify-center mb-6">
                   <div className="flex space-x-2">
-                    {[1, 2, 3].map((step) => (
+                    {[1, 2, 3, 4].map((step) => (
                       <div
                         key={step}
                         className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -4198,6 +4341,93 @@ const PatentAudit = () => {
                   </div>
                 )}
 
+                {/* Step 4: Residence */}
+                {inventorPopupStep === 4 && (
+                  <div className="text-center">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Step 4: Country of Residence</h4>
+                    <p className="text-gray-600 mb-6">
+                      {newInventor.multipleCitizenship 
+                        ? `The inventor has multiple citizenships: ${newInventor.citizenships.join(', ')}.`
+                        : `The inventor's citizenship is: ${newInventor.citizenship}.`
+                      }
+                    </p>
+                    
+                    <div className="mb-6">
+                      <label className="flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={newInventor.residenceDifferentFromCitizenship}
+                          onChange={(e) => setNewInventor(prev => ({ 
+                            ...prev, 
+                            residenceDifferentFromCitizenship: e.target.checked,
+                            residence: e.target.checked ? prev.residence : ''
+                          }))}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Current residence is different from citizenship</span>
+                      </label>
+                    </div>
+
+                    {newInventor.residenceDifferentFromCitizenship && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Country of Residence
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800 pr-10"
+                            value={citizenshipSearch}
+                            onChange={(e) => setCitizenshipSearch(e.target.value)}
+                            placeholder="Start typing to search for a country..."
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        {citizenshipSearch && (
+                          <div className="mt-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md bg-white shadow-lg">
+                            {filteredCountries.map((country) => (
+                              <button
+                                key={country}
+                                onClick={() => {
+                                  setNewInventor(prev => ({ ...prev, residence: country }));
+                                  setCitizenshipSearch('');
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-blue-50 border-b border-gray-200 last:border-b-0 text-gray-900"
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {newInventor.residence && (
+                          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                            <span className="text-sm text-blue-800">Selected Residence: {newInventor.residence}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {!newInventor.residenceDifferentFromCitizenship && (
+                      <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                        <div className="flex items-center justify-center">
+                          <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-sm text-green-800">
+                            Residence will be set to: {newInventor.multipleCitizenship ? newInventor.citizenships[0] : newInventor.citizenship}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Navigation Buttons */}
                 <div className="flex justify-between mt-6">
                   <button
@@ -4218,18 +4448,20 @@ const PatentAudit = () => {
                       (inventorPopupStep === 1 && !newInventor.name.trim()) ||
                       (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
                       (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
-                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0)
+                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0) ||
+                      (inventorPopupStep === 4 && newInventor.residenceDifferentFromCitizenship && !newInventor.residence)
                     }
                     className={`px-4 py-2 text-sm font-medium rounded-md ${
                       (inventorPopupStep === 1 && !newInventor.name.trim()) ||
                       (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
                       (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
-                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0)
+                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0) ||
+                      (inventorPopupStep === 4 && newInventor.residenceDifferentFromCitizenship && !newInventor.residence)
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                   >
-                    {inventorPopupStep === 3 ? 'Add Inventor' : 'Next'}
+                    {inventorPopupStep === 4 ? 'Add Inventor' : 'Next'}
                   </button>
                 </div>
 
