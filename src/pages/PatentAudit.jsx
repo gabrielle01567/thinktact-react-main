@@ -3,7 +3,6 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { isSupabaseAvailable } from '../services/supabaseClient.js';
-import SpellCheckInput from '../components/SpellCheckInput.jsx';
 import { generatePatentTitles } from '../services/titleGenerationService.js';
 
 const PatentAudit = () => {
@@ -1141,8 +1140,9 @@ const PatentAudit = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Title{renderRequiredIndicator()}
             </label>
-            <SpellCheckInput
-              type="input"
+            <input
+              type="text"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder='e.g., "System and Method for AI-Powered Content Generation"'
@@ -1151,13 +1151,74 @@ const PatentAudit = () => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
-            <SpellCheckInput
+            <textarea
               rows={3}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
               placeholder="A brief description to help you identify this invention in your documents"
             />
+            
+            {/* Title Generation Help Section */}
+            <div className="mt-3">
+              <button
+                onClick={handleGenerateTitles}
+                disabled={isGeneratingTitles || !shortDescription.trim()}
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm ${
+                  isGeneratingTitles || !shortDescription.trim()
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                }`}
+              >
+                {isGeneratingTitles ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating Titles...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Get Help with Title Creation
+                  </>
+                )}
+              </button>
+              
+              {titleGenerationError && (
+                <p className="mt-2 text-sm text-red-600">{titleGenerationError}</p>
+              )}
+            </div>
           </div>
+
+          {/* Generated Titles Section */}
+          {showGeneratedTitles && generatedTitles.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-green-900 mb-3">Generated Title Suggestions</h4>
+              <div className="space-y-2">
+                {generatedTitles.map((generatedTitle, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelectTitle(generatedTitle)}
+                    className="w-full text-left p-3 bg-white border border-green-200 rounded-md hover:bg-green-50 hover:border-green-300 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-900">{generatedTitle}</span>
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-green-700">
+                Click on any title above to use it, or continue writing your own.
+              </p>
+            </div>
+          )}
 
           <div className="bg-blue-50 rounded-lg p-4">
             <button
@@ -1186,8 +1247,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
         <p className="text-gray-600 mb-6">Provide the application number and filing date of the earlier application you are claiming priority to.</p>
-        <SpellCheckInput
+        <textarea
           rows={4}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={crossReference}
           onChange={(e) => setCrossReference(e.target.value)}
           placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
@@ -1201,8 +1263,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
         <p className="text-gray-600 mb-6">Provide the contract or grant number and the government agency that supported this invention.</p>
-        <SpellCheckInput
+        <textarea
           rows={4}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={federalResearch}
           onChange={(e) => setFederalResearch(e.target.value)}
           placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
@@ -1442,8 +1505,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a concise summary of your invention (150 words or less). This should explain what your invention does and its key benefits.</p>
-        <SpellCheckInput
+        <textarea
           rows={6}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={abstract}
           onChange={(e) => setAbstract(e.target.value)}
           placeholder="Describe your invention in a clear, concise manner..."
@@ -1457,8 +1521,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of Invention{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the technical field to which your invention relates.</p>
-        <SpellCheckInput
+        <textarea
           rows={4}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={field}
           onChange={(e) => setField(e.target.value)}
           placeholder="e.g., The present invention relates to artificial intelligence and machine learning systems, specifically to natural language processing and content generation."
@@ -1472,8 +1537,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Background{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the current state of the art and the problems your invention solves.</p>
-        <SpellCheckInput
+        <textarea
           rows={8}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={background}
           onChange={(e) => setBackground(e.target.value)}
           placeholder="Describe the existing technology and the problems it has..."
@@ -1487,8 +1553,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a brief summary of your invention, including its main features and advantages.</p>
-        <SpellCheckInput
+        <textarea
           rows={6}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           placeholder="Summarize your invention and its key features..."
@@ -1567,8 +1634,9 @@ const PatentAudit = () => {
         {/* Text Description */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Brief Description of Drawings</label>
-          <SpellCheckInput
+          <textarea
             rows={4}
+            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             value={drawings}
             onChange={(e) => setDrawings(e.target.value)}
             placeholder="e.g., FIG. 1 is a block diagram showing the overall system architecture..."
@@ -1752,8 +1820,9 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a detailed description of your invention, including how it works and how to make and use it.</p>
-        <SpellCheckInput
+        <textarea
           rows={12}
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           value={detailedDescription}
           onChange={(e) => setDetailedDescription(e.target.value)}
           placeholder="Provide a detailed description of your invention..."
@@ -1825,9 +1894,12 @@ const PatentAudit = () => {
   const [title, setTitle] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [showTips, setShowTips] = useState(true);
-  const [generatedTitles, setGeneratedTitles] = useState([]);
+  
+  // Title generation states
   const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
+  const [generatedTitles, setGeneratedTitles] = useState([]);
   const [showGeneratedTitles, setShowGeneratedTitles] = useState(false);
+  const [titleGenerationError, setTitleGenerationError] = useState('');
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState('standard'); // 'standard' or 'uspto'
@@ -2088,8 +2160,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <SpellCheckInput
-                  type="input"
+                <input
+                  type="text"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder='e.g., "System and Method for AI-Powered Content Generation"'
@@ -2161,8 +2234,9 @@ const PatentAudit = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications <span className="text-xs text-gray-500">(Optional)</span></h2>
             <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. <span className="font-medium">If you are not claiming priority, you can leave this section blank.</span></p>
-            <SpellCheckInput
+            <textarea
               rows={4}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={crossReference}
               onChange={(e) => setCrossReference(e.target.value)}
               placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
@@ -2350,8 +2424,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
-                <SpellCheckInput
+                <textarea
                   rows={6}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={abstract}
                   onChange={(e) => setAbstract(e.target.value)}
                   placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
@@ -2408,8 +2483,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Field Description</label>
-                <SpellCheckInput
+                <textarea
                   rows={4}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={field}
                   onChange={(e) => setField(e.target.value)}
                   placeholder="e.g., This invention relates to the field of artificial intelligence and machine learning, specifically to natural language processing systems for content generation."
@@ -2466,8 +2542,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
-                <SpellCheckInput
+                <textarea
                   rows={4}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={background}
                   onChange={(e) => setBackground(e.target.value)}
                   placeholder="Describe the specific problem or need that your invention addresses..."
@@ -2524,8 +2601,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
-                <SpellCheckInput
+                <textarea
                   rows={6}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
@@ -2751,8 +2829,9 @@ const PatentAudit = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Drawing Descriptions</label>
-                <SpellCheckInput
+                <textarea
                   rows={6}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={drawings}
                   onChange={(e) => setDrawings(e.target.value)}
                   placeholder="Describe your drawings, figures, or diagrams. For example: Figure 1 shows a block diagram of the system architecture..."
@@ -2809,8 +2888,9 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Detailed Description</label>
-                <SpellCheckInput
+                <textarea
                   rows={12}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={detailedDescription}
                   onChange={(e) => setDetailedDescription(e.target.value)}
                   placeholder="Provide a comprehensive description of your invention, including how it works, its components, and implementation details..."
@@ -3658,6 +3738,33 @@ const PatentAudit = () => {
       newSet.delete(stepKey);
       return newSet;
     });
+  };
+
+  // Title generation function
+  const handleGenerateTitles = async () => {
+    if (!shortDescription || shortDescription.trim().length < 10) {
+      setTitleGenerationError('Please provide a description with at least 10 characters to generate titles.');
+      return;
+    }
+
+    setIsGeneratingTitles(true);
+    setTitleGenerationError('');
+    setShowGeneratedTitles(false);
+
+    try {
+      const result = await generatePatentTitles(shortDescription);
+      setGeneratedTitles(result.titles);
+      setShowGeneratedTitles(true);
+    } catch (error) {
+      setTitleGenerationError(error.message || 'Failed to generate titles. Please try again.');
+    } finally {
+      setIsGeneratingTitles(false);
+    }
+  };
+
+  const handleSelectTitle = (selectedTitle) => {
+    setTitle(selectedTitle);
+    setShowGeneratedTitles(false);
   };
 
   // Render progress tracker sidebar
