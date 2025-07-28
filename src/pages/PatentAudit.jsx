@@ -1977,8 +1977,11 @@ const PatentAudit = () => {
           setSectionsNeedingReview(new Set());
         }
         // Restore lastStep from backend
-        if (typeof application.lastStep === 'number') {
+        if (typeof application.lastStep === 'number' && application.lastStep >= 0) {
           setCurrentStep(application.lastStep);
+        } else if (applicationId && applicationId !== 'undefined' && applicationId !== 'null') {
+          // If we have an application ID but no lastStep, stay on current step
+          // Don't reset to 0 for existing applications
         } else {
           setCurrentStep(0);
         }
@@ -2055,12 +2058,8 @@ const PatentAudit = () => {
         if (window.location.pathname !== `/patent-buddy/wizard/${applicationId}`) {
           navigate(`/patent-buddy/wizard/${applicationId}`);
         }
-        // Only reload if requested (not on step navigation)
-        if (reloadAfterSave) {
-          setTimeout(() => {
-            loadApplication();
-          }, 1000);
-        }
+        // Don't reload the application after saving to maintain current step
+        // The application data is already in local state
       } else {
         // Save new application
         console.log('🔍 Creating new application (no applicationId found)');
