@@ -1849,7 +1849,7 @@ const PatentAudit = () => {
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
-  const [previewMode, setPreviewMode] = useState('standard'); // 'standard' or 'uspto'
+  const [previewMode, setPreviewMode] = useState('uspto'); // 'uspto' format only
   const [showPageNumbers, setShowPageNumbers] = useState(true);
   const [showHelpPanel, setShowHelpPanel] = useState(true);
   
@@ -3038,213 +3038,9 @@ const PatentAudit = () => {
 
   // Add a live document preview in USPTO standard format
   const renderDocumentPreview = () => {
-    if (previewMode === 'standard') {
-      return (
-        <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg overflow-hidden" style={{ minHeight: 600 }}>
-          {/* Watermark */}
-          <div
-            style={{
-              position: 'absolute',
-              left: '-40%',
-              bottom: '-10%',
-              width: '180%',
-              height: '180%',
-              pointerEvents: 'none',
-              zIndex: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transform: 'rotate(-25deg)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 80,
-                color: '#2563eb',
-                opacity: 0.08,
-                fontWeight: 900,
-                letterSpacing: 8,
-                userSelect: 'none',
-              }}
-            >
-              ThinkTactAI
-            </span>
-          </div>
-          
-          {/* Standard Document Content */}
-          <div className="relative z-10" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt', lineHeight: '1.5', color: 'black' }}>
-            {/* USPTO Header */}
-            <div className="text-center mb-8">
-              <div className="text-sm text-black mb-2">UNITED STATES PATENT AND TRADEMARK OFFICE</div>
-              <div className="text-sm text-black mb-4">PROVISIONAL APPLICATION FOR PATENT</div>
-              <div className="text-xs text-black border-t border-gray-300 pt-2">
-                <div>Attorney Docket No.: [To be assigned]</div>
-                <div>Application No.: [To be assigned]</div>
-                <div>Filing Date: [To be assigned]</div>
-              </div>
-            </div>
-
-            {/* Title Section */}
-            <div className="mb-6">
-              <div className="text-center font-bold text-lg mb-2 text-black" style={{ textTransform: 'uppercase' }}>
-                {title || '[TITLE OF THE INVENTION]'}
-              </div>
-              <div className="text-center text-sm text-black mb-4">
-                {inventors && inventors.length > 0 && inventors.some(inv => inv.name.trim()) && (
-                  <span>
-                    Inventor{inventors.filter(inv => inv.name.trim()).length > 1 ? 's' : ''}: {
-                      inventors.filter(inv => inv.name.trim()).map(inv => inv.name).join(', ')
-                    }
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Cross-Reference Section */}
-            {crossReference && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  CROSS-REFERENCE TO RELATED APPLICATIONS
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {crossReference}
-                </div>
-              </div>
-            )}
-
-            {/* Federal Research Section */}
-            {federalResearch && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  STATEMENT REGARDING FEDERALLY SPONSORED RESEARCH OR DEVELOPMENT
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {federalResearch}
-                </div>
-              </div>
-            )}
-
-            {/* Abstract Section */}
-            {abstract && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  ABSTRACT
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {abstract}
-                </div>
-              </div>
-            )}
-
-            {/* Field of Invention Section */}
-            {field && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  FIELD OF THE INVENTION
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {field}
-                </div>
-              </div>
-            )}
-
-            {/* Background Section */}
-            {background && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  BACKGROUND OF THE INVENTION
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {background}
-                </div>
-              </div>
-            )}
-
-            {/* Summary Section */}
-            {summary && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  SUMMARY OF THE INVENTION
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {summary}
-                </div>
-              </div>
-            )}
-
-            {/* Brief Description of Drawings Section */}
-            {drawings && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  BRIEF DESCRIPTION OF THE DRAWINGS
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {drawings}
-                </div>
-              </div>
-            )}
-
-            {/* Detailed Description Section */}
-            {detailedDescription && (
-              <div className="mb-6">
-                <div className="font-bold mb-2" style={{ textTransform: 'uppercase' }}>
-                  DETAILED DESCRIPTION OF THE INVENTION
-                </div>
-                <div className="pl-4" style={{ textAlign: 'justify' }}>
-                  {detailedDescription}
-                </div>
-              </div>
-            )}
-
-            {/* Missing Sections Notice */}
-            {(!title || !abstract || !field || !background || !summary || !detailedDescription) && (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-6">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-yellow-800">Incomplete Application</h3>
-                    <div className="mt-2 text-sm text-yellow-700">
-                      <p>The following required sections are missing:</p>
-                      <ul className="list-disc pl-5 mt-1 space-y-1">
-                        {!title && <li>Title of the Invention</li>}
-                        {!abstract && <li>Abstract</li>}
-                        {!field && <li>Field of the Invention</li>}
-                        {!background && <li>Background of the Invention</li>}
-                        {!summary && <li>Summary of the Invention</li>}
-                        {!detailedDescription && <li>Detailed Description of the Invention</li>}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* USPTO Footer */}
-            <div className="text-center text-xs text-black mt-8 pt-4 border-t border-gray-300">
-              <div className="mb-2">
-                <strong>IMPORTANT NOTICE:</strong> This is a draft provisional patent application.
-              </div>
-              <div className="mb-2">
-                Provisional applications do not require claims but must provide sufficient disclosure 
-                to support any future non-provisional application.
-              </div>
-              <div>
-                This document should be reviewed by a qualified patent attorney or agent before filing with the USPTO.
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // USPTO Format Preview
     return (
     <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg mt-8 max-w-4xl mx-auto overflow-hidden" style={{ minHeight: 600 }}>
-      {/* Watermark */}
+      {/* Stacked Watermarks for Better Copy Protection */}
       <div
         style={{
           position: 'absolute',
@@ -3271,6 +3067,66 @@ const PatentAudit = () => {
           }}
         >
           ThinkTactAI
+        </span>
+      </div>
+      
+      {/* Second Watermark Layer */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-30%',
+          bottom: '-5%',
+          width: '160%',
+          height: '160%',
+          pointerEvents: 'none',
+          zIndex: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: 'rotate(15deg)',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 60,
+            color: '#1d4ed8',
+            opacity: 0.06,
+            fontWeight: 700,
+            letterSpacing: 6,
+            userSelect: 'none',
+          }}
+        >
+          DRAFT
+        </span>
+      </div>
+      
+      {/* Third Watermark Layer */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-50%',
+          bottom: '-15%',
+          width: '200%',
+          height: '200%',
+          pointerEvents: 'none',
+          zIndex: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: 'rotate(-45deg)',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 40,
+            color: '#3b82f6',
+            opacity: 0.04,
+            fontWeight: 600,
+            letterSpacing: 4,
+            userSelect: 'none',
+          }}
+        >
+          PROVISIONAL
         </span>
       </div>
       
@@ -3536,39 +3392,7 @@ const PatentAudit = () => {
         )}
 
         {/* Missing Sections Notice */}
-        {(!title || !abstract || !field || !background || !summary || !detailedDescription) && (
-          <div style={{
-            backgroundColor: '#fef3c7',
-            borderLeft: '4px solid #f59e0b',
-            padding: '0.25in',
-            marginTop: '0.3in',
-            borderRadius: '4px'
-          }}>
-            <div style={{ display: 'flex' }}>
-              <div style={{ flexShrink: 0, marginRight: '0.2in' }}>
-                <svg style={{ height: '20px', width: '20px', color: '#f59e0b' }} viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <h3 style={{ fontSize: '11pt', fontWeight: 'bold', color: '#92400e', marginBottom: '0.1in' }}>
-                  Incomplete Application
-                </h3>
-                <div style={{ fontSize: '10pt', color: '#92400e' }}>
-                  <p style={{ marginBottom: '0.1in' }}>The following required sections are missing:</p>
-                  <ul style={{ listStyleType: 'disc', paddingLeft: '0.25in', margin: 0 }}>
-                    {!title && <li>Title of the Invention</li>}
-                    {!abstract && <li>Abstract</li>}
-                    {!field && <li>Field of the Invention</li>}
-                    {!background && <li>Background of the Invention</li>}
-                    {!summary && <li>Summary of the Invention</li>}
-                    {!detailedDescription && <li>Detailed Description of the Invention</li>}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* USPTO Official Footer */}
         <div style={{ 
@@ -3900,7 +3724,7 @@ const PatentAudit = () => {
                 type="button"
                 onClick={goToPrevStep}
                 disabled={currentStep === 0}
-                className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300'}`}
               >
                 Back
               </button>
@@ -3958,24 +3782,10 @@ const PatentAudit = () => {
                 <div className="bg-white rounded-lg border border-gray-200 p-2 shadow-sm">
                   <div className="flex space-x-1">
                     <button
-                      onClick={() => setPreviewMode('standard')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                        previewMode === 'standard'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      Standard Preview
-                    </button>
-                    <button
                       onClick={() => setPreviewMode('uspto')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                        previewMode === 'uspto'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-blue-600 text-white"
                     >
-                      USPTO Format
+                      USPTO Format Preview
                     </button>
                   </div>
                 </div>
