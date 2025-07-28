@@ -2134,7 +2134,7 @@ const PatentAudit = () => {
                         </li>
                       ))}
                     </ul>
-                  </div>
+              </div>
                 )}
                 {titleValidation.isValid && title.trim() && (
                   <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -3061,97 +3061,217 @@ const PatentAudit = () => {
 
   // Add a live document preview in USPTO standard format
   const renderDocumentPreview = () => {
-    return (
+      return (
     <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg mt-8 max-w-4xl mx-auto" style={{ minHeight: 600, maxHeight: '80vh', overflow: 'auto' }}>
-      {/* Stacked Watermarks for Better Copy Protection */}
+      {/* Repeating Watermark Pattern for Better Copy Protection */}
       <div
         style={{
           position: 'absolute',
-          left: '-40%',
-          bottom: '-10%',
-          width: '180%',
-          height: '180%',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          backgroundImage: `
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 200px,
+              rgba(37, 99, 235, 0.03) 200px,
+              rgba(37, 99, 235, 0.03) 400px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent,
+              transparent 200px,
+              rgba(29, 78, 216, 0.02) 200px,
+              rgba(29, 78, 216, 0.02) 400px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 300px,
+              rgba(59, 130, 246, 0.015) 300px,
+              rgba(59, 130, 246, 0.015) 600px
+            )
+          `,
+          backgroundSize: '400px 400px, 400px 400px, 600px 600px',
+          backgroundPosition: '0 0, 0 0, 0 0'
+        }}
+      />
+      
+      {/* Large Centered Watermarks */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotate(-25deg)',
           pointerEvents: 'none',
           zIndex: 0,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          transform: 'rotate(-25deg)',
+          gap: '20px'
         }}
       >
         <span
           style={{
-            fontSize: 80,
+            fontSize: '80px',
             color: '#2563eb',
             opacity: 0.08,
             fontWeight: 900,
-            letterSpacing: 8,
+            letterSpacing: '8px',
             userSelect: 'none',
+            whiteSpace: 'nowrap'
           }}
         >
           ThinkTactAI
         </span>
-      </div>
-      
-      {/* Second Watermark Layer */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '-30%',
-          bottom: '-5%',
-          width: '160%',
-          height: '160%',
-          pointerEvents: 'none',
-          zIndex: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transform: 'rotate(15deg)',
-        }}
-      >
         <span
           style={{
-            fontSize: 60,
+            fontSize: '60px',
             color: '#1d4ed8',
             opacity: 0.06,
             fontWeight: 700,
-            letterSpacing: 6,
+            letterSpacing: '6px',
             userSelect: 'none',
+            whiteSpace: 'nowrap'
           }}
         >
           DRAFT
         </span>
-      </div>
-      
-      {/* Third Watermark Layer */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '-50%',
-          bottom: '-15%',
-          width: '200%',
-          height: '200%',
-          pointerEvents: 'none',
-          zIndex: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transform: 'rotate(-45deg)',
-        }}
-      >
         <span
           style={{
-            fontSize: 40,
+            fontSize: '40px',
             color: '#3b82f6',
             opacity: 0.04,
             fontWeight: 600,
-            letterSpacing: 4,
+            letterSpacing: '4px',
             userSelect: 'none',
+            whiteSpace: 'nowrap'
           }}
         >
           PROVISIONAL
         </span>
       </div>
+
+      {/* Repeating Watermark Grid for Scroll Coverage */}
+      {Array.from({ length: 20 }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: `${i * 400}px`,
+            left: '50%',
+            transform: 'translateX(-50%) rotate(-25deg)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px'
+          }}
+        >
+          <span
+            style={{
+              fontSize: '40px',
+              color: '#2563eb',
+              opacity: 0.04,
+              fontWeight: 700,
+              letterSpacing: '4px',
+              userSelect: 'none',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            ThinkTactAI
+          </span>
+          <span
+            style={{
+              fontSize: '30px',
+              color: '#1d4ed8',
+              opacity: 0.03,
+              fontWeight: 600,
+              letterSpacing: '3px',
+              userSelect: 'none',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            DRAFT
+          </span>
+        </div>
+      ))}
+
+      {/* Additional Diagonal Watermarks */}
+      {Array.from({ length: 15 }, (_, i) => (
+        <div
+          key={`diagonal-${i}`}
+          style={{
+            position: 'absolute',
+            top: `${i * 300 + 100}px`,
+            left: `${i * 200}px`,
+            transform: 'rotate(15deg)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span
+            style={{
+              fontSize: '35px',
+              color: '#3b82f6',
+              opacity: 0.025,
+              fontWeight: 600,
+              letterSpacing: '3px',
+              userSelect: 'none',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            PROVISIONAL
+          </span>
+        </div>
+      ))}
+
+      {/* Reverse Diagonal Watermarks */}
+      {Array.from({ length: 15 }, (_, i) => (
+        <div
+          key={`reverse-${i}`}
+          style={{
+            position: 'absolute',
+            top: `${i * 350 + 150}px`,
+            right: `${i * 180}px`,
+            transform: 'rotate(-15deg)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span
+            style={{
+              fontSize: '32px',
+              color: '#2563eb',
+              opacity: 0.02,
+              fontWeight: 500,
+              letterSpacing: '2px',
+              userSelect: 'none',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            ThinkTactAI
+          </span>
+        </div>
+      ))}
       
               {/* Document Content - USPTO Official Format */}
         <div className="relative z-10" style={{ 
