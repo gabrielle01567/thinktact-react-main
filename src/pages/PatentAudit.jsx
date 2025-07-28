@@ -6,6 +6,33 @@ import { isSupabaseAvailable } from '../services/supabaseClient.js';
 import { generatePatentTitles } from '../services/titleGenerationService.js';
 
 const PatentAudit = () => {
+  // Comprehensive list of all countries
+  const allCountries = [
+    'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+    'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi',
+    'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
+    'Democratic Republic of the Congo', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic',
+    'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia',
+    'Fiji', 'Finland', 'France',
+    'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+    'Haiti', 'Honduras', 'Hungary',
+    'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Ivory Coast',
+    'Jamaica', 'Japan', 'Jordan',
+    'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
+    'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+    'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+    'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway',
+    'Oman',
+    'Pakistan', 'Palau', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+    'Qatar',
+    'Romania', 'Russia', 'Rwanda',
+    'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+    'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu',
+    'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan',
+    'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+    'Yemen',
+    'Zambia', 'Zimbabwe'
+  ];
   const { id: applicationId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -1244,200 +1271,30 @@ const PatentAudit = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="e.g., John Smith"
-                    value={inventor.name}
-                    onChange={(e) => {
-                      const newInventors = [...inventors];
-                      newInventors[index].name = e.target.value;
-                      setInventors(newInventors);
-                    }}
-                  />
-                </div>
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address *
-                    {inventor.citizenship && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        (Auto-complete for {inventor.citizenship})
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
-                      placeholder="Start typing to search for address..."
-                      value={inventor.address}
-                      data-inventor-index={index}
-                      onChange={(e) => handleAddressInput(index, e.target.value)}
-                      onKeyDown={(e) => handleAddressKeyDown(index, e)}
-                      onFocus={() => {
-                        if (inventor.address && inventor.address.length >= 3) {
-                          setShowAddressDropdown(prev => ({ ...prev, [index]: true }));
-                        }
-                      }}
-                      onBlur={() => {
-                        // Delay hiding dropdown to allow for clicks
-                        setTimeout(() => {
-                          setShowAddressDropdown(prev => ({ ...prev, [index]: false }));
-                        }, 200);
-                      }}
-                    />
-                    {isAddressLoading[index] && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                      </div>
-                    )}
-                    {!isAddressLoading[index] && inventor.address && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Address Suggestions Dropdown */}
-                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                      {addressSuggestions[index].map((suggestion, suggestionIndex) => (
-                        <div
-                          key={suggestion.id}
-                          className={`px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 ${
-                            suggestionIndex === parseInt(document.querySelector(`input[data-inventor-index="${index}"]`)?.getAttribute('data-selected-index') || '-1') 
-                              ? 'bg-blue-50 border-blue-200' 
-                              : ''
-                          }`}
-                          onClick={() => selectAddress(index, suggestion)}
-                        >
-                          <div className="font-medium text-sm text-gray-900">{suggestion.display}</div>
-                          <div className="text-xs text-gray-500 truncate">{suggestion.full}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* No results message */}
-                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length === 0 && inventor.address.length >= 3 && !isAddressLoading[index] && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                      <div className="px-4 py-2 text-sm text-gray-500">
-                        No addresses found. You can continue typing or enter manually.
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Error message */}
-                  {showAddressDropdown[index] && addressSuggestions[index] && addressSuggestions[index].length === 0 && inventor.address.length >= 3 && !isAddressLoading[index] && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-red-300 rounded-md shadow-lg">
-                      <div className="px-4 py-2 text-sm text-red-600">
-                        Address search temporarily unavailable. Please enter your address manually.
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Help text */}
-                  {inventor.citizenship && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      Address autocomplete is available for {inventor.citizenship}. Start typing to search.
-                    </p>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <div className="text-gray-900 font-medium">{inventor.name}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Citizenship
-                    <span className="text-xs text-gray-500 ml-1">
-                      ({Object.keys(citizenshipData).length} countries)
-                    </span>
-                  </label>
-                  <select
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={inventor.citizenship}
-                    onChange={(e) => {
-                      const newInventors = [...inventors];
-                      newInventors[index].citizenship = e.target.value;
-                      // Reset residence when citizenship changes
-                      newInventors[index].residence = '';
-                      setInventors(newInventors);
-                    }}
-                  >
-                    <option value="">Select Citizenship</option>
-                    {/* Popular countries first */}
-                    <optgroup label="Popular Countries">
-                      {['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Japan', 'Australia', 'China', 'India', 'Brazil'].map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="All Countries">
-                      {Object.keys(citizenshipData)
-                        .filter(country => !['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Japan', 'Australia', 'China', 'India', 'Brazil'].includes(country))
-                        .map((country) => (
-                          <option key={country} value={country}>
-                            {country}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <div className="text-gray-900">{inventor.address}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Residence
-                    {inventor.citizenship && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        ({getResidencesForCitizenship(inventor.citizenship).length} options)
-                      </span>
-                    )}
-                  </label>
-                  <select
-                    className={`w-full rounded-md shadow-sm focus:ring-blue-500 ${
-                      !inventor.citizenship 
-                        ? 'border-gray-300 bg-gray-50 text-gray-500' 
-                        : 'border-gray-300 focus:border-blue-500'
-                    }`}
-                    value={inventor.residence}
-                    onChange={(e) => {
-                      const newInventors = [...inventors];
-                      newInventors[index].residence = e.target.value;
-                      setInventors(newInventors);
-                    }}
-                    disabled={!inventor.citizenship}
-                  >
-                    <option value="">
-                      {inventor.citizenship ? 'Select Residence' : 'Select Citizenship First'}
-                    </option>
-                    {inventor.citizenship && citizenshipData[inventor.citizenship] && 
-                      citizenshipData[inventor.citizenship].residences.map((residence) => (
-                        <option key={residence} value={residence}>
-                          {residence}
-                        </option>
-                      ))
-                    }
-                  </select>
-                  {inventor.citizenship && !inventor.residence && inventor.citizenship !== 'Other' && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      Please select a residence for {inventor.citizenship}
-                    </p>
-                  )}
-                  {inventor.citizenship === 'Other' && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      For "Other" citizenship, you may specify residence in the address field
-                    </p>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
+                  <div className="text-gray-900">{inventor.citizenship}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
+                  <div className="text-gray-900">{inventor.residence}</div>
                 </div>
               </div>
             </div>
           ))}
           
           <button
-            onClick={() => setInventors([...inventors, { name: '', address: '', citizenship: '', residence: '' }])}
+            onClick={handleOpenInventorPopup}
             className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md"
           >
-            + Add Another Inventor
+            + Add Inventor
           </button>
         </div>
       </div>
@@ -1881,6 +1738,19 @@ const PatentAudit = () => {
     citizenship: '',
     residence: ''
   }]);
+  
+  // Inventor popup states
+  const [showInventorPopup, setShowInventorPopup] = useState(false);
+  const [inventorPopupStep, setInventorPopupStep] = useState(1); // 1: name, 2: address, 3: citizenship
+  const [newInventor, setNewInventor] = useState({
+    name: '',
+    address: '',
+    addressType: '', // 'business' or 'home'
+    citizenship: '',
+    multipleCitizenship: false,
+    citizenships: []
+  });
+  const [citizenshipSearch, setCitizenshipSearch] = useState('');
 
   // Completion status for each section
   const [completedSections, setCompletedSections] = useState({
@@ -2015,6 +1885,44 @@ const PatentAudit = () => {
     };
   }, [showImageModal]);
 
+  // Format title with proper punctuation
+  const formatTitle = (titleText) => {
+    if (!titleText || titleText.trim() === '') return titleText;
+    
+    let formatted = titleText.trim();
+    
+    // Remove extra spaces
+    formatted = formatted.replace(/\s+/g, ' ');
+    
+    // Ensure proper capitalization for patent titles
+    // Convert to title case but preserve certain words in lowercase
+    const lowerCaseWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'up', 'via', 'with'];
+    
+    formatted = formatted.toLowerCase().split(' ').map((word, index) => {
+      // Always capitalize first and last word
+      if (index === 0 || index === formatted.split(' ').length - 1) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      
+      // Capitalize if it's not in the lowercase list or if it's a technical term
+      if (!lowerCaseWords.includes(word) || word.length > 3) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      
+      return word;
+    }).join(' ');
+    
+    // Ensure proper punctuation at the end
+    if (!formatted.endsWith('.') && !formatted.endsWith('!') && !formatted.endsWith('?')) {
+      formatted = formatted + '.';
+    }
+    
+    // Remove any double punctuation
+    formatted = formatted.replace(/[.!?]+$/, '.');
+    
+    return formatted;
+  };
+
   // Save application data
   const saveApplication = async (reloadAfterSave = true) => {
     if (!user) {
@@ -2109,6 +2017,7 @@ const PatentAudit = () => {
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  onBlur={(e) => setTitle(formatTitle(e.target.value))}
                   placeholder='e.g., "System and Method for AI-Powered Content Generation"'
                 />
               </div>
@@ -3534,6 +3443,80 @@ const PatentAudit = () => {
     setTitleGenerationError('');
   };
 
+  // Inventor popup handlers
+  const handleOpenInventorPopup = () => {
+    setShowInventorPopup(true);
+    setInventorPopupStep(1);
+    setNewInventor({
+      name: '',
+      address: '',
+      addressType: '',
+      citizenship: '',
+      multipleCitizenship: false,
+      citizenships: []
+    });
+    setCitizenshipSearch('');
+  };
+
+  const handleCloseInventorPopup = () => {
+    setShowInventorPopup(false);
+    setInventorPopupStep(1);
+    setNewInventor({
+      name: '',
+      address: '',
+      addressType: '',
+      citizenship: '',
+      multipleCitizenship: false,
+      citizenships: []
+    });
+    setCitizenshipSearch('');
+  };
+
+  const handleInventorNextStep = () => {
+    if (inventorPopupStep === 1 && newInventor.name.trim()) {
+      setInventorPopupStep(2);
+    } else if (inventorPopupStep === 2 && newInventor.address.trim() && newInventor.addressType) {
+      setInventorPopupStep(3);
+    } else if (inventorPopupStep === 3) {
+      // Add the inventor
+      const inventorToAdd = {
+        name: newInventor.name.trim(),
+        address: newInventor.address.trim(),
+        citizenship: newInventor.multipleCitizenship ? newInventor.citizenships.join(', ') : newInventor.citizenship,
+        residence: newInventor.addressType === 'home' ? 'Home' : 'Business'
+      };
+      setInventors([...inventors, inventorToAdd]);
+      handleCloseInventorPopup();
+    }
+  };
+
+  const handleInventorPrevStep = () => {
+    if (inventorPopupStep > 1) {
+      setInventorPopupStep(inventorPopupStep - 1);
+    }
+  };
+
+  const handleAddCitizenship = () => {
+    if (newInventor.citizenship && !newInventor.citizenships.includes(newInventor.citizenship)) {
+      setNewInventor(prev => ({
+        ...prev,
+        citizenships: [...prev.citizenships, newInventor.citizenship],
+        citizenship: ''
+      }));
+    }
+  };
+
+  const handleRemoveCitizenship = (citizenshipToRemove) => {
+    setNewInventor(prev => ({
+      ...prev,
+      citizenships: prev.citizenships.filter(c => c !== citizenshipToRemove)
+    }));
+  };
+
+  const filteredCountries = allCountries.filter(country =>
+    country.toLowerCase().includes(citizenshipSearch.toLowerCase())
+  );
+
   // Render progress tracker sidebar
   const renderProgressTracker = () => (
     <div className="w-80 bg-gray-50 border-r border-gray-200 p-6 overflow-y-auto">
@@ -3939,6 +3922,283 @@ const PatentAudit = () => {
                   className="w-full px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   No thanks, I'll create my own
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Inventor Popup */}
+        {showInventorPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-lg mx-4 shadow-xl">
+              <div className="text-center">
+                {/* Inventor Icon */}
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-green-600 to-blue-600 mb-6">
+                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Add Inventor</h3>
+                
+                {/* Step Indicator */}
+                <div className="flex justify-center mb-6">
+                  <div className="flex space-x-2">
+                    {[1, 2, 3].map((step) => (
+                      <div
+                        key={step}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                          step <= inventorPopupStep
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-600'
+                        }`}
+                      >
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 1: Full Name */}
+                {inventorPopupStep === 1 && (
+                  <div className="text-left">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Step 1: Full Legal Name</h4>
+                    <p className="text-gray-600 mb-4">
+                      Enter the inventor's full legal name as it appears on official documents.
+                    </p>
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Legal Name
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        value={newInventor.name}
+                        onChange={(e) => setNewInventor(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., John Michael Smith"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Address */}
+                {inventorPopupStep === 2 && (
+                  <div className="text-left">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Step 2: Current Address</h4>
+                    <p className="text-gray-600 mb-4">
+                      Provide the inventor's current address and specify whether it's a business or home address.
+                    </p>
+                    
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Address Type
+                      </label>
+                      <div className="flex space-x-4">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="addressType"
+                            value="home"
+                            checked={newInventor.addressType === 'home'}
+                            onChange={(e) => setNewInventor(prev => ({ ...prev, addressType: e.target.value }))}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700">Home Address</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="addressType"
+                            value="business"
+                            checked={newInventor.addressType === 'business'}
+                            onChange={(e) => setNewInventor(prev => ({ ...prev, addressType: e.target.value }))}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700">Business Address</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Current Address
+                      </label>
+                      <textarea
+                        rows={3}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        value={newInventor.address}
+                        onChange={(e) => setNewInventor(prev => ({ ...prev, address: e.target.value }))}
+                        placeholder="Enter complete address including street, city, state/province, and country"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Citizenship */}
+                {inventorPopupStep === 3 && (
+                  <div className="text-left">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Step 3: Citizenship</h4>
+                    <p className="text-gray-600 mb-4">
+                      Specify the inventor's citizenship. If they have multiple citizenships, you can add all that apply.
+                    </p>
+                    
+                    <div className="mb-4">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={newInventor.multipleCitizenship}
+                          onChange={(e) => setNewInventor(prev => ({ ...prev, multipleCitizenship: e.target.checked }))}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">This person has multiple citizenships</span>
+                      </label>
+                    </div>
+
+                    {!newInventor.multipleCitizenship ? (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Country of Citizenship
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                            value={citizenshipSearch}
+                            onChange={(e) => setCitizenshipSearch(e.target.value)}
+                            placeholder="Start typing to search for a country..."
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        {citizenshipSearch && (
+                          <div className="mt-2 max-h-48 overflow-y-auto border border-gray-300 rounded-md">
+                            {filteredCountries.map((country) => (
+                              <button
+                                key={country}
+                                onClick={() => {
+                                  setNewInventor(prev => ({ ...prev, citizenship: country }));
+                                  setCitizenshipSearch('');
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-200 last:border-b-0"
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {newInventor.citizenship && (
+                          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                            <span className="text-sm text-blue-800">Selected: {newInventor.citizenship}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Add Countries of Citizenship
+                        </label>
+                        <div className="relative mb-3">
+                          <input
+                            type="text"
+                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-20"
+                            value={citizenshipSearch}
+                            onChange={(e) => setCitizenshipSearch(e.target.value)}
+                            placeholder="Start typing to search for a country..."
+                          />
+                          <button
+                            onClick={handleAddCitizenship}
+                            disabled={!newInventor.citizenship}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        
+                        {citizenshipSearch && (
+                          <div className="mb-3 max-h-32 overflow-y-auto border border-gray-300 rounded-md">
+                            {filteredCountries.map((country) => (
+                              <button
+                                key={country}
+                                onClick={() => {
+                                  setNewInventor(prev => ({ ...prev, citizenship: country }));
+                                  setCitizenshipSearch('');
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-200 last:border-b-0"
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {newInventor.citizenships.length > 0 && (
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Selected Countries:</label>
+                            {newInventor.citizenships.map((citizenship, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-md">
+                                <span className="text-sm text-gray-700">{citizenship}</span>
+                                <button
+                                  onClick={() => handleRemoveCitizenship(citizenship)}
+                                  className="text-red-600 hover:text-red-800 text-sm"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-6">
+                  <button
+                    onClick={handleInventorPrevStep}
+                    disabled={inventorPopupStep === 1}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      inventorPopupStep === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-600 text-white hover:bg-gray-700'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  
+                  <button
+                    onClick={handleInventorNextStep}
+                    disabled={
+                      (inventorPopupStep === 1 && !newInventor.name.trim()) ||
+                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
+                      (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
+                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0)
+                    }
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      (inventorPopupStep === 1 && !newInventor.name.trim()) ||
+                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
+                      (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
+                      (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0)
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {inventorPopupStep === 3 ? 'Add Inventor' : 'Next'}
+                  </button>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={handleCloseInventorPopup}
+                  className="w-full mt-4 px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
