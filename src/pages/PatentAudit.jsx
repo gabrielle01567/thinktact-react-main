@@ -1951,7 +1951,6 @@ const PatentAudit = () => {
         console.log('🔍 Loaded application data:', application);
         // Populate form fields
         setTitle(application.title || '');
-        setShortDescription(application.shortDescription || '');
         setAbstract(application.abstract || '');
         setField(application.field || '');
         setBackground(application.background || '');
@@ -2024,7 +2023,6 @@ const PatentAudit = () => {
     try {
       const applicationData = {
         title,
-        shortDescription,
         crossReference,
         federalResearch,
         inventors,
@@ -2116,16 +2114,7 @@ const PatentAudit = () => {
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={3}
-                  placeholder="A brief description to help you identify this invention in your documents"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
-                />
-              </div>
+
 
               <div className="bg-blue-50 rounded-lg p-4">
                 <button
