@@ -78,7 +78,7 @@ const generateMockTitles = (description) => {
     );
   }
   
-  return titles.slice(0, 5); // Return max 5 titles
+  return titles.slice(0, 4); // Return exactly 4 titles
 };
 
 const extractTechnicalTerms = (description) => {
