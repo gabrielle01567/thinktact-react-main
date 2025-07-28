@@ -3053,39 +3053,42 @@ const PatentAudit = () => {
   const renderDocumentPreview = () => {
       return (
     <div className="relative bg-white rounded-lg border border-gray-200 p-6 shadow-lg mt-8 max-w-4xl mx-auto" style={{ minHeight: 600, maxHeight: '80vh', overflow: 'auto' }}>
-      {/* Single Large Diagonal ThinkTactAI Watermark */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-20%',
-          left: '-30%',
-          width: '160%',
-          height: '140%',
-          pointerEvents: 'none',
-          zIndex: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transform: 'rotate(-25deg)',
-          overflow: 'hidden'
-        }}
-      >
-        <span
+      {/* Repeating Diagonal ThinkTactAI Watermarks for Full Document Coverage */}
+      {Array.from({ length: 30 }, (_, i) => (
+        <div
+          key={i}
           style={{
-            fontSize: '140px',
-            color: '#2563eb',
-            opacity: 0.12,
-            fontWeight: 900,
-            letterSpacing: '15px',
-            userSelect: 'none',
-            whiteSpace: 'nowrap',
-            textAlign: 'center',
-            lineHeight: '1.2'
+            position: 'absolute',
+            top: `${i * 300}px`,
+            left: '-30%',
+            width: '160%',
+            height: '200px',
+            pointerEvents: 'none',
+            zIndex: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: 'rotate(-25deg)',
+            overflow: 'hidden'
           }}
         >
-          ThinkTactAI
-        </span>
-      </div>
+          <span
+            style={{
+              fontSize: '120px',
+              color: '#2563eb',
+              opacity: 0.10,
+              fontWeight: 900,
+              letterSpacing: '12px',
+              userSelect: 'none',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
+              lineHeight: '1.2'
+            }}
+          >
+            ThinkTactAI
+          </span>
+        </div>
+      ))}
       
               {/* Document Content - USPTO Official Format */}
         <div className="relative z-10" style={{ 
