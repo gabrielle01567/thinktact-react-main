@@ -1613,42 +1613,7 @@ const PatentAudit = () => {
           </div>
         )}
 
-        {/* Country Confirmation Popup */}
-        {showCountryConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-md mx-4 shadow-xl">
-              <div className="text-center">
-                {/* Country Icon */}
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-green-600 to-blue-600 mb-6">
-                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Add Country</h3>
-                
-                <p className="text-gray-600 mb-6">
-                  Do you want to add <span className="font-semibold text-blue-600">{selectedCountry}</span> as a citizenship?
-                </p>
-                
-                <div className="flex space-x-4">
-                  <button
-                    onClick={handleConfirmCountry}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Yes, Add Country
-                  </button>
-                  <button
-                    onClick={handleCancelCountry}
-                    className="flex-1 px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    No, Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     );
   }
@@ -1788,8 +1753,7 @@ const PatentAudit = () => {
     citizenships: []
   });
   const [citizenshipSearch, setCitizenshipSearch] = useState('');
-  const [showCountryConfirmation, setShowCountryConfirmation] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState('');
+
 
   // Completion status for each section
   const [completedSections, setCompletedSections] = useState({
@@ -3536,8 +3500,6 @@ const PatentAudit = () => {
       citizenships: []
     });
     setCitizenshipSearch('');
-    setShowCountryConfirmation(false);
-    setSelectedCountry('');
   };
 
   const handleInventorNextStep = () => {
@@ -3575,30 +3537,20 @@ const PatentAudit = () => {
   };
 
   const handleCountrySelection = (country) => {
-    setSelectedCountry(country);
-    setShowCountryConfirmation(true);
-  };
-
-  const handleConfirmCountry = () => {
     if (newInventor.multipleCitizenship) {
-      if (!newInventor.citizenships.includes(selectedCountry)) {
+      if (!newInventor.citizenships.includes(country)) {
         setNewInventor(prev => ({
           ...prev,
-          citizenships: [...prev.citizenships, selectedCountry]
+          citizenships: [...prev.citizenships, country]
         }));
       }
     } else {
-      setNewInventor(prev => ({ ...prev, citizenship: selectedCountry }));
+      setNewInventor(prev => ({ ...prev, citizenship: country }));
     }
     setCitizenshipSearch('');
-    setShowCountryConfirmation(false);
-    setSelectedCountry('');
   };
 
-  const handleCancelCountry = () => {
-    setShowCountryConfirmation(false);
-    setSelectedCountry('');
-  };
+
 
   const handleRemoveCitizenship = (citizenshipToRemove) => {
     setNewInventor(prev => ({
@@ -4067,7 +4019,7 @@ const PatentAudit = () => {
                       </label>
                       <input
                         type="text"
-                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
                         value={newInventor.name}
                         onChange={(e) => setNewInventor(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="e.g., John Michael Smith"
@@ -4120,7 +4072,7 @@ const PatentAudit = () => {
                       </label>
                       <textarea
                         rows={3}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-900 placeholder-gray-500"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
                         value={newInventor.address}
                         onChange={(e) => setNewInventor(prev => ({ ...prev, address: e.target.value }))}
                         placeholder="Enter complete address including street, city, state/province, and country"
@@ -4157,7 +4109,7 @@ const PatentAudit = () => {
                         <div className="relative">
                           <input
                             type="text"
-                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-900 placeholder-gray-500 pr-10"
+                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800 pr-10"
                             value={citizenshipSearch}
                             onChange={(e) => setCitizenshipSearch(e.target.value)}
                             placeholder="Start typing to search for a country..."
@@ -4197,7 +4149,7 @@ const PatentAudit = () => {
                         <div className="relative mb-3">
                           <input
                             type="text"
-                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-900 placeholder-gray-500 pr-20"
+                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800 pr-20"
                             value={citizenshipSearch}
                             onChange={(e) => setCitizenshipSearch(e.target.value)}
                             placeholder="Start typing to search for a country..."
