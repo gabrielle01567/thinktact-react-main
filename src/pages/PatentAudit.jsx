@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { isSupabaseAvailable } from '../services/supabaseClient.js';
+import SpellCheckInput from '../components/SpellCheckInput.jsx';
+import { generatePatentTitles } from '../services/titleGenerationService.js';
 
 const PatentAudit = () => {
   const { id: applicationId } = useParams();
@@ -1139,23 +1141,21 @@ const PatentAudit = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Title{renderRequiredIndicator()}
             </label>
-            <input
-              type="text"
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder='e.g., "System and Method for AI-Powered Content Generation"'
+            <SpellCheckInput
+              type="input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              placeholder='e.g., "System and Method for AI-Powered Content Generation"'
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Short Description (Optional)</label>
-            <textarea
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            <SpellCheckInput
               rows={3}
-              placeholder="A brief description to help you identify this invention in your documents"
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
+              placeholder="A brief description to help you identify this invention in your documents"
             />
           </div>
 
@@ -1186,12 +1186,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
         <p className="text-gray-600 mb-6">Provide the application number and filing date of the earlier application you are claiming priority to.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={4}
-          placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
           value={crossReference}
           onChange={(e) => setCrossReference(e.target.value)}
+          placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
         />
       </div>
     );
@@ -1202,12 +1201,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
         <p className="text-gray-600 mb-6">Provide the contract or grant number and the government agency that supported this invention.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={4}
-          placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
           value={federalResearch}
           onChange={(e) => setFederalResearch(e.target.value)}
+          placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
         />
       </div>
     );
@@ -1444,12 +1442,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a concise summary of your invention (150 words or less). This should explain what your invention does and its key benefits.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={6}
-          placeholder="Describe your invention in a clear, concise manner..."
           value={abstract}
           onChange={(e) => setAbstract(e.target.value)}
+          placeholder="Describe your invention in a clear, concise manner..."
         />
       </div>
     );
@@ -1460,12 +1457,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of Invention{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the technical field to which your invention relates.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={4}
-          placeholder="e.g., The present invention relates to artificial intelligence and machine learning systems, specifically to natural language processing and content generation."
           value={field}
           onChange={(e) => setField(e.target.value)}
+          placeholder="e.g., The present invention relates to artificial intelligence and machine learning systems, specifically to natural language processing and content generation."
         />
       </div>
     );
@@ -1476,12 +1472,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Background{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Describe the current state of the art and the problems your invention solves.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={8}
-          placeholder="Describe the existing technology and the problems it has..."
           value={background}
           onChange={(e) => setBackground(e.target.value)}
+          placeholder="Describe the existing technology and the problems it has..."
         />
       </div>
     );
@@ -1492,12 +1487,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a brief summary of your invention, including its main features and advantages.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={6}
-          placeholder="Summarize your invention and its key features..."
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
+          placeholder="Summarize your invention and its key features..."
         />
       </div>
     );
@@ -1573,12 +1567,11 @@ const PatentAudit = () => {
         {/* Text Description */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Brief Description of Drawings</label>
-          <textarea
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          <SpellCheckInput
             rows={4}
-            placeholder="e.g., FIG. 1 is a block diagram showing the overall system architecture..."
             value={drawings}
             onChange={(e) => setDrawings(e.target.value)}
+            placeholder="e.g., FIG. 1 is a block diagram showing the overall system architecture..."
           />
         </div>
 
@@ -1759,12 +1752,11 @@ const PatentAudit = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Detailed Description{renderRequiredIndicator()}</h2>
         <p className="text-gray-600 mb-6">Provide a detailed description of your invention, including how it works and how to make and use it.</p>
-        <textarea
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        <SpellCheckInput
           rows={12}
-          placeholder="Provide a detailed description of your invention..."
           value={detailedDescription}
           onChange={(e) => setDetailedDescription(e.target.value)}
+          placeholder="Provide a detailed description of your invention..."
         />
       </div>
     );
@@ -1833,6 +1825,9 @@ const PatentAudit = () => {
   const [title, setTitle] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [showTips, setShowTips] = useState(true);
+  const [generatedTitles, setGeneratedTitles] = useState([]);
+  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
+  const [showGeneratedTitles, setShowGeneratedTitles] = useState(false);
   const [showCommonMistakes, setShowCommonMistakes] = useState(true);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState('standard'); // 'standard' or 'uspto'
@@ -2093,12 +2088,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder='e.g., "System and Method for AI-Powered Content Generation"'
+                <SpellCheckInput
+                  type="input"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  placeholder='e.g., "System and Method for AI-Powered Content Generation"'
                 />
               </div>
               
@@ -2167,12 +2161,11 @@ const PatentAudit = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications <span className="text-xs text-gray-500">(Optional)</span></h2>
             <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. <span className="font-medium">If you are not claiming priority, you can leave this section blank.</span></p>
-            <textarea
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            <SpellCheckInput
               rows={4}
-              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
               value={crossReference}
               onChange={(e) => setCrossReference(e.target.value)}
+              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
             />
             <div className="flex justify-end mt-4">
               <button
@@ -2357,12 +2350,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={6}
-                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
                   value={abstract}
                   onChange={(e) => setAbstract(e.target.value)}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
                 />
               </div>
 
@@ -2416,12 +2408,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Field Description</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={4}
-                  placeholder="e.g., This invention relates to the field of artificial intelligence and machine learning, specifically to natural language processing systems for content generation."
                   value={field}
                   onChange={(e) => setField(e.target.value)}
+                  placeholder="e.g., This invention relates to the field of artificial intelligence and machine learning, specifically to natural language processing systems for content generation."
                 />
               </div>
 
@@ -2475,12 +2466,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={4}
-                  placeholder="Describe the specific problem or need that your invention addresses..."
                   value={background}
                   onChange={(e) => setBackground(e.target.value)}
+                  placeholder="Describe the specific problem or need that your invention addresses..."
                 />
               </div>
 
@@ -2534,12 +2524,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={6}
-                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
                 />
               </div>
 
@@ -2762,12 +2751,11 @@ const PatentAudit = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Drawing Descriptions</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={6}
-                  placeholder="Describe your drawings, figures, or diagrams. For example: Figure 1 shows a block diagram of the system architecture..."
                   value={drawings}
                   onChange={(e) => setDrawings(e.target.value)}
+                  placeholder="Describe your drawings, figures, or diagrams. For example: Figure 1 shows a block diagram of the system architecture..."
                 />
               </div>
 
@@ -2821,12 +2809,11 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Detailed Description</label>
-                <textarea
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                <SpellCheckInput
                   rows={12}
-                  placeholder="Provide a comprehensive description of your invention, including how it works, its components, and implementation details..."
                   value={detailedDescription}
                   onChange={(e) => setDetailedDescription(e.target.value)}
+                  placeholder="Provide a comprehensive description of your invention, including how it works, its components, and implementation details..."
                 />
               </div>
 
