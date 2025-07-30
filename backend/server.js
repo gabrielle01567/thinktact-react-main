@@ -98,6 +98,46 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Test user status endpoint (for debugging)
+app.post('/api/test-user-status', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email is required' 
+      });
+    }
+
+    console.log('🔍 Testing user status for:', email);
+    const user = await findUserByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin,
+        hasPassword: !!user.password,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('❌ Test user status error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 // Supabase connection test endpoint
 app.get('/test-supabase', async (req, res) => {
   try {
@@ -520,7 +560,9 @@ app.post('/api/auth/login', async (req, res) => {
       console.log('❌ Login failed: User not verified');
       return res.status(401).json({ 
         success: false, 
-        error: 'Please verify your email before logging in' 
+        error: 'Please verify your email before logging in',
+        needsVerification: true,
+        email: user.email
       });
     }
 
