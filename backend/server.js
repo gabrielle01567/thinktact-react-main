@@ -476,52 +476,74 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
+    console.log('🔍 Login attempt received');
     const { email, password } = req.body;
     
+    console.log('🔍 Login data:', { email, password: password ? '[HIDDEN]' : '[MISSING]' });
+    
     if (!email || !password) {
+      console.log('❌ Login failed: Missing email or password');
       return res.status(400).json({ 
         success: false, 
         error: 'Email and password are required' 
       });
     }
 
+    console.log('🔍 Looking up user by email:', email);
     const user = await findUserByEmail(email);
+    
     if (!user) {
+      console.log('❌ Login failed: User not found');
       return res.status(401).json({ 
         success: false, 
         error: 'Invalid email or password' 
       });
     }
 
+    console.log('🔍 User found:', { id: user.id, email: user.email, isVerified: user.isVerified });
+    console.log('🔍 Verifying password...');
+    
     const isValidPassword = await verifyPassword(user, password);
+    
     if (!isValidPassword) {
+      console.log('❌ Login failed: Invalid password');
       return res.status(401).json({ 
         success: false, 
         error: 'Invalid email or password' 
       });
     }
+
+    console.log('✅ Password verified successfully');
 
     // Check if user is verified
     if (!user.isVerified) {
+      console.log('❌ Login failed: User not verified');
       return res.status(401).json({ 
         success: false, 
         error: 'Please verify your email before logging in' 
       });
     }
 
+    console.log('🔍 Generating JWT token...');
     const token = generateToken(user);
     
+    console.log('✅ Login successful, sending response');
     res.json({
       success: true,
       message: 'Login successful',
       user: { 
-        ...user, 
-        password: undefined
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt
       },
       token
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

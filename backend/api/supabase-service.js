@@ -93,6 +93,7 @@ export const createUser = async (userData) => {
 
 export const findUserByEmail = async (email) => {
   try {
+    console.log('🔍 Finding user by email:', email);
     const supabase = getSupabaseClient();
     const jwtSecret = getJwtSecret();
 
@@ -104,11 +105,14 @@ export const findUserByEmail = async (email) => {
     
     if (error) {
       if (error.code === 'PGRST116') {
+        console.log('🔍 User not found in database');
         return null; // User not found
       }
-      console.error('Error finding user by email:', error);
+      console.error('❌ Error finding user by email:', error);
       return null;
     }
+    
+    console.log('🔍 User found in database:', { id: user.id, email: user.email, isVerified: user.is_verified });
     
     return {
       id: user.id,
@@ -128,7 +132,8 @@ export const findUserByEmail = async (email) => {
       updatedAt: user.updated_at
     };
   } catch (error) {
-    console.error('Error finding user by email:', error);
+    console.error('❌ Error finding user by email:', error);
+    console.error('Error stack:', error.stack);
     return null;
   }
 };
@@ -284,7 +289,22 @@ export const saveUser = async (userData) => {
 };
 
 export const verifyPassword = async (user, password) => {
-  return bcrypt.compareSync(password, user.password_hash);
+  try {
+    console.log('🔍 Verifying password for user:', user.email);
+    console.log('🔍 Password hash exists:', !!user.password_hash);
+    
+    if (!user.password_hash) {
+      console.error('❌ No password hash found for user');
+      return false;
+    }
+    
+    const isValid = bcrypt.compareSync(password, user.password_hash);
+    console.log('🔍 Password verification result:', isValid);
+    return isValid;
+  } catch (error) {
+    console.error('❌ Password verification error:', error);
+    return false;
+  }
 };
 
 export const generateToken = (user) => {
