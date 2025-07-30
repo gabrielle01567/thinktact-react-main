@@ -21,6 +21,7 @@ console.log('  NODE_ENV:', process.env.NODE_ENV || 'development');
 import { createUser, findUserByEmail, verifyPassword, generateToken, saveUser, verifyUserByToken, getAllUsers, updateUser, deleteUser, verifyToken, findUserById, saveAnalysis, getAnalysisHistory, deleteAnalysis } from './api/supabase-service.js';
 import { savePatentApplication, updatePatentApplication, getPatentApplications, getPatentApplication, deletePatentApplication, getUserApplicationCount } from './api/patent-applications.js';
 import { sendVerificationEmail, sendPasswordResetEmail, generateVerificationToken } from './api/email-service.js';
+import debugDb from './api/debug-db.js';
 import bcrypt from 'bcryptjs';
 
 // Force redeploy to apply environment variables - 2025-07-01 - Database Reconfiguration
@@ -79,6 +80,9 @@ app.get('/api/health', async (req, res) => {
     res.status(500).json({ healthy: false, error: err.message });
   }
 });
+
+// Debug database endpoint
+app.get('/api/debug-db', debugDb);
 
 // Root endpoint
 app.get('/', (req, res) => {

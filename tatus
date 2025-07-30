@@ -1,0 +1,83 @@
+[33m20352eb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add debugging to registration endpoint to identify 400 error cause
+[33mf31a6f8[m Add user status test endpoint and better error handling for unverified users
+[33mb4d7bba[m Add comprehensive logging to login endpoint and password verification for debugging internal server errors
+[33m1bc6526[m Fix blue screen on account creation - add better error handling and fix backend registration endpoint parameter mismatch
+[33m613b03d[m Make cross-reference and federal research sections required; update inventor wizard address fields to separate inputs
+[33m693bfd3[m Add repeating watermarks for full document coverage - Replace single watermark with array of 30 repeating watermarks - Position watermarks every 300px vertically for consistent coverage - Each watermark spans full width with 160% width and -30% left offset - Maintain diagonal rotation (-25deg) for professional appearance - Use 120px font size with 0.10 opacity for optimal visibility - Ensure watermarks appear throughout entire document length as content grows
+[33m8de5a52[m Simplify watermark to single diagonal ThinkTactAI - Remove all stacked and multiple watermark layers - Remove background gradient patterns - Remove grid, diagonal, and reverse diagonal watermark arrays - Create single large diagonal ThinkTactAI watermark spanning full document - Position watermark to cover entire application length - Use 140px font size with 0.12 opacity for optimal visibility - Maintain -25 degree rotation for diagonal effect
+[33m249bbdd[m Increase watermark visibility and size - Increase background pattern opacity from 0.03/0.02/0.015 to 0.08/0.06/0.05 - Increase main watermark font sizes: ThinkTactAI 80px120px, DRAFT 60px90px, PROVISIONAL 40px70px - Increase main watermark opacity: ThinkTactAI 0.080.15, DRAFT 0.060.12, PROVISIONAL 0.040.10 - Increase grid watermark font sizes: ThinkTactAI 40px60px, DRAFT 30px45px - Increase grid watermark opacity: ThinkTactAI 0.040.08, DRAFT 0.030.06 - Increase diagonal watermark font size: PROVISIONAL 35px50px, opacity 0.0250.06 - Increase reverse diagonal watermark font size: ThinkTactAI 32px45px, opacity 0.020.05 - Reduce spacing between watermarks for better coverage
+[33mb33eedf[m Fix watermark stacking in preview - Replace single watermarks with comprehensive repeating pattern - Add background gradient pattern for subtle watermark effect - Create grid of repeating watermarks throughout scrollable area - Add diagonal and reverse diagonal watermark arrays - Ensure watermarks appear consistently when scrolling through content - Improve copy protection with layered watermark system
+[33mb211685[m Add residence step to inventor wizard - Add Step 4 to ask if residence differs from citizenship - Automatically set residence to citizenship if they're the same - Allow manual residence selection if different from citizenship - Handle multiple citizenship scenarios - Update step indicator to show 4 steps - Add validation for residence selection
+[33m1bcc0cf[m Fix inventor wizard text color and country selection - Change text color from black to white in inventor wizard textboxes - Add dark background (bg-gray-800) to textboxes for better contrast - Remove country confirmation popup - Countries are now automatically added when selected from dropdown - Simplify user experience by direct country selection
+[33m6fb20c8[m Fix document preview overflow and text wrapping issues - Add proper overflow handling to document preview container with maxHeight and scroll - Implement word-wrap, overflow-wrap, and hyphens for all content sections - Ensure long text content stays within page boundaries and wraps properly - Fix text visibility and readability in document preview
+[33m3aed9f4[m Redesign inventors page with popup-based interface - Remove all text boxes from inventors section, replace with simple display - Add 'Add Inventor' button that opens a 3-step popup wizard - Step 1: Full legal name input - Step 2: Current address with business/home selection - Step 3: Citizenship with searchable dropdown of all world countries - Support for multiple citizenships with add/remove functionality - Comprehensive list of 195+ countries with search functionality - Improved UX with step indicators and validation
+[33m7756442[m Fix application wizard step reset issue after saving - Remove loadApplication() call after saving to prevent step reset - Improve lastStep restoration logic to maintain current step for existing applications - Application now stays on the same step after saving instead of returning to step 1
+[33me094be9[m Fix shortDescription reference error in save application - Remove shortDescription from applicationData object in saveApplication function - Remove setShortDescription call in loadApplication function - Remove shortDescription textarea from renderSectionContent function - Fixes ReferenceError when saving patent applications
+[33m1fe2e20[m Improve patent wizard UI and preview functionality - Make back button more visible with blue styling and border - Remove standard preview mode, keep only USPTO format - Add stacked watermarks (ThinkTactAI, DRAFT, PROVISIONAL) for better copy protection - Remove incomplete application status notice from preview - Default preview mode to USPTO format
+[33m7f70484[m Enhance title generation to be dynamic based on user input - Replace simple keyword extraction with comprehensive context analysis - Add technology, action, problem, solution, domain, and feature keyword detection - Generate titles based on extracted context and relationships - Support multiple technology domains (AI, blockchain, IoT, VR/AR, robotics, etc.) - Create more relevant and specific patent titles - Improve title variety and accuracy based on user description
+[33mc2e0342[m Remove short description field from title section - Remove short description textarea and label - Remove shortDescription state variable - Keep title generation button for popup functionality - Clean up title section layout
+[33m2cf1ad6[m Update title generation to use popup with custom input - Replace inline title generation with popup modal - Add textarea for user to input invention description - Generate exactly 4 title options - Add 'No thanks, I'll create my own' button - Auto-update title field when option is selected - Remove dependency on short description field - Improve UX with dedicated popup interface
+[33me5de463[m Update export button to PDF with premium feature popup - Change 'Export as Text' to 'Export as PDF' - Add premium feature popup modal - Show popup when PDF export is clicked - Include premium icon and feature list - Add 'Back to Patent Buddy' button to close popup - Indicate this is a post-beta premium feature
+[33m3348e19[m Remove spell check functionality and add title generation feature - Remove SpellCheckInput component completely - Replace all SpellCheckInput with regular input/textarea elements - Add title generation service with AI-powered suggestions - Add 'Get Help with Title Creation' button under short description - Add generated titles display with selection functionality - Add loading states and error handling for title generation
+[33m00d6451[m Add title generation feature for patent applications - Add titleGenerationService with AI-powered title suggestions - Import service in PatentAudit component - Add SpellCheckInput component for better text input
+[33me7c1275[m feat: implement address autocomplete for inventors with real-time validation
+[33m2a6786e[m feat: implement dynamic citizenship and residence dropdown system for inventors
+[33me3f2b2a[m feat: implement USPTO-compliant patent application preview format
+[33m5b423ca[m feat: highlight current section in blue in patent application progress tracker
+[33mbabf467[m feat: auto-save section when navigating between steps in patent application wizard
+[33mb7a611a[m fix: always read env vars and create Supabase client per request to prevent Vercel env loss issues
+[33m1e24dd6[m fix: update progress tracker to mark gate questions as completed when answered
+[33maef7810[m feat: persist lastStep for patent application wizard to restore step progress after refresh
+[33mf739946[m refactor: use per-request Supabase client initialization in patent-applications API for reliability
+[33mee23e04[m Add ThinkTactAI favicon and update page title - Create new SVG favicon with brain circuit design matching brand colors - Update page title from 'Vite + React' to 'ThinkTactAI - Patent Analysis Tool' - Use pink-950 background with white circuit design for brand consistency
+[33mc36ecf0[m Fix React hook order violation causing form state issues - Move useAuth and useNavigate hooks to top level before useEffect - This was causing React error #321 and preventing form data from being saved properly
+[33m0cb4d28[m Fix health endpoint to use ES module import instead of require
+[33mba19355[m Add explicit error logging and throwing for silent Supabase failures (RLS/quota) in save and update patent application functions
+[33m2c1e9b8[m Fix blue screen error when loading saved applications - Remove invalid useParams() call from useEffect - Add comprehensive error handling and try-catch blocks - Add loading state display - Add detailed console logging for debugging - Add fallback error UI with refresh button
+[33mabedc48[m Add debugging and fix save persistence issue - Add detailed logging to track applicationId and save operations - Ensure correct URL navigation after save - Add automatic reload after successful save - Fix loadApplication function accessibility - Add debugging to track URL parameters and application loading
+[33m690ff5c[m Add SQL script to fix missing database columns - Create add-missing-columns.sql to add all required columns to patent_applications table - Fixes the 'inventors column not found' error - Includes all columns needed by the backend API
+[33mf57f340[m Add debugging and fix status calculation for patent application save - Fix status calculation to use completedSectionsCount instead of sections.length - Add detailed error logging to track save issues - Add debugging logs to patentService for update operations - Improve error message display with specific error details
+[33mac10d2c[m Fix patent application save issue - Replace wildcard route with specific routes for wizard - Add proper applicationId validation - Add debugging logs to track save/load behavior - Ensure existing applications are updated instead of creating new ones
+[33mf1b9aa4[m Add image preview functionality to patent applications page - Show uploaded images when users return to view applications - Display up to 3 image thumbnails with hover effects - Add full-size image modal with ESC key support - Show image count and 'more' indicator for applications with many images - Handle applications with no images gracefully
+[33m0d118a3[m Hide Research and Blog pages from navigation
+[33m133151b[m Remove pink box and update founder page title
+[33m1899f47[m Remove Gabrielle Shand name from Founder page
+[33m1ade02f[m Purge all unneeded test scripts from root and backend directories
+[33mdde67d4[m Add application limit check to prevent starting new applications when maximum reached
+[33md243d37[m Change document preview font color to black for better readability
+[33m00b355d[m Update document preview to match USPTO standard patent application format
+[33m2eec894[m Move save message to display between back and next buttons with improved styling
+[33me0bd0e7[m Replace 'Come Back Later' with 'Save Draft' button positioned above step counter
+[33m566fed9[m Fix patent wizard drawings step: reposition delete button to allow image enlargement
+[33md41a86c[m Add introduction section to Patent Buddy wizard with helpful guidance and expectations
+[33m7b4cf98[m Add debugging to identify premise truncation issue
+[33m5645343[m Fix premise truncation issue: improve text handling and auto-split long premises
+[33m1f33111[m Fix argument analysis history display issues: improve text handling, reorganize layout, and add detailed hidden assumptions
+[33m0a7ff41[m Add context and instructions to Argument Analyzer page
+[33mca622f4[m Improve USPTO API error handling with seamless Google Patents fallback
+[33m022618a[m Improve USPTO API error handling and CORS support - Added detailed logging for USPTO API calls - Better error messages for CORS and fetch failures - Automatic fallback to Google Patents when USPTO fails - Added warning about CORS restrictions in API config - Enhanced console logging for debugging API issues
+[33m18ff10f[m Add environment variable support for USPTO API key - Updated patentSearchService.js to use VITE_USPTO_API_KEY environment variable - Enhanced ApiKeyConfig component to show environment variable status - Added setup script for easy .env file creation - Added npm script 'setup-uspto' for convenient setup - Environment variables take precedence over localStorage
+[33m3ac8a82[m Add USPTO API key integration - Updated patentSearchService.js to support USPTO API key authentication - Added API key management methods (setUSPTOApiKey, getUSPTOApiKey) - Prioritized USPTO API over Google Patents when API key is available - Added proper error handling for API key validation and rate limits - Created ApiKeyConfig component for easy API key management - Added API key configuration route to App.jsx - Added settings section to PatentBuddyHome with API key configuration link - API key is stored securely in localStorage and automatically loaded
+[33mdaf73ed[m Remove all mock data from patent search functionality - Updated patentSearchService.js to only return real data from APIs - Removed getEnhancedMockData and getMockCitations functions - Updated PatentSearch component to handle errors and show appropriate messages - Updated PatentCitations component to remove mock data and add proper error handling - Updated PatentAnalysis component to show message that real data analysis is not yet available - Added error states and loading indicators throughout all components
+[33m0f67cc8[m Integrate real patent data APIs: Replace mock data with USPTO and Google Patents APIs
+[33m414bf74[m Fix navigation routes: Update all patent-audit links to patent-buddy/wizard
+[33m22c37a1[m Add comprehensive AI-powered patent search tools for inventors
+[33mb18b881[m Add validation for required fields in patent wizard: mark incomplete sections as needs review
+[33m351fb17[m Fix gate question button styling: make Yes/No buttons neutral to avoid appearing pre-selected
+[33mb2e6ae6[m Move navigation buttons to top of patent application wizard for better UX
+[33mb6f1606[m Fix navigation links: update Patent Buddy links from /patent-audit to /patent-buddy
+[33m143e033[m Fix Patent Buddy routing: simplify component and handle wizard route in App.jsx
+[33me7f8223[m Fix Patent Buddy routing: use index route and remove unused import
+[33m374caee[m Fix import/export error: remove default PatentAudit import, use PatentBuddy route
+[33ma4f0f83[m Add Patent Buddy landing page and route; wizard only shows after start button; update navigation
+[33ma2b59ba[m Fix blue screen issue in drawings section by moving useEffect hook to component top level
+[33m7f0eb24[m Enhance image modal with ESC key support, click-outside-to-close, and visual indicators
+[33mb8750f3[m Add image upload functionality to drawings section with custom naming
+[33m11fb578[m Fix blue screen issue by adding missing render functions for wizard steps
+[33m9dfa89b[m Add visual progress tracker with completion status and review indicators
+[33m8b89d97[m Live document preview with watermark and inventors section in patent wizard
+[33mbdfe55e[m Add inventors section to patent application: frontend, backend, and database support
+[33m8d67adc[m Fix patent application save/update: handle backend response shape for navigation and state updates
+[33mafe4a53[m Add enhanced drawing upload with naming and image modal viewer
+[33mce07b50[m Add USPTO document preview format and clickable help links to official resources
+[33ma1ad9b0[m Align patent application sections with true provisional format; add optional cross-reference and federal research fields with context

@@ -1,7 +1,8 @@
 class AuthService {
   constructor() {
     // Use the deployed backend URL
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+    this.baseUrl = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
     console.log('VITE_BACKEND_URL in production:', import.meta.env.VITE_BACKEND_URL);
     console.log('AuthService baseUrl:', this.baseUrl);
   }
@@ -54,7 +55,7 @@ class AuthService {
         body: JSON.stringify({ email, password })
       });
       const result = await response.json();
-      if (result.user && result.user.verified === false) {
+      if (result.user && result.user.isVerified === false) {
         return { success: false, error: 'Please verify your email before logging in.' };
       }
       return result;

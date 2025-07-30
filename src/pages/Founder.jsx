@@ -12,36 +12,33 @@ const Founder = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="mx-auto max-w-md">
-              {/* Placeholder for founder image - replace with actual image */}
-            </div>
-            
-            <div>
-              <p className="text-gray-600 mb-4 font-medium text-center">A message from our founder and CEO</p>
-              <div className="space-y-4 text-gray-600 text-center">
-                <p>
+          {/* Centered Founder Message Section */}
+          <div className="text-center mb-16">
+            <div className="mx-auto max-w-3xl">
+              <p className="text-gray-600 mb-6 font-medium text-lg">A message from our founder and CEO</p>
+              <div className="space-y-6 text-gray-600 text-left bg-gray-50 p-8 rounded-lg shadow-sm">
+                <p className="text-lg leading-relaxed">
                   After years working in both tech and academia, I founded ThinkTactAI with a vision to bridge the gap 
                   between powerful artificial intelligence and human critical thinking.
                 </p>
-                <p>
+                <p className="text-lg leading-relaxed">
                   My background in philosophy and cognitive science taught me that one of the most valuable skills 
                   we can develop is the ability to analyze arguments effectively. In today's complex information 
                   environment, this skill is more important than ever.
                 </p>
-                <p>
+                <p className="text-lg leading-relaxed">
                   ThinkTactAI emerged from the recognition that AI could help people navigate the increasingly complex and 
                   often manipulative information landscape we all face daily. By creating tools that break down arguments 
                   into their logical components, we can help people see past rhetoric to the underlying reasoning.
                 </p>
-                <p>
+                <p className="text-lg leading-relaxed">
                   My vision is to create a world where critical thinking is accessible to everyone, where arguments are 
                   evaluated on their merits rather than their emotional appeal, and where we can engage in productive 
                   dialogue across differences.
                 </p>
               </div>
               
-              <div className="mt-8 flex space-x-6">
+              <div className="mt-8 flex justify-center space-x-6">
                 <a href="#" className="text-gray-500 hover:text-pink-900">
                   <span className="sr-only">Twitter</span>
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -59,7 +56,7 @@ const Founder = () => {
           </div>
           
           <div className="mt-16 space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900">Core Values</h2>
+            <h2 className="text-2xl font-bold text-gray-900 text-center">Core Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-lg font-bold text-pink-950 mb-3">Intellectual Clarity</h3>

@@ -10,9 +10,17 @@ dotenv.config();
 function getSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+  
+  console.log('🔍 Supabase configuration check:');
+  console.log('🔍 SUPABASE_URL:', supabaseUrl ? 'Set' : 'Not set');
+  console.log('🔍 SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set (length: ' + supabaseServiceKey.length + ')' : 'Not set');
+  
   if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Missing Supabase configuration');
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
   }
+  
+  console.log('🔍 Creating Supabase client...');
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
@@ -94,14 +102,24 @@ export const createUser = async (userData) => {
 export const findUserByEmail = async (email) => {
   try {
     console.log('🔍 Finding user by email:', email);
+    console.log('🔍 Normalized email:', email.toLowerCase());
+    
     const supabase = getSupabaseClient();
     const jwtSecret = getJwtSecret();
 
+    console.log('🔍 Executing Supabase query...');
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
       .eq('email', email.toLowerCase())
       .single();
+    
+    console.log('🔍 Supabase query result:', { 
+      hasData: !!user, 
+      hasError: !!error,
+      errorCode: error?.code,
+      errorMessage: error?.message 
+    });
     
     if (error) {
       if (error.code === 'PGRST116') {
@@ -112,9 +130,15 @@ export const findUserByEmail = async (email) => {
       return null;
     }
     
-    console.log('🔍 User found in database:', { id: user.id, email: user.email, isVerified: user.is_verified });
+    console.log('🔍 User found in database:', { 
+      id: user.id, 
+      email: user.email, 
+      isVerified: user.is_verified,
+      hasPasswordHash: !!user.password_hash,
+      passwordHashLength: user.password_hash ? user.password_hash.length : 0
+    });
     
-    return {
+    const result = {
       id: user.id,
       email: user.email,
       password: user.password_hash,
@@ -131,6 +155,16 @@ export const findUserByEmail = async (email) => {
       createdAt: user.created_at,
       updatedAt: user.updated_at
     };
+    
+    console.log('🔍 Returning user object:', {
+      id: result.id,
+      email: result.email,
+      isVerified: result.isVerified,
+      hasPassword: !!result.password,
+      passwordLength: result.password ? result.password.length : 0
+    });
+    
+    return result;
   } catch (error) {
     console.error('❌ Error finding user by email:', error);
     console.error('Error stack:', error.stack);
@@ -291,18 +325,34 @@ export const saveUser = async (userData) => {
 export const verifyPassword = async (user, password) => {
   try {
     console.log('🔍 Verifying password for user:', user.email);
-    console.log('🔍 Password hash exists:', !!user.password_hash);
+    console.log('🔍 Password hash exists:', !!user.password);
+    console.log('🔍 Password hash length:', user.password ? user.password.length : 0);
+    console.log('🔍 Password hash starts with:', user.password ? user.password.substring(0, 10) + '...' : 'N/A');
     
-    if (!user.password_hash) {
+    if (!user.password) {
       console.error('❌ No password hash found for user');
       return false;
     }
     
-    const isValid = bcrypt.compareSync(password, user.password_hash);
+    // Check if the password hash looks like a valid bcrypt hash
+    if (!user.password.startsWith('$2a$') && !user.password.startsWith('$2b$') && !user.password.startsWith('$2y$')) {
+      console.error('❌ Password hash does not appear to be a valid bcrypt hash');
+      console.error('❌ Hash format:', user.password.substring(0, 20));
+      return false;
+    }
+    
+    const isValid = bcrypt.compareSync(password, user.password);
     console.log('🔍 Password verification result:', isValid);
+    
+    if (!isValid) {
+      console.log('🔍 Password comparison failed. Input password length:', password.length);
+      console.log('🔍 Stored hash:', user.password);
+    }
+    
     return isValid;
   } catch (error) {
     console.error('❌ Password verification error:', error);
+    console.error('❌ Error stack:', error.stack);
     return false;
   }
 };
@@ -313,7 +363,7 @@ export const generateToken = (user) => {
     { 
       userId: user.id, 
       email: user.email, 
-      isAdmin: user.is_admin 
+      isAdmin: user.isAdmin 
     },
     jwtSecret,
     { expiresIn: '7d' }
@@ -378,7 +428,7 @@ export const verifyUserByToken = async (verificationToken) => {
         email: user.email,
         name: user.name,
         isVerified: true,
-        isAdmin: user.is_admin
+        isAdmin: user.isAdmin
       }
     };
   } catch (error) {
