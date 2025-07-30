@@ -428,12 +428,40 @@ app.get('/test-registration-email', async (req, res) => {
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
+    console.log('🔍 Registration request received');
+    console.log('🔍 Request body:', { ...req.body, password: '[HIDDEN]' });
+    
     const { email, password, firstName, lastName, securityQuestion, securityAnswer, name, isVerified = false, isAdmin = false } = req.body;
     
+    console.log('🔍 Extracted fields:', { 
+      email: email || '[MISSING]', 
+      password: password ? '[HIDDEN]' : '[MISSING]',
+      firstName: firstName || '[MISSING]',
+      lastName: lastName || '[MISSING]',
+      securityQuestion: securityQuestion || '[MISSING]',
+      securityAnswer: securityAnswer || '[MISSING]'
+    });
+    
     if (!email || !password) {
+      console.log('❌ Registration failed: Missing email or password');
       return res.status(400).json({ 
         success: false, 
         error: 'Email and password are required' 
+      });
+    }
+    
+    // Validate all required fields that frontend sends
+    if (!firstName || !lastName || !securityQuestion || !securityAnswer) {
+      console.log('❌ Registration failed: Missing required fields');
+      console.log('❌ Missing fields:', {
+        firstName: !firstName ? 'MISSING' : 'OK',
+        lastName: !lastName ? 'MISSING' : 'OK', 
+        securityQuestion: !securityQuestion ? 'MISSING' : 'OK',
+        securityAnswer: !securityAnswer ? 'MISSING' : 'OK'
+      });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'All fields are required: firstName, lastName, securityQuestion, securityAnswer' 
       });
     }
 
