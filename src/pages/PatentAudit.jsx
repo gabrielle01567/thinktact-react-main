@@ -867,29 +867,13 @@ const PatentAudit = () => {
   // 1. Replace currentSection with currentStep (index-based navigation)
   const [currentStep, setCurrentStep] = useState(0);
 
-  // 2. Add Yes/No state for each optional section
-  const [wantsCrossReference, setWantsCrossReference] = useState(null); // null = not answered, true/false = answered
-  const [wantsFederalResearch, setWantsFederalResearch] = useState(null);
-
-  // 3. Build wizardSteps array dynamically based on answers
+  // 3. Build wizardSteps array - both sections are now required
   const getWizardSteps = () => {
     const steps = [
       { key: 'Introduction' },
       { key: 'Title' },
-      { key: 'CrossReferenceGate' },
-    ];
-    
-    if (wantsCrossReference === true) {
-      steps.push({ key: 'CrossReference' });
-    }
-    
-    steps.push({ key: 'FederalResearchGate' });
-    
-    if (wantsFederalResearch === true) {
-      steps.push({ key: 'FederalResearch' });
-    }
-    
-    steps.push(
+      { key: 'CrossReference' },
+      { key: 'FederalResearch' },
       { key: 'Inventors' },
       { key: 'Abstract' },
       { key: 'Field' },
@@ -898,7 +882,7 @@ const PatentAudit = () => {
       { key: 'Drawings' },
       { key: 'DetailedDescription' },
       { key: 'Review' }
-    );
+    ];
     
     return steps;
   };
@@ -922,12 +906,8 @@ const PatentAudit = () => {
           return renderIntroductionSection();
         case 'Title':
           return renderTitleSection();
-        case 'CrossReferenceGate':
-          return renderCrossReferenceGate();
         case 'CrossReference':
           return renderCrossReferenceSection();
-        case 'FederalResearchGate':
-          return renderFederalResearchGate();
         case 'FederalResearch':
           return renderFederalResearchSection();
         case 'Inventors':
@@ -1021,31 +1001,7 @@ const PatentAudit = () => {
     <span className="text-red-500 ml-1">*</span>
   );
 
-  // 8. Gate question renderers for optional sections
-  function renderCrossReferenceGate() {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
-        <p className="text-gray-600 mb-6">Are you claiming priority to an earlier U.S. or foreign patent application?</p>
-        <div className="flex gap-4">
-          <button onClick={() => { setWantsCrossReference(true); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Yes</button>
-          <button onClick={() => { setWantsCrossReference(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">No</button>
-        </div>
-      </div>
-    );
-  }
-  function renderFederalResearchGate() {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
-        <p className="text-gray-600 mb-6">Was this invention made with U.S. federal government support?</p>
-        <div className="flex gap-4">
-          <button onClick={() => { setWantsFederalResearch(true); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">Yes</button>
-          <button onClick={() => { setWantsFederalResearch(false); goToNextStep(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors">No</button>
-        </div>
-      </div>
-    );
-  }
+
 
   // Add missing render functions for each section
   function renderIntroductionSection() {
@@ -1743,6 +1699,9 @@ const PatentAudit = () => {
   const [newInventor, setNewInventor] = useState({
     name: '',
     address: '',
+    addressCont: '',
+    locality: '',
+    country: '',
     addressType: '', // 'business' or 'home'
     citizenship: '',
     multipleCitizenship: false,
@@ -1756,8 +1715,8 @@ const PatentAudit = () => {
   // Completion status for each section
   const [completedSections, setCompletedSections] = useState({
     Title: false,
-    'Cross-Reference to Related Applications (Optional)': false,
-    'Federally Sponsored Research or Development (Optional)': false,
+    'Cross-Reference to Related Applications': false,
+    'Federally Sponsored Research or Development': false,
     Inventors: false,
     Abstract: false,
     Field: false,
@@ -1780,8 +1739,8 @@ const PatentAudit = () => {
 
   const sections = [
     'Title',
-    'Cross-Reference to Related Applications (Optional)',
-    'Federally Sponsored Research or Development (Optional)',
+    'Cross-Reference to Related Applications',
+    'Federally Sponsored Research or Development',
     'Inventors',
     'Abstract',
     'Field',
@@ -2189,54 +2148,54 @@ const PatentAudit = () => {
           </div>
         );
 
-      case 'Cross-Reference to Related Applications (Optional)':
+      case 'Cross-Reference to Related Applications':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications <span className="text-xs text-gray-500">(Optional)</span></h2>
-            <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. <span className="font-medium">If you are not claiming priority, you can leave this section blank.</span></p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
+            <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. If you are not claiming priority, enter "None" or "Not applicable".</p>
             <textarea
               rows={4}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={crossReference}
               onChange={(e) => setCrossReference(e.target.value)}
-              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
+              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023. OR None"
             />
             <div className="flex justify-end mt-4">
               <button
-                onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications (Optional)': !prev['Cross-Reference to Related Applications (Optional)'] }))}
+                onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': !prev['Cross-Reference to Related Applications'] }))}
                 className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                  completedSections['Cross-Reference to Related Applications (Optional)']
+                  completedSections['Cross-Reference to Related Applications']
                     ? 'text-white bg-green-600 hover:bg-green-700'
                     : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                 }`}
               >
-                {completedSections['Cross-Reference to Related Applications (Optional)'] ? 'Completed' : 'Mark as Complete'}
+                {completedSections['Cross-Reference to Related Applications'] ? 'Completed' : 'Mark as Complete'}
               </button>
             </div>
           </div>
         );
-      case 'Federally Sponsored Research or Development (Optional)':
+      case 'Federally Sponsored Research or Development':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development <span className="text-xs text-gray-500">(Optional)</span></h2>
-            <p className="text-gray-600 mb-6">If your invention was made with U.S. federal government support, you must disclose the contract or grant number and the government agency. <span className="font-medium">If your invention was not federally funded, you can leave this section blank.</span></p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
+            <p className="text-gray-600 mb-6">If your invention was made with U.S. federal government support, you must disclose the contract or grant number and the government agency. If your invention was not federally funded, enter "None" or "Not applicable".</p>
             <textarea
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               rows={4}
-              placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
+              placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention. OR None"
               value={federalResearch}
               onChange={(e) => setFederalResearch(e.target.value)}
             />
             <div className="flex justify-end mt-4">
               <button
-                onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development (Optional)': !prev['Federally Sponsored Research or Development (Optional)'] }))}
+                onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': !prev['Federally Sponsored Research or Development'] }))}
                 className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                  completedSections['Federally Sponsored Research or Development (Optional)']
+                  completedSections['Federally Sponsored Research or Development']
                     ? 'text-white bg-green-600 hover:bg-green-700'
                     : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                 }`}
               >
-                {completedSections['Federally Sponsored Research or Development (Optional)'] ? 'Completed' : 'Mark as Complete'}
+                {completedSections['Federally Sponsored Research or Development'] ? 'Completed' : 'Mark as Complete'}
               </button>
             </div>
           </div>
@@ -2912,15 +2871,15 @@ const PatentAudit = () => {
         link: 'USPTO Patent Application Guide',
         url: 'https://www.uspto.gov/patents/basics/patent-process-overview'
       },
-      'Cross-Reference to Related Applications (Optional)': {
-        title: 'Current Section: Cross-Reference to Related Applications (Optional)',
-        description: 'Needed only if you are claiming priority to an earlier U.S. or foreign patent application. Otherwise, leave blank.',
+      'Cross-Reference to Related Applications': {
+        title: 'Current Section: Cross-Reference to Related Applications',
+        description: 'Required section. If you are claiming priority to an earlier U.S. or foreign patent application, provide the details. If not claiming priority, enter "None" or "Not applicable".',
         link: 'USPTO Priority Claims Guide',
         url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/priority-claims'
       },
-      'Federally Sponsored Research or Development (Optional)': {
-        title: 'Current Section: Federally Sponsored Research or Development (Optional)',
-        description: 'Needed only if your invention was made with U.S. federal government support. Otherwise, leave blank.',
+      'Federally Sponsored Research or Development': {
+        title: 'Current Section: Federally Sponsored Research or Development',
+        description: 'Required section. If your invention was made with U.S. federal government support, you must disclose the details. If not federally funded, enter "None" or "Not applicable".',
         link: 'USPTO Federal Funding Disclosure',
         url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/federally-sponsored-research'
       },
@@ -3416,14 +3375,10 @@ const PatentAudit = () => {
         return true; // Introduction is always considered completed once viewed
       case 'Title':
         return title.trim() !== '';
-      case 'CrossReferenceGate':
-        return wantsCrossReference !== null; // Mark as completed once answered
       case 'CrossReference':
-        return wantsCrossReference === false || (wantsCrossReference === true && crossReference.trim() !== '');
-      case 'FederalResearchGate':
-        return wantsFederalResearch !== null; // Mark as completed once answered
+        return crossReference.trim() !== '';
       case 'FederalResearch':
-        return wantsFederalResearch === false || (wantsFederalResearch === true && federalResearch.trim() !== '');
+        return federalResearch.trim() !== '';
       case 'Inventors':
         return inventors.some(inv => inv.name.trim() && inv.address.trim());
       case 'Abstract':
@@ -3450,14 +3405,10 @@ const PatentAudit = () => {
         return 'Introduction';
       case 'Title':
         return 'Title of Invention';
-      case 'CrossReferenceGate':
-        return 'Cross-Reference (Optional)';
       case 'CrossReference':
-        return 'Cross-Reference Details';
-      case 'FederalResearchGate':
-        return 'Federal Research (Optional)';
+        return 'Cross-Reference to Related Applications';
       case 'FederalResearch':
-        return 'Federal Research Details';
+        return 'Federally Sponsored Research or Development';
       case 'Inventors':
         return 'Inventors';
       case 'Abstract':
@@ -3540,6 +3491,9 @@ const PatentAudit = () => {
     setNewInventor({
       name: '',
       address: '',
+      addressCont: '',
+      locality: '',
+      country: '',
       addressType: '',
       citizenship: '',
       multipleCitizenship: false,
@@ -3556,6 +3510,9 @@ const PatentAudit = () => {
     setNewInventor({
       name: '',
       address: '',
+      addressCont: '',
+      locality: '',
+      country: '',
       addressType: '',
       citizenship: '',
       multipleCitizenship: false,
@@ -3569,7 +3526,7 @@ const PatentAudit = () => {
   const handleInventorNextStep = () => {
     if (inventorPopupStep === 1 && newInventor.name.trim()) {
       setInventorPopupStep(2);
-    } else if (inventorPopupStep === 2 && newInventor.address.trim() && newInventor.addressType) {
+    } else if (inventorPopupStep === 2 && newInventor.address.trim() && newInventor.locality.trim() && newInventor.country.trim() && newInventor.addressType) {
       setInventorPopupStep(3);
     } else if (inventorPopupStep === 3) {
       // Check if we need to ask about residence
@@ -3589,9 +3546,19 @@ const PatentAudit = () => {
         residence = newInventor.multipleCitizenship ? newInventor.citizenships[0] : newInventor.citizenship;
       }
       
+      // Combine address fields into a single address string
+      const addressParts = [
+        newInventor.address.trim(),
+        newInventor.addressCont.trim(),
+        newInventor.locality.trim(),
+        newInventor.country.trim()
+      ].filter(part => part.length > 0);
+      
+      const fullAddress = addressParts.join(', ');
+      
       const inventorToAdd = {
         name: newInventor.name.trim(),
-        address: newInventor.address.trim(),
+        address: fullAddress,
         citizenship: newInventor.multipleCitizenship ? newInventor.citizenships.join(', ') : newInventor.citizenship,
         residence: residence
       };
@@ -4146,17 +4113,58 @@ const PatentAudit = () => {
                       </div>
                     </div>
 
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Current Address
-                      </label>
-                      <textarea
-                        rows={3}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
-                        value={newInventor.address}
-                        onChange={(e) => setNewInventor(prev => ({ ...prev, address: e.target.value }))}
-                        placeholder="Enter complete address including street, city, state/province, and country"
-                      />
+                    <div className="mb-6 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Address *
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
+                          value={newInventor.address}
+                          onChange={(e) => setNewInventor(prev => ({ ...prev, address: e.target.value }))}
+                          placeholder="e.g., 123 Main Street"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Address Continued (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
+                          value={newInventor.addressCont}
+                          onChange={(e) => setNewInventor(prev => ({ ...prev, addressCont: e.target.value }))}
+                          placeholder="e.g., Apartment 4B, Suite 200"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Locality (City, State/Province) *
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
+                          value={newInventor.locality}
+                          onChange={(e) => setNewInventor(prev => ({ ...prev, locality: e.target.value }))}
+                          placeholder="e.g., San Francisco, CA"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Country *
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-white placeholder-gray-400 bg-gray-800"
+                          value={newInventor.country}
+                          onChange={(e) => setNewInventor(prev => ({ ...prev, country: e.target.value }))}
+                          placeholder="e.g., United States"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -4383,14 +4391,14 @@ const PatentAudit = () => {
                     onClick={handleInventorNextStep}
                     disabled={
                       (inventorPopupStep === 1 && !newInventor.name.trim()) ||
-                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
+                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.locality.trim() || !newInventor.country.trim() || !newInventor.addressType)) ||
                       (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
                       (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0) ||
                       (inventorPopupStep === 4 && newInventor.residenceDifferentFromCitizenship && !newInventor.residence)
                     }
                     className={`px-4 py-2 text-sm font-medium rounded-md ${
                       (inventorPopupStep === 1 && !newInventor.name.trim()) ||
-                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.addressType)) ||
+                      (inventorPopupStep === 2 && (!newInventor.address.trim() || !newInventor.locality.trim() || !newInventor.country.trim() || !newInventor.addressType)) ||
                       (inventorPopupStep === 3 && !newInventor.multipleCitizenship && !newInventor.citizenship) ||
                       (inventorPopupStep === 3 && newInventor.multipleCitizenship && newInventor.citizenships.length === 0) ||
                       (inventorPopupStep === 4 && newInventor.residenceDifferentFromCitizenship && !newInventor.residence)
