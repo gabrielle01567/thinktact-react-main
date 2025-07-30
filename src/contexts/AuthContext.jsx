@@ -70,7 +70,13 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, userData) => {
     try {
+      console.log('🔍 AuthContext: Starting registration...');
+      console.log('🔍 AuthContext: Email:', email);
+      console.log('🔍 AuthContext: User data:', { ...userData, password: '[HIDDEN]' });
+      
       const result = await authService.registerUser(email, password, userData);
+      
+      console.log('🔍 AuthContext: Registration result:', result);
       
       if (result.success) {
         // Return success without auto-login - user will be redirected to verification page
@@ -79,8 +85,8 @@ export const AuthProvider = ({ children }) => {
         return result;
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Registration failed' };
+      console.error('🔍 AuthContext: Registration error:', error);
+      return { success: false, error: 'Registration failed: ' + error.message };
     }
   };
 

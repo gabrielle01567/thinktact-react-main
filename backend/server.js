@@ -388,7 +388,7 @@ app.get('/test-registration-email', async (req, res) => {
 // Real auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, name, isVerified = false, isAdmin = false } = req.body;
+    const { email, password, firstName, lastName, securityQuestion, securityAnswer, name, isVerified = false, isAdmin = false } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ 
@@ -397,7 +397,18 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    const result = await createUser({ email, password, name: name || email.split('@')[0], isVerified, isAdmin });
+    // Construct the full name from firstName and lastName if provided
+    const fullName = firstName && lastName ? `${firstName} ${lastName}` : (name || email.split('@')[0]);
+
+    const result = await createUser({ 
+      email, 
+      password, 
+      name: fullName, 
+      isVerified, 
+      isAdmin,
+      securityQuestion,
+      securityAnswer
+    });
     
     if (result.success) {
       // Only send verification email if user is not already verified

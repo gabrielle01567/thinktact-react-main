@@ -58,12 +58,15 @@ const Login = () => {
     try {
       let result;
       if (isRegisterMode) {
+        console.log('🔍 Starting registration process...');
         result = await register(email, password, {
           firstName,
           lastName,
           securityQuestion,
           securityAnswer
         });
+        
+        console.log('🔍 Registration result:', result);
         
         if (result.success) {
           // Redirect to verification page after successful registration
@@ -79,7 +82,10 @@ const Login = () => {
           if (result.canReset) setShowResetLink(true);
         }
       } else {
+        console.log('🔍 Starting login process...');
         result = await login(email, password);
+        
+        console.log('🔍 Login result:', result);
         
         if (result.success) {
           // Navigate to the home page
@@ -99,8 +105,9 @@ const Login = () => {
           setError(result.error || 'Login failed');
         }
       }
-    } catch {
-      setError('An unexpected error occurred');
+    } catch (error) {
+      console.error('🔍 Authentication error:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

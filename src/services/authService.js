@@ -9,20 +9,39 @@ class AuthService {
   // Register a new user
   async registerUser(email, password, extra = {}) {
     try {
+      console.log('🔍 AuthService: Registering user with email:', email);
+      console.log('🔍 AuthService: Backend URL:', this.baseUrl);
+      
+      const requestBody = {
+        email,
+        password,
+        ...extra
+      };
+      
+      console.log('🔍 AuthService: Request body:', { ...requestBody, password: '[HIDDEN]' });
+      
       const response = await fetch(`${this.baseUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          ...extra
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log('🔍 AuthService: Response status:', response.status);
+      console.log('🔍 AuthService: Response ok:', response.ok);
+      
+      if (!response.ok) {
+        console.error('🔍 AuthService: HTTP error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('🔍 AuthService: Error response:', errorText);
+        return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      
       const result = await response.json();
+      console.log('🔍 AuthService: Response result:', result);
       return result;
     } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Registration failed' };
+      console.error('🔍 AuthService: Registration error:', error);
+      return { success: false, error: 'Registration failed: ' + error.message };
     }
   }
 
