@@ -37,11 +37,6 @@ const PatentAudit = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Helper function to get residences for a citizenship
-  const getResidencesForCitizenship = (citizenship) => {
-    return citizenshipData[citizenship]?.residences || [];
-  };
-
   // Address autocomplete functions
   const searchAddress = async (query, inventorIndex) => {
     if (!query || query.length < 3) {
@@ -852,6 +847,11 @@ const PatentAudit = () => {
       type: 'other',
       residences: ['Other']
     }
+  };
+  
+  // Helper function to get residences for a citizenship
+  const getResidencesForCitizenship = (citizenship) => {
+    return citizenshipData[citizenship]?.residences || [];
   };
   
   // Debug logging for applicationId
