@@ -2072,7 +2072,7 @@ const PatentAudit = () => {
                         </li>
                       ))}
                     </ul>
-              </div>
+                  </div>
                 )}
                 {titleValidation.isValid && title.trim() && (
                   <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -2085,8 +2085,87 @@ const PatentAudit = () => {
                   </div>
                 )}
               </div>
-              
 
+              {/* Title Generation Section */}
+              <div className="bg-purple-50 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-purple-900 mb-3">Generate Title Suggestions</h3>
+                <p className="text-purple-800 mb-4">Enter keywords or a description of your invention to get AI-generated title suggestions.</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-purple-700 mb-2">Description or Keywords</label>
+                    <textarea
+                      rows={3}
+                      className="w-full rounded-md border-purple-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                      value={titleGenerationInput}
+                      onChange={(e) => setTitleGenerationInput(e.target.value)}
+                      placeholder="Describe your invention, its key features, technology area, or enter relevant keywords..."
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleGenerateTitles}
+                    disabled={isGeneratingTitles || !titleGenerationInput.trim()}
+                    className={`w-full px-4 py-2 text-sm font-medium rounded-md flex items-center justify-center ${
+                      isGeneratingTitles || !titleGenerationInput.trim()
+                        ? 'bg-purple-200 text-purple-500 cursor-not-allowed'
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                    }`}
+                  >
+                    {isGeneratingTitles ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating Titles...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Generate Title Suggestions
+                      </>
+                    )}
+                  </button>
+                  
+                  {titleGenerationError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-600">{titleGenerationError}</p>
+                    </div>
+                  )}
+                  
+                  {generatedTitles.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium text-purple-900">Generated Titles:</h4>
+                      {generatedTitles.map((generatedTitle, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-white border border-purple-200 rounded-md hover:bg-purple-50">
+                          <span className="text-sm text-purple-900 flex-1">{generatedTitle}</span>
+                          <button
+                            onClick={() => handleSelectTitle(generatedTitle)}
+                            className="ml-3 px-3 py-1 text-xs font-medium text-purple-600 bg-purple-100 hover:bg-purple-200 rounded-md"
+                          >
+                            Use This Title
+                          </button>
+                        </div>
+                      ))}
+                      <div className="flex justify-center pt-2">
+                        <button
+                          onClick={() => {
+                            setTitleGenerationInput('');
+                            setGeneratedTitles([]);
+                            setTitleGenerationError('');
+                          }}
+                          className="text-sm text-purple-600 hover:text-purple-800"
+                        >
+                          Generate Different Titles
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <div className="bg-blue-50 rounded-lg p-4">
                 <button

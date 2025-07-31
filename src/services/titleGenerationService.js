@@ -1,5 +1,5 @@
 // Title Generation Service for Patent Applications
-// Uses AI to generate patent titles based on descriptions
+// Uses Mistral AI to generate patent titles based on descriptions
 
 const generatePatentTitles = async (description) => {
   if (!description || description.trim().length < 10) {
@@ -7,8 +7,65 @@ const generatePatentTitles = async (description) => {
   }
 
   try {
-    // Enhanced title generation based on user input analysis
-    const titles = generateDynamicTitles(description);
+    // Get API Key from environment variable
+    const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('Mistral API key is missing. Please contact support.');
+    }
+
+    // Create prompt for Mistral AI
+    const prompt = `Generate exactly 4 patent titles based on this invention description: "${description}"
+
+Requirements for each title:
+- Be specific about the technology area
+- Include key technical features that make the invention unique
+- Avoid marketing language or superlatives
+- Keep under 15 words if possible
+- Use proper patent title format (e.g., "System and Method for...", "Apparatus for...", "Method of...")
+- Be technically accurate and descriptive
+- Each title should be different in approach or focus
+
+Format your response as exactly 4 titles, one per line, with no numbering or special formatting. Just the titles, separated by line breaks.
+
+Example format:
+System and Method for AI-Powered Content Generation
+Apparatus for Real-Time Data Processing
+Method of Automated Quality Control
+Intelligent Network Management System`;
+
+    // Make API call to Mistral AI
+    const MISTRAL_API_ENDPOINT = 'https://api.mistral.ai/v1/chat/completions';
+
+    const response = await fetch(MISTRAL_API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'mistral-small-latest',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 300,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from Mistral AI');
+    }
+
+    const generatedText = data.choices[0].message.content;
+    
+    // Parse the generated titles
+    const titles = parseGeneratedTitles(generatedText);
     
     return {
       success: true,
@@ -21,236 +78,35 @@ const generatePatentTitles = async (description) => {
   }
 };
 
-const generateDynamicTitles = (description) => {
-  const lowerDesc = description.toLowerCase();
-  const titles = [];
+const parseGeneratedTitles = (generatedText) => {
+  // Split by line breaks and clean up each title
+  const lines = generatedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
-  // Enhanced keyword extraction
-  const extractedData = extractKeywordsAndContext(lowerDesc);
+  // Extract titles (remove any numbering or formatting)
+  const titles = lines
+    .map(line => {
+      // Remove common prefixes like "1.", "2.", "-", "•", etc.
+      return line.replace(/^[\d\.\-\•\s]+/, '').trim();
+    })
+    .filter(title => title.length > 0 && title.length < 100) // Filter out empty or too long titles
+    .slice(0, 4); // Take only the first 4 titles
   
-  // Generate titles based on the extracted data
-  if (extractedData.primaryTechnology && extractedData.primaryTechnology.length > 0) {
-    // Pattern 1: "System and Method for [Primary Technology] [Secondary Feature]"
-    if (extractedData.secondaryFeatures.length > 0) {
-      titles.push(`System and Method for ${extractedData.primaryTechnology[0]} ${extractedData.secondaryFeatures[0]}`);
-    } else {
-      titles.push(`System and Method for ${extractedData.primaryTechnology[0]}`);
-    }
-    
-    // Pattern 2: "[Primary Technology] Apparatus"
-    titles.push(`${extractedData.primaryTechnology[0]} Apparatus`);
-    
-    // Pattern 3: "Method of [Action] [Technology]"
-    if (extractedData.actions.length > 0) {
-      titles.push(`Method of ${extractedData.actions[0]} ${extractedData.primaryTechnology[0]}`);
-    } else {
-      const defaultActions = ['processing', 'analyzing', 'generating', 'optimizing', 'managing'];
-      const action = defaultActions[Math.floor(Math.random() * defaultActions.length)];
-      titles.push(`Method of ${action} ${extractedData.primaryTechnology[0]}`);
-    }
-    
-    // Pattern 4: "[Technology] System"
-    titles.push(`${extractedData.primaryTechnology[0]} System`);
-  }
-  
-  // Generate titles based on problem/solution context
-  if (extractedData.problems.length > 0 && extractedData.solutions.length > 0) {
-    titles.push(`Apparatus for ${extractedData.solutions[0]} ${extractedData.problems[0]}`);
-  } else if (extractedData.solutions.length > 0) {
-    titles.push(`Apparatus for ${extractedData.solutions[0]}`);
-  }
-  
-  // Generate titles based on application domain
-  if (extractedData.domains.length > 0 && extractedData.primaryTechnology.length > 0) {
-    titles.push(`${extractedData.primaryTechnology[0]} for ${extractedData.domains[0]}`);
-  }
-  
-  // Generate titles based on specific features
-  if (extractedData.features.length > 0 && extractedData.primaryTechnology.length > 0) {
-    titles.push(`${extractedData.primaryTechnology[0]} with ${extractedData.features[0]}`);
-  }
-  
-  // If we don't have enough titles, generate some generic ones based on context
+  // If we don't have enough titles, generate some fallback ones
   if (titles.length < 4) {
-    const genericTitles = generateGenericTitles(extractedData);
-    titles.push(...genericTitles.slice(0, 4 - titles.length));
+    const fallbackTitles = generateFallbackTitles();
+    titles.push(...fallbackTitles.slice(0, 4 - titles.length));
   }
   
-  return titles.slice(0, 4); // Return exactly 4 titles
+  return titles.slice(0, 4); // Ensure exactly 4 titles
 };
 
-const extractKeywordsAndContext = (description) => {
-  const result = {
-    primaryTechnology: [],
-    secondaryFeatures: [],
-    actions: [],
-    problems: [],
-    solutions: [],
-    domains: [],
-    features: []
-  };
-  
-  // Technology keywords
-  const technologyKeywords = [
-    'artificial intelligence', 'ai', 'machine learning', 'ml', 'neural network', 'deep learning',
-    'blockchain', 'cryptocurrency', 'smart contract', 'distributed ledger',
-    'internet of things', 'iot', 'sensor', 'actuator', 'wireless', 'bluetooth', 'wifi',
-    'cloud computing', 'edge computing', 'serverless', 'microservices',
-    'virtual reality', 'vr', 'augmented reality', 'ar', 'mixed reality', 'mr',
-    'robotics', 'automation', 'autonomous', 'drone', 'uav',
-    'biotechnology', 'genetic', 'dna', 'protein', 'enzyme', 'cell',
-    'nanotechnology', 'nano', 'quantum', 'photonics', 'laser',
-    'renewable energy', 'solar', 'wind', 'battery', 'energy storage',
-    'cybersecurity', 'encryption', 'authentication', 'biometric', 'firewall'
+const generateFallbackTitles = () => {
+  return [
+    'System and Method for Data Processing',
+    'Apparatus for Information Management',
+    'Method of System Optimization',
+    'Intelligent Processing System'
   ];
-  
-  // Action keywords
-  const actionKeywords = [
-    'process', 'analyze', 'generate', 'optimize', 'manage', 'control', 'monitor',
-    'detect', 'identify', 'classify', 'predict', 'forecast', 'recommend',
-    'filter', 'sort', 'search', 'index', 'retrieve', 'store', 'transmit',
-    'encrypt', 'decrypt', 'compress', 'decompress', 'encode', 'decode',
-    'calibrate', 'measure', 'sense', 'actuate', 'move', 'rotate', 'lift'
-  ];
-  
-  // Problem keywords
-  const problemKeywords = [
-    'problem', 'issue', 'challenge', 'difficulty', 'limitation', 'inefficiency',
-    'error', 'failure', 'breakdown', 'malfunction', 'defect', 'fault',
-    'delay', 'latency', 'bottleneck', 'congestion', 'overload', 'overflow',
-    'security', 'privacy', 'vulnerability', 'threat', 'risk', 'attack'
-  ];
-  
-  // Solution keywords
-  const solutionKeywords = [
-    'solution', 'improvement', 'enhancement', 'optimization', 'efficiency',
-    'automation', 'streamlining', 'simplification', 'integration', 'unification',
-    'prevention', 'protection', 'safety', 'reliability', 'robustness',
-    'accuracy', 'precision', 'speed', 'performance', 'scalability'
-  ];
-  
-  // Domain keywords
-  const domainKeywords = [
-    'healthcare', 'medical', 'pharmaceutical', 'diagnostic', 'treatment',
-    'finance', 'banking', 'insurance', 'trading', 'investment',
-    'education', 'learning', 'training', 'assessment', 'evaluation',
-    'transportation', 'logistics', 'supply chain', 'delivery', 'shipping',
-    'manufacturing', 'production', 'assembly', 'quality control', 'inspection',
-    'agriculture', 'farming', 'crop', 'livestock', 'irrigation',
-    'entertainment', 'gaming', 'media', 'streaming', 'content',
-    'communication', 'messaging', 'social media', 'collaboration', 'sharing'
-  ];
-  
-  // Feature keywords
-  const featureKeywords = [
-    'real-time', 'automatic', 'adaptive', 'intelligent', 'smart',
-    'portable', 'mobile', 'wireless', 'remote', 'distributed',
-    'scalable', 'modular', 'flexible', 'customizable', 'configurable',
-    'secure', 'encrypted', 'authenticated', 'verified', 'validated',
-    'efficient', 'fast', 'accurate', 'precise', 'reliable'
-  ];
-  
-  // Extract keywords from description
-  const words = description.split(/\s+/);
-  
-  for (const word of words) {
-    const cleanWord = word.replace(/[^\w]/g, '').toLowerCase();
-    
-    // Check technology keywords
-    for (const tech of technologyKeywords) {
-      if (description.includes(tech) && !result.primaryTechnology.includes(tech)) {
-        result.primaryTechnology.push(tech.charAt(0).toUpperCase() + tech.slice(1));
-      }
-    }
-    
-    // Check action keywords
-    for (const action of actionKeywords) {
-      if (description.includes(action) && !result.actions.includes(action)) {
-        result.actions.push(action);
-      }
-    }
-    
-    // Check problem keywords
-    for (const problem of problemKeywords) {
-      if (description.includes(problem) && !result.problems.includes(problem)) {
-        result.problems.push(problem);
-      }
-    }
-    
-    // Check solution keywords
-    for (const solution of solutionKeywords) {
-      if (description.includes(solution) && !result.solutions.includes(solution)) {
-        result.solutions.push(solution);
-      }
-    }
-    
-    // Check domain keywords
-    for (const domain of domainKeywords) {
-      if (description.includes(domain) && !result.domains.includes(domain)) {
-        result.domains.push(domain);
-      }
-    }
-    
-    // Check feature keywords
-    for (const feature of featureKeywords) {
-      if (description.includes(feature) && !result.features.includes(feature)) {
-        result.features.push(feature);
-      }
-    }
-  }
-  
-  // Extract secondary features (nouns that aren't primary technology)
-  const nouns = extractNouns(description);
-  result.secondaryFeatures = nouns.filter(noun => 
-    !result.primaryTechnology.some(tech => tech.toLowerCase().includes(noun.toLowerCase()))
-  ).slice(0, 3);
-  
-  return result;
-};
-
-const extractNouns = (description) => {
-  // Simple noun extraction - in a real implementation, this would use NLP
-  const commonNouns = [
-    'data', 'information', 'system', 'device', 'apparatus', 'method', 'process',
-    'algorithm', 'model', 'network', 'platform', 'interface', 'database',
-    'application', 'software', 'hardware', 'component', 'module', 'service',
-    'user', 'client', 'server', 'node', 'connection', 'channel', 'signal',
-    'image', 'video', 'audio', 'text', 'document', 'file', 'message'
-  ];
-  
-  const foundNouns = [];
-  for (const noun of commonNouns) {
-    if (description.includes(noun) && !foundNouns.includes(noun)) {
-      foundNouns.push(noun);
-    }
-  }
-  
-  return foundNouns;
-};
-
-const generateGenericTitles = (extractedData) => {
-  const titles = [];
-  
-  if (extractedData.primaryTechnology.length > 0) {
-    titles.push(`${extractedData.primaryTechnology[0]} Processing System`);
-    titles.push(`Method for ${extractedData.primaryTechnology[0]} Management`);
-  }
-  
-  if (extractedData.domains.length > 0) {
-    titles.push(`${extractedData.domains[0]} Management System`);
-  }
-  
-  if (extractedData.actions.length > 0) {
-    titles.push(`${extractedData.actions[0].charAt(0).toUpperCase() + extractedData.actions[0].slice(1)} Apparatus`);
-  }
-  
-  // Fallback generic titles
-  titles.push('Data Processing System');
-  titles.push('Information Management Apparatus');
-  titles.push('Method of System Optimization');
-  titles.push('Apparatus for Resource Management');
-  
-  return titles;
 };
 
 export { generatePatentTitles }; 
