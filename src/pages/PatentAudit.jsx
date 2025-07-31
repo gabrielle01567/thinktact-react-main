@@ -1811,8 +1811,17 @@ const PatentAudit = () => {
   };
 
   useEffect(() => {
-    loadApplication();
-  }, [applicationId, user]);
+    // Only load application if we have an applicationId and user, and we're not currently saving
+    if (applicationId && user && applicationId !== 'undefined' && applicationId !== 'null' && !isSaving) {
+      // Check if we already have data loaded for this application
+      const hasDataLoaded = title || abstract || field || background || summary || 
+                           drawings || detailedDescription || inventors.length > 0;
+      
+      if (!hasDataLoaded) {
+        loadApplication();
+      }
+    }
+  }, [applicationId, user, isSaving]);
 
   // Handle ESC key to close image modal
   useEffect(() => {
