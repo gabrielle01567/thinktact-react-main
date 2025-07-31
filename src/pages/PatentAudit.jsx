@@ -901,35 +901,8 @@ const PatentAudit = () => {
       
       console.log('🔍 Rendering step:', currentStepData.key, 'at index:', currentStep);
       
-      switch (currentStepData.key) {
-        case 'Introduction':
-          return renderIntroductionSection();
-        case 'Title':
-          return renderTitleSection();
-        case 'CrossReference':
-          return renderCrossReferenceSection();
-        case 'FederalResearch':
-          return renderFederalResearchSection();
-        case 'Inventors':
-          return renderInventorsSection();
-        case 'Abstract':
-          return renderAbstractSection();
-        case 'Field':
-          return renderFieldSection();
-        case 'Background':
-          return renderBackgroundSection();
-        case 'Summary':
-          return renderSummarySection();
-        case 'Drawings':
-          return renderDrawingsSection();
-        case 'DetailedDescription':
-          return renderDetailedDescriptionSection();
-        case 'Review':
-          return renderReviewSection();
-        default:
-          console.error('🔍 Unknown step:', currentStepData.key);
-          return <div>Unknown step: {currentStepData.key}</div>;
-      }
+      // Use renderSectionContent for all sections to ensure consistent implementation
+      return renderSectionContent(currentStepData.key);
     } catch (error) {
       console.error('🔍 Error rendering current step:', error);
       return <div>Error rendering step. Please refresh the page.</div>;
@@ -2056,8 +2029,8 @@ const PatentAudit = () => {
   };
 
   // Helper function to render section content
-  const renderSectionContent = () => {
-    switch (currentStep) {
+  const renderSectionContent = (stepKey) => {
+    switch (stepKey) {
       case 'Title':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
@@ -3032,6 +3005,33 @@ const PatentAudit = () => {
           </div>
         );
 
+      case 'Introduction':
+        return renderIntroductionSection();
+
+      case 'Inventors':
+        return renderInventorsSection();
+
+      case 'Abstract':
+        return renderAbstractSection();
+
+      case 'Field':
+        return renderFieldSection();
+
+      case 'Background':
+        return renderBackgroundSection();
+
+      case 'Summary':
+        return renderSummarySection();
+
+      case 'Drawings':
+        return renderDrawingsSection();
+
+      case 'DetailedDescription':
+        return renderDetailedDescriptionSection();
+
+      case 'Review':
+        return renderReviewSection();
+
       default:
         return null;
     }
@@ -3551,9 +3551,9 @@ const PatentAudit = () => {
       case 'Title':
         return title.trim() !== '';
       case 'CrossReference':
-        return crossReference.trim() !== '';
+        return hasCrossReference !== null && (hasCrossReference ? crossReference.trim() !== '' : true);
       case 'FederalResearch':
-        return federalResearch.trim() !== '';
+        return hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() !== '' : true);
       case 'Inventors':
         return inventors.some(inv => inv.name.trim() && inv.address.trim());
       case 'Abstract':
