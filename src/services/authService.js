@@ -2,9 +2,31 @@ class AuthService {
   constructor() {
     // Use the deployed backend URL
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
-    this.baseUrl = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+    
+    // Handle cases where VITE_BACKEND_URL already includes /api
+    if (backendUrl.includes('/api')) {
+      this.baseUrl = backendUrl;
+    } else {
+      this.baseUrl = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+    }
+    
     console.log('VITE_BACKEND_URL in production:', import.meta.env.VITE_BACKEND_URL);
     console.log('AuthService baseUrl:', this.baseUrl);
+    
+    // Test the backend URL on initialization
+    this.testBackendConnection();
+  }
+
+  async testBackendConnection() {
+    try {
+      const response = await fetch(`${this.baseUrl}/health`);
+      console.log('🔍 Backend health check status:', response.status);
+      if (!response.ok) {
+        console.error('🔍 Backend health check failed:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('🔍 Backend health check error:', error);
+    }
   }
 
   // Register a new user
@@ -52,6 +74,19 @@ class AuthService {
       console.log('🔍 AuthService: Starting login for email:', email);
       console.log('🔍 AuthService: Backend URL:', this.baseUrl);
       console.log('🔍 AuthService: Full login URL:', `${this.baseUrl}/auth/login`);
+      
+      // First, test if the backend is accessible
+      try {
+        const healthResponse = await fetch(`${this.baseUrl}/health`);
+        console.log('🔍 AuthService: Health check status:', healthResponse.status);
+        if (!healthResponse.ok) {
+          console.error('🔍 AuthService: Health check failed:', healthResponse.status, healthResponse.statusText);
+          return { success: false, error: 'Backend is not accessible. Please try again later.' };
+        }
+      } catch (healthError) {
+        console.error('🔍 AuthService: Health check error:', healthError);
+        return { success: false, error: 'Cannot connect to backend. Please check your internet connection.' };
+      }
       
       const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',

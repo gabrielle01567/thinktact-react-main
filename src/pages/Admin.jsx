@@ -4,7 +4,16 @@ import Navbar from '../components/Navbar';
 import { clearAllStorage, checkTokenStatus, forceTokenRefresh } from '../utils/debug';
 
 // Get backend URL from environment variable
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app/api';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+
+// Handle cases where VITE_BACKEND_URL already includes /api
+let BACKEND_URL;
+if (backendUrl.includes('/api')) {
+  BACKEND_URL = backendUrl;
+} else {
+  BACKEND_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+}
+
 console.log('🔍 BACKEND_URL:', BACKEND_URL);
 console.log('🔍 VITE_BACKEND_URL env var:', import.meta.env.VITE_BACKEND_URL);
 
