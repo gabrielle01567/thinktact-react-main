@@ -1181,50 +1181,63 @@ const PatentAudit = () => {
         <p className="text-gray-600 mb-6">List all inventors who contributed to the conception of the invention. Each inventor must have made a significant contribution to the inventive concept.</p>
         
         <div className="space-y-6">
-          {inventors.map((inventor, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Inventor {index + 1}</h3>
-                {inventors.length > 1 && (
-                  <button
-                    onClick={() => {
-                      const newInventors = inventors.filter((_, i) => i !== index);
-                      setInventors(newInventors);
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <div className="text-gray-900 font-medium">{inventor.name}</div>
+          {/* Display existing inventors */}
+          {inventors.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">Added Inventors:</h3>
+              {inventors.map((inventor, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="text-md font-medium text-gray-900">Inventor {index + 1}</h4>
+                    <button
+                      onClick={() => {
+                        const newInventors = inventors.filter((_, i) => i !== index);
+                        setInventors(newInventors);
+                      }}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Name:</span>
+                      <div className="text-gray-900">{inventor.name}</div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Address:</span>
+                      <div className="text-gray-900">{inventor.address}</div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Citizenship:</span>
+                      <div className="text-gray-900">{inventor.citizenship}</div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Residence:</span>
+                      <div className="text-gray-900">{inventor.residence}</div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                  <div className="text-gray-900">{inventor.address}</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
-                  <div className="text-gray-900">{inventor.citizenship}</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
-                  <div className="text-gray-900">{inventor.residence}</div>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
           
-          <button
-            onClick={handleOpenInventorPopup}
-            className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md"
-          >
-            + Add Inventor
-          </button>
+          {/* Add Inventor Button */}
+          <div className="text-center">
+            <button
+              onClick={handleOpenInventorPopup}
+              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Inventor
+            </button>
+            {inventors.length === 0 && (
+              <p className="text-sm text-gray-500 mt-2">Click the button above to add the first inventor</p>
+            )}
+          </div>
         </div>
       </div>
     );
