@@ -49,19 +49,48 @@ class AuthService {
   // Login user
   async loginUser(email, password) {
     try {
+      console.log('🔍 AuthService: Starting login for email:', email);
+      console.log('🔍 AuthService: Backend URL:', this.baseUrl);
+      console.log('🔍 AuthService: Full login URL:', `${this.baseUrl}/auth/login`);
+      
       const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      
+      console.log('🔍 AuthService: Response status:', response.status);
+      console.log('🔍 AuthService: Response ok:', response.ok);
+      console.log('🔍 AuthService: Response status text:', response.statusText);
+      
+      if (!response.ok) {
+        console.error('🔍 AuthService: HTTP error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('🔍 AuthService: Error response body:', errorText);
+        
+        // Check if it's actually a 404
+        if (response.status === 404) {
+          return { success: false, error: 'Login endpoint not found. Please check backend configuration.' };
+        }
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          return { success: false, error: errorJson.error || `HTTP ${response.status}: ${response.statusText}` };
+        } catch (parseError) {
+          return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+        }
+      }
+      
       const result = await response.json();
+      console.log('🔍 AuthService: Login result:', result);
+      
       if (result.user && result.user.isVerified === false) {
         return { success: false, error: 'Please verify your email before logging in.' };
       }
       return result;
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Login failed' };
+      console.error('🔍 AuthService: Login error:', error);
+      return { success: false, error: 'Login failed: ' + error.message };
     }
   }
 

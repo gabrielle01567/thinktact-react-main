@@ -36,22 +36,28 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('🔍 AuthContext: Starting login process...');
+      console.log('🔍 AuthContext: Email:', email);
+      
       // Try API authentication
       const result = await authService.loginUser(email, password);
       
-      console.log('🔍 Login result:', result);
+      console.log('🔍 AuthContext: Login result from authService:', result);
       
       if (result.success && result.user && result.token) {
         // Save the real JWT token from backend
-        console.log('🔍 Storing JWT token:', result.token.substring(0, 20) + '...');
+        console.log('🔍 AuthContext: Login successful, storing token and user data');
+        console.log('🔍 AuthContext: Storing JWT token:', result.token.substring(0, 20) + '...');
         localStorage.setItem('thinktact_token', result.token);
         localStorage.setItem('thinktact_user', JSON.stringify(result.user));
         setUser(result.user);
         setIsAuthenticated(true);
         return { success: true };
       } else {
+        console.log('🔍 AuthContext: Login failed, checking error type...');
         // Check if the error is about email verification
         if (result.error && result.error.includes('verify your email')) {
+          console.log('🔍 AuthContext: User needs email verification');
           return { 
             success: false, 
             error: 'Please verify your email before logging in.',
@@ -60,10 +66,11 @@ export const AuthProvider = ({ children }) => {
           };
         }
         // Return the error from the API
+        console.log('🔍 AuthContext: Returning login error:', result.error);
         return result;
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('🔍 AuthContext: Login error:', error);
       return { success: false, error: 'Login failed. Please try again.' };
     }
   };
