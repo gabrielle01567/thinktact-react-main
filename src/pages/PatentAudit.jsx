@@ -960,9 +960,9 @@ const PatentAudit = () => {
       case 'DetailedDescription':
         return detailedDescription.trim() !== '';
       case 'CrossReference':
-        return crossReference.trim() !== '';
+        return hasCrossReference !== null && (hasCrossReference ? crossReference.trim() !== '' : true);
       case 'FederalResearch':
-        return federalResearch.trim() !== '';
+        return hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() !== '' : true);
       default:
         return true; // Gate questions and other non-required sections
     }
@@ -1711,6 +1711,9 @@ const PatentAudit = () => {
   });
   const [citizenshipSearch, setCitizenshipSearch] = useState('');
 
+  // Add state for yes/no questions
+  const [hasCrossReference, setHasCrossReference] = useState(null); // null = not answered, true = yes, false = no
+  const [hasFederalSponsorship, setHasFederalSponsorship] = useState(null); // null = not answered, true = yes, false = no
 
   // Completion status for each section
   const [completedSections, setCompletedSections] = useState({
@@ -1753,8 +1756,8 @@ const PatentAudit = () => {
   // Calculate actual completed sections
   const completedSectionsCount = [
     title.trim(),
-    crossReference.trim(),
-    federalResearch.trim(),
+    hasCrossReference !== null && (hasCrossReference ? crossReference.trim() : true),
+    hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() : true),
     inventors.some(inv => inv.name.trim() && inv.address.trim()),
     abstract.trim(),
     field.trim(),
@@ -1790,6 +1793,19 @@ const PatentAudit = () => {
         setImages(application.images || []);
         setCrossReference(application.crossReference || '');
         setFederalResearch(application.federalResearch || '');
+        
+        // Set the yes/no question states based on existing data
+        if (application.crossReference && application.crossReference.trim() !== '' && application.crossReference.trim() !== 'None') {
+          setHasCrossReference(true);
+        } else if (application.crossReference === 'None') {
+          setHasCrossReference(false);
+        }
+        
+        if (application.federalResearch && application.federalResearch.trim() !== '' && application.federalResearch.trim() !== 'None') {
+          setHasFederalSponsorship(true);
+        } else if (application.federalResearch === 'None') {
+          setHasFederalSponsorship(false);
+        }
         setInventors(application.inventors || []);
         // Set completion status
         if (application.completedSections) {
@@ -2152,52 +2168,211 @@ const PatentAudit = () => {
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
-            <p className="text-gray-600 mb-6">If you are claiming priority to an earlier U.S. or foreign patent application, provide the application number and filing date here. If you are not claiming priority, enter "None" or "Not applicable".</p>
-            <textarea
-              rows={4}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              value={crossReference}
-              onChange={(e) => setCrossReference(e.target.value)}
-              placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023. OR None"
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': !prev['Cross-Reference to Related Applications'] }))}
-                className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                  completedSections['Cross-Reference to Related Applications']
-                    ? 'text-white bg-green-600 hover:bg-green-700'
-                    : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                }`}
-              >
-                {completedSections['Cross-Reference to Related Applications'] ? 'Completed' : 'Mark as Complete'}
-              </button>
-            </div>
+            
+            {hasCrossReference === null ? (
+              <>
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-medium text-blue-900 mb-2">Do you need to claim priority to an earlier patent application?</h3>
+                  <p className="text-blue-800 mb-4">
+                    This applies if you are filing a non-provisional application and want to claim the benefit of an earlier U.S. provisional application, 
+                    or if you want to claim priority to a foreign patent application. This establishes an earlier filing date for your invention.
+                  </p>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setHasCrossReference(true)}
+                      className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
+                    >
+                      Yes, I need to claim priority
+                    </button>
+                    <button
+                      onClick={() => {
+                        setHasCrossReference(false);
+                        setCrossReference('None');
+                        setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': true }));
+                      }}
+                      className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
+                    >
+                      No, not applicable
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : hasCrossReference ? (
+              <>
+                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                  <p className="text-green-800 mb-4">
+                    <strong>You selected: Yes</strong><br/>
+                    Please provide the details of the earlier application you are claiming priority to.
+                  </p>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cross-Reference Details</label>
+                  <textarea
+                    rows={4}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value={crossReference}
+                    onChange={(e) => setCrossReference(e.target.value)}
+                    placeholder="e.g., This application claims the benefit of U.S. Provisional Application No. 62/123,456, filed Jan. 1, 2023."
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Include the application number, filing date, and type of application (provisional, non-provisional, PCT, etc.)
+                  </p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => {
+                      setHasCrossReference(null);
+                      setCrossReference('');
+                    }}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    ← Change answer
+                  </button>
+                  <button
+                    onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': !prev['Cross-Reference to Related Applications'] }))}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                      completedSections['Cross-Reference to Related Applications']
+                        ? 'text-white bg-green-600 hover:bg-green-700'
+                        : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                    }`}
+                  >
+                    {completedSections['Cross-Reference to Related Applications'] ? 'Completed' : 'Mark as Complete'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <p className="text-gray-800">
+                    <strong>You selected: No</strong><br/>
+                    No cross-reference to related applications is needed for this patent application.
+                  </p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => {
+                      setHasCrossReference(null);
+                      setCrossReference('');
+                    }}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    ← Change answer
+                  </button>
+                  <button
+                    className="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600"
+                    disabled
+                  >
+                    Completed
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         );
       case 'Federally Sponsored Research or Development':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
-            <p className="text-gray-600 mb-6">If your invention was made with U.S. federal government support, you must disclose the contract or grant number and the government agency. If your invention was not federally funded, enter "None" or "Not applicable".</p>
-            <textarea
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              rows={4}
-              placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention. OR None"
-              value={federalResearch}
-              onChange={(e) => setFederalResearch(e.target.value)}
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': !prev['Federally Sponsored Research or Development'] }))}
-                className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                  completedSections['Federally Sponsored Research or Development']
-                    ? 'text-white bg-green-600 hover:bg-green-700'
-                    : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                }`}
-              >
-                {completedSections['Federally Sponsored Research or Development'] ? 'Completed' : 'Mark as Complete'}
-              </button>
-            </div>
+            
+            {hasFederalSponsorship === null ? (
+              <>
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-medium text-blue-900 mb-2">Was your invention made with U.S. federal government support?</h3>
+                  <p className="text-blue-800 mb-4">
+                    This applies if your invention was developed under a federal contract, grant, or cooperative agreement. 
+                    Examples include research funded by NSF, NIH, DARPA, DOE, or other federal agencies. 
+                    You must disclose this information as required by federal law.
+                  </p>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setHasFederalSponsorship(true)}
+                      className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
+                    >
+                      Yes, federally funded
+                    </button>
+                    <button
+                      onClick={() => {
+                        setHasFederalSponsorship(false);
+                        setFederalResearch('None');
+                        setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': true }));
+                      }}
+                      className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
+                    >
+                      No, not federally funded
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : hasFederalSponsorship ? (
+              <>
+                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                  <p className="text-green-800 mb-4">
+                    <strong>You selected: Yes</strong><br/>
+                    Please provide the details of the federal funding support.
+                  </p>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Federal Funding Details</label>
+                  <textarea
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    rows={4}
+                    placeholder="e.g., This invention was made with government support under contract no. ABC-123 awarded by the National Science Foundation. The government has certain rights in the invention."
+                    value={federalResearch}
+                    onChange={(e) => setFederalResearch(e.target.value)}
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Include the contract/grant number, funding agency, and any government rights statement
+                  </p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => {
+                      setHasFederalSponsorship(null);
+                      setFederalResearch('');
+                    }}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    ← Change answer
+                  </button>
+                  <button
+                    onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': !prev['Federally Sponsored Research or Development'] }))}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                      completedSections['Federally Sponsored Research or Development']
+                        ? 'text-white bg-green-600 hover:bg-green-700'
+                        : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                    }`}
+                  >
+                    {completedSections['Federally Sponsored Research or Development'] ? 'Completed' : 'Mark as Complete'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <p className="text-gray-800">
+                    <strong>You selected: No</strong><br/>
+                    No federal funding disclosure is required for this patent application.
+                  </p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => {
+                      setHasFederalSponsorship(null);
+                      setFederalResearch('');
+                    }}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    ← Change answer
+                  </button>
+                  <button
+                    className="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600"
+                    disabled
+                  >
+                    Completed
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         );
 
