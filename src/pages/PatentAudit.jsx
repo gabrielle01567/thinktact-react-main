@@ -882,6 +882,57 @@ const PatentAudit = () => {
   // 1. Replace currentSection with currentStep (index-based navigation)
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Helper function to check if a section is completed
+  const isSectionCompleted = (stepKey) => {
+    switch (stepKey) {
+      case 'Introduction':
+        return true; // Introduction is always considered completed once viewed
+      case 'Title':
+        return title.trim() !== '';
+      case 'CrossReference':
+        return hasCrossReference !== null && (hasCrossReference ? crossReference.trim() !== '' : true);
+      case 'FederalResearch':
+        return hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() !== '' : true);
+      case 'Inventors':
+        return inventors.some(inv => inv.name.trim() && inv.address.trim());
+      case 'Abstract':
+        return abstract.trim() !== '';
+      case 'Field':
+        return field.trim() !== '';
+      case 'Background':
+        return background.trim() !== '';
+      case 'Summary':
+        return summary.trim() !== '';
+      case 'Drawings':
+        return drawings.trim() !== '';
+      case 'DetailedDescription':
+        return detailedDescription.trim() !== '';
+      case 'Claims':
+        return true; // Claims are optional, so always considered completed
+      default:
+        return false;
+    }
+  };
+
+  // Helper function to check if step needs review
+  const needsReview = (stepKey) => {
+    return sectionsNeedingReview.has(stepKey);
+  };
+
+  // Mark section for review
+  const markForReview = (stepKey) => {
+    setSectionsNeedingReview(prev => new Set([...prev, stepKey]));
+  };
+
+  // Clear review mark when section is completed
+  const clearReviewMark = (stepKey) => {
+    setSectionsNeedingReview(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(stepKey);
+      return newSet;
+    });
+  };
+
   // 3. Build wizardSteps array - both sections are now required
   const getWizardSteps = () => {
     const steps = [
@@ -4026,38 +4077,6 @@ const PatentAudit = () => {
   );
   };
 
-  // Helper function to check if a section is completed
-  const isSectionCompleted = (stepKey) => {
-    switch (stepKey) {
-      case 'Introduction':
-        return true; // Introduction is always considered completed once viewed
-      case 'Title':
-        return title.trim() !== '';
-      case 'CrossReference':
-        return hasCrossReference !== null && (hasCrossReference ? crossReference.trim() !== '' : true);
-      case 'FederalResearch':
-        return hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() !== '' : true);
-      case 'Inventors':
-        return inventors.some(inv => inv.name.trim() && inv.address.trim());
-      case 'Abstract':
-        return abstract.trim() !== '';
-      case 'Field':
-        return field.trim() !== '';
-      case 'Background':
-        return background.trim() !== '';
-      case 'Summary':
-        return summary.trim() !== '';
-      case 'Drawings':
-        return drawings.trim() !== '';
-      case 'DetailedDescription':
-        return detailedDescription.trim() !== '';
-      case 'Claims':
-        return true; // Claims are optional, so always considered completed
-      default:
-        return false;
-    }
-  };
-
   // Helper function to get step display name
   const getStepDisplayName = (stepKey) => {
     switch (stepKey) {
@@ -4090,25 +4109,6 @@ const PatentAudit = () => {
       default:
         return stepKey;
     }
-  };
-
-  // Helper function to check if step needs review
-  const needsReview = (stepKey) => {
-    return sectionsNeedingReview.has(stepKey);
-  };
-
-  // Mark section for review
-  const markForReview = (stepKey) => {
-    setSectionsNeedingReview(prev => new Set([...prev, stepKey]));
-  };
-
-  // Clear review mark when section is completed
-  const clearReviewMark = (stepKey) => {
-    setSectionsNeedingReview(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(stepKey);
-      return newSet;
-    });
   };
 
   // Title generation function
