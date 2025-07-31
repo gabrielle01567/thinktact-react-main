@@ -864,6 +864,15 @@ const PatentAudit = () => {
     });
   }, [applicationId]);
   
+  // Auto-clear review marks when sections are completed
+  useEffect(() => {
+    getWizardSteps().forEach(step => {
+      if (needsReview(step.key) && isSectionCompleted(step.key)) {
+        clearReviewMark(step.key);
+      }
+    });
+  }, [title, abstract, field, background, summary, drawings, detailedDescription, claims, crossReference, federalResearch, inventors]);
+  
   // 1. Replace currentSection with currentStep (index-based navigation)
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -1576,6 +1585,54 @@ const PatentAudit = () => {
     );
   }
 
+  function renderClaimsSection() {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Claims (Optional)</h2>
+        <p className="text-gray-600 mb-6">
+          Claims define the legal scope of protection for your invention. While optional for provisional applications, 
+          including claims can help establish an earlier filing date for your invention's scope.
+        </p>
+        
+        <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <h3 className="text-lg font-medium text-blue-900 mb-2">About Claims</h3>
+          <ul className="space-y-2 text-sm text-blue-800">
+            <li>• <strong>Optional for provisional applications</strong> - Not required but can be beneficial</li>
+            <li>• <strong>Define protection scope</strong> - Claims specify what your patent protects</li>
+            <li>• <strong>Use clear, precise language</strong> - Avoid ambiguous terms</li>
+            <li>• <strong>Start with independent claims</strong> - These stand on their own</li>
+            <li>• <strong>Include dependent claims</strong> - These reference and narrow other claims</li>
+          </ul>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Claims</label>
+            <textarea
+              rows={15}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={claims}
+              onChange={(e) => setClaims(e.target.value)}
+              placeholder="Example:
+1. A system for [invention purpose], comprising:
+   [key components and their relationships]
+
+2. The system of claim 1, further comprising:
+   [additional features or limitations]
+
+3. A method for [invention purpose], comprising:
+   [steps of the method]"
+            />
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            <p><strong>Tip:</strong> Each claim should be a single sentence that clearly defines what your invention is and what it does.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   function renderReviewSection() {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
@@ -1631,6 +1688,12 @@ const PatentAudit = () => {
               {detailedDescription.trim() ? '✓' : '✗'}
             </span>
           </div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <span className="font-medium">Claims (Optional)</span>
+            <span className={claims.trim() ? 'text-green-600' : 'text-gray-500'}>
+              {claims.trim() ? '✓' : '—'}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -1671,6 +1734,7 @@ const PatentAudit = () => {
   const [summary, setSummary] = useState('');
   const [drawings, setDrawings] = useState('');
   const [detailedDescription, setDetailedDescription] = useState('');
+  const [claims, setClaims] = useState('');
 
   // Add state for new optional sections
   const [crossReference, setCrossReference] = useState('');
@@ -1712,7 +1776,8 @@ const PatentAudit = () => {
     Background: false,
     Summary: false,
     Drawings: false,
-    'Detailed Description': false
+    'Detailed Description': false,
+    Claims: false
   });
 
   const [images, setImages] = useState([]);
@@ -1736,7 +1801,8 @@ const PatentAudit = () => {
     'Background',
     'Summary',
     'Drawings',
-    'Detailed Description'
+    'Detailed Description',
+    'Claims'
   ];
   
   // Calculate actual completed sections
@@ -1750,7 +1816,8 @@ const PatentAudit = () => {
     background.trim(),
     summary.trim(),
     drawings.trim(),
-    detailedDescription.trim()
+    detailedDescription.trim(),
+    claims.trim() // Optional - counts as completed if filled
   ].filter(Boolean).length;
 
     // Load existing application data if editing
@@ -1776,6 +1843,7 @@ const PatentAudit = () => {
         setSummary(application.summary || '');
         setDrawings(application.drawings || '');
         setDetailedDescription(application.detailedDescription || '');
+        setClaims(application.claims || '');
         setImages(application.images || []);
         setCrossReference(application.crossReference || '');
         setFederalResearch(application.federalResearch || '');
@@ -1993,6 +2061,7 @@ const PatentAudit = () => {
         summary,
         drawings,
         detailedDescription,
+        claims,
         images,
         completedSections,
         status: completedSectionsCount >= 8 ? 'complete' : 'draft',
@@ -3419,6 +3488,9 @@ const PatentAudit = () => {
       case 'DetailedDescription':
         return renderDetailedDescriptionSection();
 
+      case 'Claims':
+        return renderClaimsSection();
+
       case 'Review':
         return renderReviewSection();
 
@@ -3489,6 +3561,12 @@ const PatentAudit = () => {
         description: 'This is the most critical section. Provide complete details on how your invention works.',
         link: 'USPTO Detailed Description Guide',
         url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/detailed-description'
+      },
+      'Claims': {
+        title: 'Current Section: Claims (Optional)',
+        description: 'Optional section for provisional applications. Claims define the legal scope of protection for your invention.',
+        link: 'USPTO Claims Guidelines',
+        url: 'https://www.uspto.gov/patents/basics/using-legal-services/pro-se-assistance/claims-guidelines'
       }
     };
     return helpContent[currentStep] || helpContent['Title'];
@@ -3561,6 +3639,12 @@ const PatentAudit = () => {
     if (detailedDescription) {
       text += 'DETAILED DESCRIPTION OF THE INVENTION\n\n';
       text += detailedDescription + '\n\n';
+    }
+    
+    // Claims (Optional)
+    if (claims) {
+      text += 'CLAIMS\n\n';
+      text += claims + '\n\n';
     }
     
     // Footer
@@ -3958,6 +4042,8 @@ const PatentAudit = () => {
         return drawings.trim() !== '';
       case 'DetailedDescription':
         return detailedDescription.trim() !== '';
+      case 'Claims':
+        return true; // Claims are optional, so always considered completed
       default:
         return false;
     }
@@ -3988,6 +4074,8 @@ const PatentAudit = () => {
         return 'Drawings';
       case 'DetailedDescription':
         return 'Detailed Description';
+      case 'Claims':
+        return 'Claims (Optional)';
       case 'Review':
         return 'Review & Save';
       default:
@@ -4207,7 +4295,7 @@ const PatentAudit = () => {
           {getWizardSteps().map((step, index) => {
             const isCurrent = index === currentStep;
             const isCompleted = isSectionCompleted(step.key);
-            const needsReviewFlag = needsReview(step.key);
+            const needsReviewFlag = needsReview(step.key) && !isCompleted; // Only show needs review if not completed
             
             return (
               <div
@@ -4266,7 +4354,7 @@ const PatentAudit = () => {
 
                 {/* Status Icons */}
                 <div className="flex-shrink-0">
-                  {needsReviewFlag && !isCompleted && (
+                  {needsReviewFlag && (
                     <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
@@ -4291,7 +4379,7 @@ const PatentAudit = () => {
           <div className="flex justify-between">
             <span className="text-gray-600">Needs Review:</span>
             <span className="font-medium text-yellow-600">
-              {sectionsNeedingReview.size}
+              {getWizardSteps().filter(step => needsReview(step.key) && !isSectionCompleted(step.key)).length}
             </span>
           </div>
           <div className="flex justify-between">
