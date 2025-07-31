@@ -866,9 +866,15 @@ const PatentAudit = () => {
   
   // Auto-clear review marks when sections are completed
   useEffect(() => {
-    getWizardSteps().forEach(step => {
-      if (needsReview(step.key) && isSectionCompleted(step.key)) {
-        clearReviewMark(step.key);
+    // Define steps inline to avoid dependency on getWizardSteps function
+    const steps = [
+      'Introduction', 'Title', 'CrossReference', 'FederalResearch', 'Inventors',
+      'Abstract', 'Field', 'Background', 'Summary', 'Drawings', 'DetailedDescription', 'Claims', 'Review'
+    ];
+    
+    steps.forEach(stepKey => {
+      if (needsReview(stepKey) && isSectionCompleted(stepKey)) {
+        clearReviewMark(stepKey);
       }
     });
   }, [title, abstract, field, background, summary, drawings, detailedDescription, claims, crossReference, federalResearch, inventors]);
@@ -890,6 +896,7 @@ const PatentAudit = () => {
       { key: 'Summary' },
       { key: 'Drawings' },
       { key: 'DetailedDescription' },
+      { key: 'Claims' },
       { key: 'Review' }
     ];
     
@@ -941,6 +948,8 @@ const PatentAudit = () => {
         return drawings.trim() !== '';
       case 'DetailedDescription':
         return detailedDescription.trim() !== '';
+      case 'Claims':
+        return true; // Claims are optional, so always considered valid
       case 'CrossReference':
         return hasCrossReference !== null && (hasCrossReference ? crossReference.trim() !== '' : true);
       case 'FederalResearch':
