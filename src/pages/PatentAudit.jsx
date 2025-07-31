@@ -4436,6 +4436,10 @@ const PatentAudit = () => {
 
   // Update the main return to include sidebar
   try {
+    // Ensure currentStep is within bounds
+    const steps = getWizardSteps();
+    const safeCurrentStep = Math.min(Math.max(0, currentStep), steps.length - 1);
+    
     return (
       <div className="flex h-screen bg-gray-50">
         {/* Left Sidebar - Progress Tracker */}
@@ -4449,8 +4453,8 @@ const PatentAudit = () => {
               <button
                 type="button"
                 onClick={goToPrevStep}
-                disabled={currentStep === 0}
-                className={`px-6 py-2 rounded-md font-medium ${currentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300'}`}
+                disabled={safeCurrentStep === 0}
+                className={`px-6 py-2 rounded-md font-medium ${safeCurrentStep === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300'}`}
               >
                 Back
               </button>
@@ -4468,7 +4472,7 @@ const PatentAudit = () => {
                 </div>
               )}
               
-              {currentStep === getWizardSteps().length - 1 ? (
+              {safeCurrentStep === steps.length - 1 ? (
                 <button
                   type="button"
                   onClick={saveApplication}
@@ -4489,16 +4493,45 @@ const PatentAudit = () => {
             </div>
 
             {/* Save Draft Button */}
-            {getWizardSteps()[currentStep]?.key !== 'Introduction' && renderSaveDraftButton()}
+            {steps[safeCurrentStep]?.key !== 'Introduction' && renderSaveDraftButton()}
 
             {/* Progress Indicator */}
             <div className="w-full flex justify-center items-center mb-6">
-              {renderProgress()}
+              {(() => {
+                try {
+                  return renderProgress();
+                } catch (error) {
+                  console.error('Error rendering progress:', error);
+                  return (
+                    <div className="text-sm text-gray-600">
+                      Step {safeCurrentStep + 1} of {steps.length}
+                    </div>
+                  );
+                }
+              })()}
             </div>
 
             {/* Step Content */}
             <div className="w-full max-w-2xl mx-auto">
-              {renderCurrentStep()}
+              {(() => {
+                try {
+                  return renderSectionContent(steps[safeCurrentStep]?.key || 'Introduction');
+                } catch (error) {
+                  console.error('Error rendering step content:', error);
+                  return (
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-4">Error Loading Step</h2>
+                      <p className="text-gray-600 mb-4">There was an error loading this step. Please refresh the page.</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Refresh Page
+                      </button>
+                    </div>
+                  );
+                }
+              })()}
             </div>
 
             {/* Document Preview */}
