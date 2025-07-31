@@ -2137,7 +2137,7 @@ const PatentAudit = () => {
           </div>
         );
 
-      case 'Cross-Reference to Related Applications':
+      case 'CrossReference':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Cross-Reference to Related Applications</h2>
@@ -2161,7 +2161,7 @@ const PatentAudit = () => {
                       onClick={() => {
                         setHasCrossReference(false);
                         setCrossReference('None');
-                        setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': true }));
+                        setCompletedSections(prev => ({ ...prev, 'CrossReference': true }));
                       }}
                       className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
                     >
@@ -2202,14 +2202,14 @@ const PatentAudit = () => {
                     ← Change answer
                   </button>
                   <button
-                    onClick={() => setCompletedSections(prev => ({ ...prev, 'Cross-Reference to Related Applications': !prev['Cross-Reference to Related Applications'] }))}
+                    onClick={() => setCompletedSections(prev => ({ ...prev, 'CrossReference': !prev['CrossReference'] }))}
                     className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                      completedSections['Cross-Reference to Related Applications']
+                      completedSections['CrossReference']
                         ? 'text-white bg-green-600 hover:bg-green-700'
                         : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                     }`}
                   >
-                    {completedSections['Cross-Reference to Related Applications'] ? 'Completed' : 'Mark as Complete'}
+                    {completedSections['CrossReference'] ? 'Completed' : 'Mark as Complete'}
                   </button>
                 </div>
               </>
@@ -2242,7 +2242,7 @@ const PatentAudit = () => {
             )}
           </div>
         );
-      case 'Federally Sponsored Research or Development':
+      case 'FederalResearch':
         return (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Federally Sponsored Research or Development</h2>
@@ -2267,7 +2267,7 @@ const PatentAudit = () => {
                       onClick={() => {
                         setHasFederalSponsorship(false);
                         setFederalResearch('None');
-                        setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': true }));
+                        setCompletedSections(prev => ({ ...prev, 'FederalResearch': true }));
                       }}
                       className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
                     >
@@ -2308,14 +2308,14 @@ const PatentAudit = () => {
                     ← Change answer
                   </button>
                   <button
-                    onClick={() => setCompletedSections(prev => ({ ...prev, 'Federally Sponsored Research or Development': !prev['Federally Sponsored Research or Development'] }))}
+                    onClick={() => setCompletedSections(prev => ({ ...prev, 'FederalResearch': !prev['FederalResearch'] }))}
                     className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                      completedSections['Federally Sponsored Research or Development']
+                      completedSections['FederalResearch']
                         ? 'text-white bg-green-600 hover:bg-green-700'
                         : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                     }`}
                   >
-                    {completedSections['Federally Sponsored Research or Development'] ? 'Completed' : 'Mark as Complete'}
+                    {completedSections['FederalResearch'] ? 'Completed' : 'Mark as Complete'}
                   </button>
                 </div>
               </>
@@ -3009,19 +3009,373 @@ const PatentAudit = () => {
         return renderIntroductionSection();
 
       case 'Inventors':
-        return renderInventorsSection();
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventors{renderRequiredIndicator()}</h2>
+            <p className="text-gray-600 mb-6">List all inventors who contributed to the conception of the invention. Each inventor must have made a significant contribution to the inventive concept.</p>
+            
+            <div className="space-y-6">
+              {inventors.map((inventor, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Inventor {index + 1}</h3>
+                    {inventors.length > 1 && (
+                      <button
+                        onClick={() => {
+                          const newInventors = inventors.filter((_, i) => i !== index);
+                          setInventors(newInventors);
+                        }}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., John Smith"
+                        value={inventor.name}
+                        onChange={(e) => {
+                          const newInventors = [...inventors];
+                          newInventors[index].name = e.target.value;
+                          setInventors(newInventors);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., 123 Main St, City, State, ZIP"
+                        value={inventor.address}
+                        onChange={(e) => {
+                          const newInventors = [...inventors];
+                          newInventors[index].address = e.target.value;
+                          setInventors(newInventors);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., United States"
+                        value={inventor.citizenship}
+                        onChange={(e) => {
+                          const newInventors = [...inventors];
+                          newInventors[index].citizenship = e.target.value;
+                          setInventors(newInventors);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="e.g., California"
+                        value={inventor.residence}
+                        onChange={(e) => {
+                          const newInventors = [...inventors];
+                          newInventors[index].residence = e.target.value;
+                          setInventors(newInventors);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button
+                onClick={() => setInventors([...inventors, { name: '', address: '', citizenship: '', residence: '' }])}
+                className="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors"
+              >
+                + Add Another Inventor
+              </button>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">Inventor Requirements</h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>• Each inventor must have contributed to the conception of the invention</li>
+                  <li>• Include all inventors who made significant contributions</li>
+                  <li>• Provide complete and accurate information for each inventor</li>
+                  <li>• All inventors must sign the application</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Inventors: !prev.Inventors }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Inventors
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Inventors ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
       case 'Abstract':
-        return renderAbstractSection();
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract of the Invention</h2>
+            <p className="text-gray-600 mb-6">Provide a concise overview of your invention and its key advantages.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
+                <textarea
+                  rows={6}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={abstract}
+                  onChange={(e) => setAbstract(e.target.value)}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
+                />
+              </div>
+
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">Abstract Best Practices</h4>
+                <ul className="space-y-2 text-sm text-green-800">
+                  <li>• Keep it concise but comprehensive</li>
+                  <li>• Highlight key technical features</li>
+                  <li>• Mention advantages over prior art</li>
+                  <li>• Avoid overly technical jargon</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Abstract: !prev.Abstract }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Abstract
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Abstract ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
       case 'Field':
-        return renderFieldSection();
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Field of the Invention</h2>
+            <p className="text-gray-600 mb-6">Describe the technical field or area of technology to which your invention relates.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Field Description</label>
+                <textarea
+                  rows={4}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={field}
+                  onChange={(e) => setField(e.target.value)}
+                  placeholder="e.g., This invention relates to the field of artificial intelligence and machine learning, specifically to natural language processing systems for content generation."
+                />
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">Tips for Field Section</h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>• Be broad enough to encompass your invention</li>
+                  <li>• Include relevant technical disciplines</li>
+                  <li>• Avoid being too narrow or too broad</li>
+                  <li>• Reference established technical areas</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Field: !prev.Field }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Field
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Field ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
       case 'Background':
-        return renderBackgroundSection();
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Background of the Invention</h2>
+            <p className="text-gray-600 mb-6">Describe the problem your invention solves and the limitations of existing solutions.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Problem Statement</label>
+                <textarea
+                  rows={4}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={background}
+                  onChange={(e) => setBackground(e.target.value)}
+                  placeholder="Describe the specific problem or need that your invention addresses..."
+                />
+              </div>
+
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <h4 className="font-medium text-yellow-900 mb-2">Background Section Guidelines</h4>
+                <ul className="space-y-2 text-sm text-yellow-800">
+                  <li>• Focus on the problem, not just the solution</li>
+                  <li>• Explain why existing solutions are inadequate</li>
+                  <li>• Provide context for your invention</li>
+                  <li>• Be objective and factual</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Background: !prev.Background }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Background
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Background ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
       case 'Summary':
-        return renderSummarySection();
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Summary of the Invention</h2>
+            <p className="text-gray-600 mb-6">Provide a concise overview of your invention and its key advantages.</p>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
+                <textarea
+                  rows={6}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
+                />
+              </div>
+
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">Summary Best Practices</h4>
+                <ul className="space-y-2 text-sm text-green-800">
+                  <li>• Keep it concise but comprehensive</li>
+                  <li>• Highlight key technical features</li>
+                  <li>• Mention advantages over prior art</li>
+                  <li>• Avoid overly technical jargon</li>
+                </ul>
+              </div>
+
+              {/* Completion Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setCompletedSections(prev => ({ ...prev, Summary: !prev.Summary }))}
+                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
+                    completedSections.Summary
+                      ? 'text-white bg-green-600 hover:bg-green-700'
+                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                  }`}
+                >
+                  {completedSections.Summary ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Mark as Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
       case 'Drawings':
         return renderDrawingsSection();
