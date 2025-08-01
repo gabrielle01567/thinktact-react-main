@@ -1802,6 +1802,35 @@ const PatentAudit = () => {
   // Track sections needing review (persisted)
   const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
 
+  const sections = [
+    'Title',
+    'Cross-Reference to Related Applications',
+    'Federally Sponsored Research or Development',
+    'Inventors',
+    'Abstract',
+    'Field',
+    'Background',
+    'Summary',
+    'Drawings',
+    'Detailed Description',
+    'Claims'
+  ];
+  
+  // Calculate actual completed sections
+  const completedSectionsCount = [
+    title.trim(),
+    hasCrossReference !== null && (hasCrossReference ? crossReference.trim() : true),
+    hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() : true),
+    inventors.some(inv => inv.name.trim() && inv.address.trim()),
+    abstract.trim(),
+    field.trim(),
+    background.trim(),
+    summary.trim(),
+    drawings.trim(),
+    detailedDescription.trim(),
+    claims.trim() // Optional - counts as completed if filled
+  ].filter(Boolean).length;
+
   // Helper function to check if a section is completed
   const isSectionCompleted = (stepKey) => {
     switch (stepKey) {
@@ -1852,35 +1881,6 @@ const PatentAudit = () => {
       return newSet;
     });
   };
-
-  const sections = [
-    'Title',
-    'Cross-Reference to Related Applications',
-    'Federally Sponsored Research or Development',
-    'Inventors',
-    'Abstract',
-    'Field',
-    'Background',
-    'Summary',
-    'Drawings',
-    'Detailed Description',
-    'Claims'
-  ];
-  
-  // Calculate actual completed sections
-  const completedSectionsCount = [
-    title.trim(),
-    hasCrossReference !== null && (hasCrossReference ? crossReference.trim() : true),
-    hasFederalSponsorship !== null && (hasFederalSponsorship ? federalResearch.trim() : true),
-    inventors.some(inv => inv.name.trim() && inv.address.trim()),
-    abstract.trim(),
-    field.trim(),
-    background.trim(),
-    summary.trim(),
-    drawings.trim(),
-    detailedDescription.trim(),
-    claims.trim() // Optional - counts as completed if filled
-  ].filter(Boolean).length;
 
     // Load existing application data if editing
   const loadApplication = async () => {
