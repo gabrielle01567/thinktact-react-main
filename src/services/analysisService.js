@@ -1,15 +1,22 @@
 import axios from 'axios';
 
-// Use the deployed backend URL
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+// Lazy initialization to avoid TDZ issues with import.meta.env
+let API_BASE_URL = null;
 
-// Handle cases where VITE_BACKEND_URL already includes /api
-let API_BASE_URL;
-if (backendUrl.includes('/api')) {
-  API_BASE_URL = backendUrl;
-} else {
-  API_BASE_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
-}
+const getApiBaseUrl = () => {
+  if (!API_BASE_URL) {
+    // Use the deployed backend URL
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+    
+    // Handle cases where VITE_BACKEND_URL already includes /api
+    if (backendUrl.includes('/api')) {
+      API_BASE_URL = backendUrl;
+    } else {
+      API_BASE_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+    }
+  }
+  return API_BASE_URL;
+};
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -26,7 +33,7 @@ export const saveAnalysis = async (originalArgument, processedAnalysis) => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.post(`${API_BASE_URL}/analysis/save`, {
+    const response = await axios.post(`${getApiBaseUrl()}/analysis/save`, {
       originalArgument,
       processedAnalysis
     }, {
@@ -51,7 +58,7 @@ export const getAnalysisHistory = async () => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.get(`${API_BASE_URL}/analysis/history`, {
+    const response = await axios.get(`${getApiBaseUrl()}/analysis/history`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -72,7 +79,7 @@ export const deleteAnalysis = async (analysisId) => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.delete(`${API_BASE_URL}/analysis/delete`, {
+    const response = await axios.delete(`${getApiBaseUrl()}/analysis/delete`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'

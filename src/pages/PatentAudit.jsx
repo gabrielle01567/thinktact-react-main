@@ -1,11 +1,110 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { savePatentApplication, updatePatentApplication, getPatentApplication, uploadPatentImage } from '../services/patentService.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { isSupabaseAvailable } from '../services/supabaseClient.js';
-import { generatePatentTitles } from '../services/titleGenerationService.js';
+
+// Import services with proper error handling
+let patentService = null;
+let supabaseClient = null;
+let titleGenerationService = null;
+
+try {
+  patentService = await import('../services/patentService.js');
+} catch (error) {
+  console.warn('Patent service import failed:', error);
+}
+
+try {
+  supabaseClient = await import('../services/supabaseClient.js');
+} catch (error) {
+  console.warn('Supabase client import failed:', error);
+}
+
+try {
+  titleGenerationService = await import('../services/titleGenerationService.js');
+} catch (error) {
+  console.warn('Title generation service import failed:', error);
+}
 
 const PatentAudit = () => {
+  // Initialize state variables first to avoid hoisting issues
+  const [currentStep, setCurrentStep] = useState(0);
+  const [title, setTitle] = useState('');
+  const [showTips, setShowTips] = useState(true);
+  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
+  const [generatedTitles, setGeneratedTitles] = useState([]);
+  const [showTitleGenerationPopup, setShowTitleGenerationPopup] = useState(false);
+  const [titleGenerationError, setTitleGenerationError] = useState('');
+  const [titleValidation, setTitleValidation] = useState({ isValid: true, issues: [] });
+  const [titleGenerationInput, setTitleGenerationInput] = useState('');
+  const [showPremiumPopup, setShowPremiumPopup] = useState(false);
+  const [showCommonMistakes, setShowCommonMistakes] = useState(true);
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState('uspto');
+  const [showPageNumbers, setShowPageNumbers] = useState(true);
+  const [showHelpPanel, setShowHelpPanel] = useState(true);
+  const [addressSuggestions, setAddressSuggestions] = useState({});
+  const [showAddressDropdown, setShowAddressDropdown] = useState({});
+  const [isAddressLoading, setIsAddressLoading] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [abstract, setAbstract] = useState('');
+  const [field, setField] = useState('');
+  const [background, setBackground] = useState('');
+  const [summary, setSummary] = useState('');
+  const [drawings, setDrawings] = useState('');
+  const [detailedDescription, setDetailedDescription] = useState('');
+  const [claims, setClaims] = useState('');
+  const [crossReference, setCrossReference] = useState('');
+  const [federalResearch, setFederalResearch] = useState('');
+  const [inventors, setInventors] = useState([]);
+  const [showInventorPopup, setShowInventorPopup] = useState(false);
+  const [inventorPopupStep, setInventorPopupStep] = useState(1);
+  const [newInventor, setNewInventor] = useState({
+    name: '',
+    address: '',
+    addressCont: '',
+    locality: '',
+    country: '',
+    addressType: '',
+    citizenship: '',
+    multipleCitizenship: false,
+    citizenships: [],
+    residence: '',
+    residenceDifferentFromCitizenship: false
+  });
+  const [citizenshipSearch, setCitizenshipSearch] = useState('');
+  const [hasCrossReference, setHasCrossReference] = useState(null);
+  const [hasFederalSponsorship, setHasFederalSponsorship] = useState(null);
+  const [completedSections, setCompletedSections] = useState({
+    Title: false,
+    'Cross-Reference to Related Applications': false,
+    'Federally Sponsored Research or Development': false,
+    Inventors: false,
+    Abstract: false,
+    Field: false,
+    Background: false,
+    Summary: false,
+    Drawings: false,
+    'Detailed Description': false,
+    Claims: false
+  });
+  const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [imageNames, setImageNames] = useState({});
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
+
+  // Initialize hooks
+  const { id: applicationId } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const addressSearchTimeout = useRef(null);
+
   // Comprehensive list of all countries
   const allCountries = [
     'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
@@ -33,10 +132,7 @@ const PatentAudit = () => {
     'Yemen',
     'Zambia', 'Zimbabwe'
   ];
-  const { id: applicationId } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  
+
   // Helper function to get country code
   const getCountryCode = (citizenship) => {
     const countryCodes = {
@@ -246,17 +342,7 @@ const PatentAudit = () => {
     }
   };
 
-  // Ref for debouncing address search
-  const addressSearchTimeout = useRef(null);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (addressSearchTimeout.current) {
-        clearTimeout(addressSearchTimeout.current);
-      }
-    };
-  }, []);
 
   // Citizenship and Residence Data
   const citizenshipData = {
@@ -884,9 +970,6 @@ const PatentAudit = () => {
       }
     });
   }, [title, abstract, field, background, summary, drawings, detailedDescription, claims, crossReference, federalResearch, inventors]);
-  
-  // 1. Replace currentSection with currentStep (index-based navigation)
-  const [currentStep, setCurrentStep] = useState(0);
 
 
 
@@ -1369,7 +1452,7 @@ const PatentAudit = () => {
             });
           }
           
-          const response = await uploadPatentImage(fileToUpload, user.id, applicationId || 'draft');
+          const response = await patentService.uploadPatentImage(fileToUpload, user.id, applicationId || 'draft');
           return response;
         });
         
@@ -1716,97 +1799,7 @@ const PatentAudit = () => {
     );
   }
 
-  const [title, setTitle] = useState('');
-  const [showTips, setShowTips] = useState(true);
-  
-  // Title generation states
-  const [isGeneratingTitles, setIsGeneratingTitles] = useState(false);
-  const [generatedTitles, setGeneratedTitles] = useState([]);
-  const [showTitleGenerationPopup, setShowTitleGenerationPopup] = useState(false);
-  const [titleGenerationError, setTitleGenerationError] = useState('');
-  const [titleValidation, setTitleValidation] = useState({ isValid: true, issues: [] });
-  const [titleGenerationInput, setTitleGenerationInput] = useState('');
-  
-  // Premium feature popup state
-  const [showPremiumPopup, setShowPremiumPopup] = useState(false);
-  const [showCommonMistakes, setShowCommonMistakes] = useState(true);
-  const [showDocumentPreview, setShowDocumentPreview] = useState(false);
-  const [previewMode, setPreviewMode] = useState('uspto'); // 'uspto' format only
-  const [showPageNumbers, setShowPageNumbers] = useState(true);
-  const [showHelpPanel, setShowHelpPanel] = useState(true);
-  
-  // Address autocomplete states
-  const [addressSuggestions, setAddressSuggestions] = useState({});
-  const [showAddressDropdown, setShowAddressDropdown] = useState({});
-  const [isAddressLoading, setIsAddressLoading] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
 
-  // New state for other sections
-  const [abstract, setAbstract] = useState('');
-  const [field, setField] = useState('');
-  const [background, setBackground] = useState('');
-  const [summary, setSummary] = useState('');
-  const [drawings, setDrawings] = useState('');
-  const [detailedDescription, setDetailedDescription] = useState('');
-  const [claims, setClaims] = useState('');
-
-  // Add state for new optional sections
-  const [crossReference, setCrossReference] = useState('');
-  const [federalResearch, setFederalResearch] = useState('');
-  
-  // Add state for inventors
-  const [inventors, setInventors] = useState([]);
-  
-  // Inventor popup states
-  const [showInventorPopup, setShowInventorPopup] = useState(false);
-  const [inventorPopupStep, setInventorPopupStep] = useState(1); // 1: name, 2: address, 3: citizenship, 4: residence
-  const [newInventor, setNewInventor] = useState({
-    name: '',
-    address: '',
-    addressCont: '',
-    locality: '',
-    country: '',
-    addressType: '', // 'business' or 'home'
-    citizenship: '',
-    multipleCitizenship: false,
-    citizenships: [],
-    residence: '',
-    residenceDifferentFromCitizenship: false
-  });
-  const [citizenshipSearch, setCitizenshipSearch] = useState('');
-
-  // Add state for yes/no questions
-  const [hasCrossReference, setHasCrossReference] = useState(null); // null = not answered, true = yes, false = no
-  const [hasFederalSponsorship, setHasFederalSponsorship] = useState(null); // null = not answered, true = yes, false = no
-
-  // Completion status for each section
-  const [completedSections, setCompletedSections] = useState({
-    Title: false,
-    'Cross-Reference to Related Applications': false,
-    'Federally Sponsored Research or Development': false,
-    Inventors: false,
-    Abstract: false,
-    Field: false,
-    Background: false,
-    Summary: false,
-    Drawings: false,
-    'Detailed Description': false,
-    Claims: false
-  });
-
-  const [images, setImages] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [imageNames, setImageNames] = useState({});
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showImageModal, setShowImageModal] = useState(false);
-
-  // Track sections needing review (persisted)
-  const [sectionsNeedingReview, setSectionsNeedingReview] = useState(new Set());
 
   const sections = [
     'Title',
@@ -1896,7 +1889,7 @@ const PatentAudit = () => {
       setIsLoading(true);
       try {
         console.log('🔍 Attempting to load application with ID:', applicationId);
-        const application = await getPatentApplication(applicationId);
+        const application = await patentService.getPatentApplication(applicationId);
         console.log('🔍 Loaded application data:', application);
         // Populate form fields
         setTitle(application.title || '');
@@ -2141,7 +2134,7 @@ const PatentAudit = () => {
       if (applicationId && applicationId !== 'undefined' && applicationId !== 'null') {
         // Update existing application
         console.log('🔍 Updating existing application with ID:', applicationId);
-        result = await updatePatentApplication(applicationId, applicationData);
+        result = await patentService.updatePatentApplication(applicationId, applicationData);
         console.log('🔍 Update result:', result);
         setSaveMessage('Application updated successfully!');
         // Ensure we're on the correct URL with the application ID
@@ -2153,7 +2146,7 @@ const PatentAudit = () => {
       } else {
         // Save new application
         console.log('🔍 Creating new application (no applicationId found)');
-        result = await savePatentApplication(applicationData);
+        result = await patentService.savePatentApplication(applicationData);
         console.log('🔍 Save result:', result);
         setSaveMessage('Application saved successfully!');
         // Redirect to the saved application
@@ -2895,7 +2888,7 @@ const PatentAudit = () => {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Upload Drawing Images</label>
-                {isSupabaseAvailable() ? (
+                {supabaseClient ? (
                   <>
                     {/* File Selection */}
                     <div className="mb-4">
@@ -2967,7 +2960,7 @@ const PatentAudit = () => {
                               try {
                                 const uploaded = [];
                                 for (const file of selectedFiles) {
-                                  const img = await uploadPatentImage(file, user.id, applicationId || 'new');
+                                  const img = await patentService.uploadPatentImage(file, user.id, applicationId || 'new');
                                   // Add the custom name to the uploaded image
                                   const namedImg = {
                                     ...img,
@@ -4125,7 +4118,7 @@ const PatentAudit = () => {
     setTitleGenerationError('');
 
     try {
-      const result = await generatePatentTitles(titleGenerationInput);
+      const result = await titleGenerationService.generatePatentTitles(titleGenerationInput);
       setGeneratedTitles(result.titles);
     } catch (error) {
       setTitleGenerationError(error.message || 'Failed to generate titles. Please try again.');

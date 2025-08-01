@@ -3,19 +3,23 @@ import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import { clearAllStorage, checkTokenStatus, forceTokenRefresh } from '../utils/debug';
 
-// Get backend URL from environment variable
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+// Lazy initialization to avoid TDZ issues with import.meta.env
+let BACKEND_URL = null;
 
-// Handle cases where VITE_BACKEND_URL already includes /api
-let BACKEND_URL;
-if (backendUrl.includes('/api')) {
-  BACKEND_URL = backendUrl;
-} else {
-  BACKEND_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
-}
-
-console.log('🔍 BACKEND_URL:', BACKEND_URL);
-console.log('🔍 VITE_BACKEND_URL env var:', import.meta.env.VITE_BACKEND_URL);
+const getBackendUrl = () => {
+  if (!BACKEND_URL) {
+    // Get backend URL from environment variable
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+    
+    // Handle cases where VITE_BACKEND_URL already includes /api
+    if (backendUrl.includes('/api')) {
+      BACKEND_URL = backendUrl;
+    } else {
+      BACKEND_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+    }
+  }
+  return BACKEND_URL;
+};
 
 export default function Admin() {
   const { user } = useAuth();
@@ -75,8 +79,8 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      console.log('🔍 Fetching users from:', `${BACKEND_URL}/admin/users`);
-      const response = await fetch(`${BACKEND_URL}/admin/users`);
+      console.log('🔍 Fetching users from:', `${getBackendUrl()}/admin/users`);
+      const response = await fetch(`${getBackendUrl()}/admin/users`);
       console.log('🔍 Response status:', response.status);
       console.log('🔍 Response ok:', response.ok);
       
@@ -107,7 +111,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/reset-password`, {
+      const response = await fetch(`${getBackendUrl()}/admin/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, newPassword })
@@ -139,7 +143,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/toggle-status`, {
+      const response = await fetch(`${getBackendUrl()}/admin/toggle-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, blocked })
@@ -194,7 +198,7 @@ export default function Admin() {
     setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
 
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/delete-user`, {
+      const response = await fetch(`${getBackendUrl()}/admin/delete-user`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -227,7 +231,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/toggle-admin`, {
+      const response = await fetch(`${getBackendUrl()}/admin/toggle-admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, isAdmin: makeAdmin })
@@ -280,7 +284,7 @@ export default function Admin() {
     );
     
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/verify-user`, {
+      const response = await fetch(`${getBackendUrl()}/admin/verify-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -316,7 +320,7 @@ export default function Admin() {
 
   const sendPasswordReset = async (email) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/request-reset`, {
+      const response = await fetch(`${getBackendUrl()}/auth/request-reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -356,7 +360,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/create-user`, {
+      const response = await fetch(`${getBackendUrl()}/admin/create-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createUserForm)
@@ -408,7 +412,7 @@ export default function Admin() {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/create-super-user`, {
+      const response = await fetch(`${getBackendUrl()}/admin/create-super-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -445,7 +449,7 @@ export default function Admin() {
   const handleTestUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/test-users`);
+      const response = await fetch(`${getBackendUrl()}/test-users`);
       const data = await response.json();
       setTestUsersResult(data);
     } catch (error) {
@@ -459,7 +463,7 @@ export default function Admin() {
   const handleMigrateUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/migrate-users`, {
+      const response = await fetch(`${getBackendUrl()}/migrate-users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -484,7 +488,7 @@ export default function Admin() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
-      const response = await fetch(`${BACKEND_URL}/admin/request-reset-for-user`, {
+      const response = await fetch(`${getBackendUrl()}/admin/request-reset-for-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email }),

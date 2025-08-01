@@ -132,7 +132,7 @@ export const getPatentApplications = async () => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.get(`${API_BASE_URL}/patent-applications`, {
+    const response = await axios.get(`${getApiBaseUrl()}/patent-applications`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -154,7 +154,7 @@ export const getPatentApplication = async (applicationId) => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.get(`${API_BASE_URL}/patent-applications/${applicationId}`, {
+    const response = await axios.get(`${getApiBaseUrl()}/patent-applications/${applicationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -175,7 +175,7 @@ export const deletePatentApplication = async (applicationId) => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.delete(`${API_BASE_URL}/patent-applications/${applicationId}`, {
+    const response = await axios.delete(`${getApiBaseUrl()}/patent-applications/${applicationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

@@ -32,9 +32,13 @@ class PatentSearchService {
       return this.usptoApiKey;
     }
     
-    // Try to get from Vite environment variable (prefixed with VITE_)
-    if (import.meta.env && import.meta.env.VITE_USPTO_API_KEY) {
-      return import.meta.env.VITE_USPTO_API_KEY;
+    // Try to get from Vite environment variable (prefixed with VITE_) - lazy access
+    try {
+      if (import.meta.env && import.meta.env.VITE_USPTO_API_KEY) {
+        return import.meta.env.VITE_USPTO_API_KEY;
+      }
+    } catch (error) {
+      console.warn('Error accessing USPTO API key from environment:', error);
     }
     
     // Try to get from localStorage (if user has entered it)

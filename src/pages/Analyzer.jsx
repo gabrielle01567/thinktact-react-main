@@ -122,7 +122,7 @@ const Analyzer = () => {
       firstFewWords: argumentText.substring(0, 50)
     });
 
-    // Get API Key from environment variable
+    // Get API Key from environment variable (lazy access to avoid TDZ)
     const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
 
     if (!apiKey) {
