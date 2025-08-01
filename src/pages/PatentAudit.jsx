@@ -37,84 +37,7 @@ const PatentAudit = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Address autocomplete functions
-  const searchAddress = async (query, inventorIndex) => {
-    if (!query || query.length < 3) {
-      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
-      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: false }));
-      return;
-    }
-
-    setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: true }));
-    setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
-
-    try {
-      // Use OpenStreetMap Nominatim API for address search (free and no API key required)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=${getCountryCode(inventors[inventorIndex]?.citizenship)}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Address search failed');
-      }
-
-      const data = await response.json();
-      
-      // Format the suggestions
-      const suggestions = data.map(item => ({
-        id: item.place_id,
-        display: formatAddress(item),
-        full: item.display_name,
-        lat: item.lat,
-        lon: item.lon,
-        address: item.address
-      }));
-
-      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: suggestions }));
-    } catch (error) {
-      console.error('Address search error:', error);
-      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
-      
-      // Show error message to user
-      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
-    } finally {
-      setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: false }));
-    }
-  };
-
-  const formatAddress = (item) => {
-    const address = item.address;
-    let formatted = '';
-    
-    if (address.house_number && address.road) {
-      formatted += `${address.house_number} ${address.road}`;
-    } else if (address.road) {
-      formatted += address.road;
-    }
-    
-    if (address.city || address.town || address.village) {
-      if (formatted) formatted += ', ';
-      formatted += address.city || address.town || address.village;
-    }
-    
-    if (address.state) {
-      if (formatted) formatted += ', ';
-      formatted += address.state;
-    }
-    
-    if (address.postcode) {
-      if (formatted) formatted += ' ';
-      formatted += address.postcode;
-    }
-    
-    if (address.country) {
-      if (formatted) formatted += ', ';
-      formatted += address.country;
-    }
-    
-    return formatted || item.display_name;
-  };
-
+  // Helper function to get country code
   const getCountryCode = (citizenship) => {
     const countryCodes = {
       'United States': 'us',
@@ -197,6 +120,84 @@ const PatentAudit = () => {
     };
     
     return countryCodes[citizenship] || '';
+  };
+  
+  // Address autocomplete functions
+  const searchAddress = async (query, inventorIndex) => {
+    if (!query || query.length < 3) {
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
+      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: false }));
+      return;
+    }
+
+    setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: true }));
+    setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
+
+    try {
+      // Use OpenStreetMap Nominatim API for address search (free and no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=${getCountryCode(inventors[inventorIndex]?.citizenship)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Address search failed');
+      }
+
+      const data = await response.json();
+      
+      // Format the suggestions
+      const suggestions = data.map(item => ({
+        id: item.place_id,
+        display: formatAddress(item),
+        full: item.display_name,
+        lat: item.lat,
+        lon: item.lon,
+        address: item.address
+      }));
+
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: suggestions }));
+    } catch (error) {
+      console.error('Address search error:', error);
+      setAddressSuggestions(prev => ({ ...prev, [inventorIndex]: [] }));
+      
+      // Show error message to user
+      setShowAddressDropdown(prev => ({ ...prev, [inventorIndex]: true }));
+    } finally {
+      setIsAddressLoading(prev => ({ ...prev, [inventorIndex]: false }));
+    }
+  };
+
+  const formatAddress = (item) => {
+    const address = item.address;
+    let formatted = '';
+    
+    if (address.house_number && address.road) {
+      formatted += `${address.house_number} ${address.road}`;
+    } else if (address.road) {
+      formatted += address.road;
+    }
+    
+    if (address.city || address.town || address.village) {
+      if (formatted) formatted += ', ';
+      formatted += address.city || address.town || address.village;
+    }
+    
+    if (address.state) {
+      if (formatted) formatted += ', ';
+      formatted += address.state;
+    }
+    
+    if (address.postcode) {
+      if (formatted) formatted += ' ';
+      formatted += address.postcode;
+    }
+    
+    if (address.country) {
+      if (formatted) formatted += ', ';
+      formatted += address.country;
+    }
+    
+    return formatted || item.display_name;
   };
 
   const selectAddress = (inventorIndex, suggestion) => {
