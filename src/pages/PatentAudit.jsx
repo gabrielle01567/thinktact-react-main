@@ -851,7 +851,12 @@ const PatentAudit = () => {
 
   // Helper function to get residences for a citizenship
   const getResidencesForCitizenship = (citizenship) => {
-    return citizenshipData[citizenship]?.residences || [];
+    try {
+      return citizenshipData?.[citizenship]?.residences || [];
+    } catch (error) {
+      console.error('Error accessing citizenshipData:', error);
+      return [];
+    }
   };
   
   // Debug logging for applicationId
