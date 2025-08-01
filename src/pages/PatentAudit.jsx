@@ -848,7 +848,7 @@ const PatentAudit = () => {
       residences: ['Other']
     }
   };
-  
+
   // Helper function to get residences for a citizenship
   const getResidencesForCitizenship = (citizenship) => {
     return citizenshipData[citizenship]?.residences || [];
