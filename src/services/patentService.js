@@ -1,16 +1,23 @@
 import axios from 'axios';
 import { supabase, isSupabaseAvailable } from './supabaseClient';
 
-// Use the deployed backend URL
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+// Lazy initialization to avoid TDZ issues with import.meta.env
+let API_BASE_URL = null;
 
-// Handle cases where VITE_BACKEND_URL already includes /api
-let API_BASE_URL;
-if (backendUrl.includes('/api')) {
-  API_BASE_URL = backendUrl;
-} else {
-  API_BASE_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
-}
+const getApiBaseUrl = () => {
+  if (!API_BASE_URL) {
+    // Use the deployed backend URL
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://backendv2-ruddy.vercel.app';
+    
+    // Handle cases where VITE_BACKEND_URL already includes /api
+    if (backendUrl.includes('/api')) {
+      API_BASE_URL = backendUrl;
+    } else {
+      API_BASE_URL = backendUrl.endsWith('/') ? backendUrl + 'api' : backendUrl + '/api';
+    }
+  }
+  return API_BASE_URL;
+};
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -27,7 +34,7 @@ export const getApplicationCount = async () => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.get(`${API_BASE_URL}/patent-applications/count`, {
+    const response = await axios.get(`${getApiBaseUrl()}/patent-applications/count`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -46,7 +53,7 @@ export const savePatentApplication = async (applicationData) => {
     const token = getAuthToken();
     console.log('🔍 PatentService: Attempting to save application');
     console.log('🔍 PatentService: Token exists:', !!token);
-    console.log('🔍 PatentService: API URL:', `${API_BASE_URL}/patent-applications/save`);
+    console.log('🔍 PatentService: API URL:', `${getApiBaseUrl()}/patent-applications/save`);
     console.log('🔍 PatentService: Application data:', {
       title: applicationData.title,
       status: applicationData.status,
@@ -57,7 +64,7 @@ export const savePatentApplication = async (applicationData) => {
       throw new Error('No authentication token found');
     }
 
-    const response = await axios.post(`${API_BASE_URL}/patent-applications/save`, applicationData, {
+    const response = await axios.post(`${getApiBaseUrl()}/patent-applications/save`, applicationData, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -88,7 +95,7 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
 
     console.log('🔍 PatentService: Updating application', {
       applicationId,
-      url: `${API_BASE_URL}/patent-applications/${applicationId}`,
+      url: `${getApiBaseUrl()}/patent-applications/${applicationId}`,
       data: {
         title: applicationData.title,
         status: applicationData.status,
@@ -96,7 +103,7 @@ export const updatePatentApplication = async (applicationId, applicationData) =>
       }
     });
 
-    const response = await axios.put(`${API_BASE_URL}/patent-applications/${applicationId}`, applicationData, {
+    const response = await axios.put(`${getApiBaseUrl()}/patent-applications/${applicationId}`, applicationData, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
