@@ -7,24 +7,6 @@ let patentService = null;
 let supabaseClient = null;
 let titleGenerationService = null;
 
-try {
-  patentService = await import('../services/patentService.js');
-} catch (error) {
-  console.warn('Patent service import failed:', error);
-}
-
-try {
-  supabaseClient = await import('../services/supabaseClient.js');
-} catch (error) {
-  console.warn('Supabase client import failed:', error);
-}
-
-try {
-  titleGenerationService = await import('../services/titleGenerationService.js');
-} catch (error) {
-  console.warn('Title generation service import failed:', error);
-}
-
 const PatentAudit = () => {
   // Initialize state variables first to avoid hoisting issues
   const [currentStep, setCurrentStep] = useState(0);
@@ -104,6 +86,31 @@ const PatentAudit = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const addressSearchTimeout = useRef(null);
+
+  // Initialize services on component mount
+  useEffect(() => {
+    const initializeServices = async () => {
+      try {
+        patentService = await import('../services/patentService.js');
+      } catch (error) {
+        console.warn('Patent service import failed:', error);
+      }
+
+      try {
+        supabaseClient = await import('../services/supabaseClient.js');
+      } catch (error) {
+        console.warn('Supabase client import failed:', error);
+      }
+
+      try {
+        titleGenerationService = await import('../services/titleGenerationService.js');
+      } catch (error) {
+        console.warn('Title generation service import failed:', error);
+      }
+    };
+
+    initializeServices();
+  }, []);
 
   // Comprehensive list of all countries
   const allCountries = [
@@ -3170,196 +3177,10 @@ const PatentAudit = () => {
         return renderIntroductionSection();
 
       case 'Inventors':
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventors{renderRequiredIndicator()}</h2>
-            <p className="text-gray-600 mb-6">List all inventors who contributed to the conception of the invention. Each inventor must have made a significant contribution to the inventive concept.</p>
-            
-            <div className="space-y-6">
-              {inventors.map((inventor, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">Inventor {index + 1}</h3>
-                    {inventors.length > 1 && (
-                      <button
-                        onClick={() => {
-                          const newInventors = inventors.filter((_, i) => i !== index);
-                          setInventors(newInventors);
-                        }}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                      <input
-                        type="text"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., John Smith"
-                        value={inventor.name}
-                        onChange={(e) => {
-                          const newInventors = [...inventors];
-                          newInventors[index].name = e.target.value;
-                          setInventors(newInventors);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                      <input
-                        type="text"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., 123 Main St, City, State, ZIP"
-                        value={inventor.address}
-                        onChange={(e) => {
-                          const newInventors = [...inventors];
-                          newInventors[index].address = e.target.value;
-                          setInventors(newInventors);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Citizenship</label>
-                      <input
-                        type="text"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., United States"
-                        value={inventor.citizenship}
-                        onChange={(e) => {
-                          const newInventors = [...inventors];
-                          newInventors[index].citizenship = e.target.value;
-                          setInventors(newInventors);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Residence</label>
-                      <input
-                        type="text"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., California"
-                        value={inventor.residence}
-                        onChange={(e) => {
-                          const newInventors = [...inventors];
-                          newInventors[index].residence = e.target.value;
-                          setInventors(newInventors);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button
-                onClick={() => setInventors([...inventors, { name: '', address: '', citizenship: '', residence: '' }])}
-                className="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors"
-              >
-                + Add Another Inventor
-              </button>
-
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Inventor Requirements</h4>
-                <ul className="space-y-2 text-sm text-blue-800">
-                  <li>• Each inventor must have contributed to the conception of the invention</li>
-                  <li>• Include all inventors who made significant contributions</li>
-                  <li>• Provide complete and accurate information for each inventor</li>
-                  <li>• All inventors must sign the application</li>
-                </ul>
-              </div>
-
-              {/* Completion Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setCompletedSections(prev => ({ ...prev, Inventors: !prev.Inventors }))}
-                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                    completedSections.Inventors
-                      ? 'text-white bg-green-600 hover:bg-green-700'
-                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                  }`}
-                >
-                  {completedSections.Inventors ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
+        return renderInventorsSection();
 
       case 'Abstract':
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Abstract of the Invention</h2>
-            <p className="text-gray-600 mb-6">Provide a concise overview of your invention and its key advantages.</p>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
-                <textarea
-                  rows={6}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={abstract}
-                  onChange={(e) => setAbstract(e.target.value)}
-                  placeholder="Provide a clear, concise summary of your invention, including its key features and advantages..."
-                />
-              </div>
-
-              <div className="bg-green-50 rounded-lg p-4">
-                <h4 className="font-medium text-green-900 mb-2">Abstract Best Practices</h4>
-                <ul className="space-y-2 text-sm text-green-800">
-                  <li>• Keep it concise but comprehensive</li>
-                  <li>• Highlight key technical features</li>
-                  <li>• Mention advantages over prior art</li>
-                  <li>• Avoid overly technical jargon</li>
-                </ul>
-              </div>
-
-              {/* Completion Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setCompletedSections(prev => ({ ...prev, Abstract: !prev.Abstract }))}
-                  className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ${
-                    completedSections.Abstract
-                      ? 'text-white bg-green-600 hover:bg-green-700'
-                      : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                  }`}
-                >
-                  {completedSections.Abstract ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
+        return renderAbstractSection();
 
       case 'Field':
         return (
