@@ -277,4 +277,23 @@ class AuthService {
   }
 }
 
-export const authService = new AuthService(); 
+// Lazy instantiation to avoid TDZ issues with import.meta.env
+let authServiceInstance = null;
+
+export const authService = {
+  get instance() {
+    if (!authServiceInstance) {
+      authServiceInstance = new AuthService();
+    }
+    return authServiceInstance;
+  }
+};
+
+// Proxy all method calls to the instance
+Object.getOwnPropertyNames(AuthService.prototype).forEach(method => {
+  if (method !== 'constructor') {
+    authService[method] = function(...args) {
+      return this.instance[method](...args);
+    };
+  }
+}); 
