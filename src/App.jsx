@@ -30,11 +30,14 @@ import PatentAnalysis from './components/PatentAnalysis';
 import PatentCitations from './components/PatentCitations';
 import ApiKeyConfig from './components/ApiKeyConfig';
 import { PatentApplicationWizard } from './pages/PatentAudit';
+import ErrorBoundary, { PatentAuditErrorBoundary, ProductionDebugger } from './components/ErrorBoundary';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ErrorBoundary>
+      <ProductionDebugger />
+      <AuthProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -50,8 +53,16 @@ function App() {
             <Route path="patent-buddy/analysis" element={<PatentAnalysis />} />
             <Route path="patent-buddy/citations" element={<PatentCitations />} />
             <Route path="patent-buddy/api-config" element={<ApiKeyConfig />} />
-            <Route path="patent-buddy/wizard" element={<PatentApplicationWizard />} />
-            <Route path="patent-buddy/wizard/:id" element={<PatentApplicationWizard />} />
+            <Route path="patent-buddy/wizard" element={
+              <PatentAuditErrorBoundary>
+                <PatentApplicationWizard />
+              </PatentAuditErrorBoundary>
+            } />
+            <Route path="patent-buddy/wizard/:id" element={
+              <PatentAuditErrorBoundary>
+                <PatentApplicationWizard />
+              </PatentAuditErrorBoundary>
+            } />
             <Route path="*" element={<ErrorPage />} />
           </Route>
           
@@ -96,6 +107,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

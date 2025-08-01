@@ -1868,11 +1868,6 @@ const PatentAudit = () => {
     return sectionsNeedingReview.has(stepKey);
   };
 
-  // Mark section for review
-  const markForReview = (stepKey) => {
-    setSectionsNeedingReview(prev => new Set([...prev, stepKey]));
-  };
-
   // Clear review mark when section is completed
   const clearReviewMark = (stepKey) => {
     setSectionsNeedingReview(prev => {
