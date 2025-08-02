@@ -1,0 +1,5 @@
+[33mdb1bc86[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add automatic navigation for 'No' selections in PatentAudit wizard - Auto-advance to next step when user selects 'No' for cross-reference or federally sponsored sections
+[33me9f1b65[m Fix PatentAudit build errors - resolve top-level await and duplicate case clauses
+[33med35142[m Fix PatentAudit circular dependency and variable hoisting issues
+[33mf6178ed[m Fix all TDZ issues - Lazy initialization for import.meta.env
+[33m3d90ac8[m Fix TDZ issue in AuthService - Use lazy instantiation

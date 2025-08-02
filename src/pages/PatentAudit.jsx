@@ -1000,13 +1000,16 @@ const PatentAudit = () => {
     
     return steps;
   };
+
+  // Memoize the steps to avoid recreating the array on every render
+  const wizardSteps = React.useMemo(() => getWizardSteps(), []);
   
 
 
   // 4. Render only the current step
   const renderCurrentStep = () => {
     try {
-      const currentStepData = getWizardSteps()[currentStep];
+      const currentStepData = wizardSteps[currentStep];
       
       if (!currentStepData) {
         console.log('🔍 No current step data found for step:', currentStep);
@@ -1025,7 +1028,7 @@ const PatentAudit = () => {
 
   // 5. Validation function for required fields
   const validateCurrentStep = () => {
-    const currentStepData = getWizardSteps()[currentStep];
+    const currentStepData = wizardSteps[currentStep];
     
     switch (currentStepData.key) {
       case 'Introduction':
@@ -1059,17 +1062,17 @@ const PatentAudit = () => {
 
   // 6. Next/Back button logic with validation
   const goToNextStep = () => {
-    if (currentStep < getWizardSteps().length - 1) {
+    if (currentStep < wizardSteps.length - 1) {
       // Check if current step has required fields that are incomplete
       if (!validateCurrentStep()) {
         // Mark current step as needing review
-        markForReview(getWizardSteps()[currentStep].key);
+        markForReview(wizardSteps[currentStep].key);
         // Show a brief message to the user
         setSaveMessage('⚠️ This section has required fields that need to be completed. It has been marked for review.');
         setTimeout(() => setSaveMessage(''), 3000); // Clear message after 3 seconds
       } else {
         // Clear review mark if step is now complete
-        clearReviewMark(getWizardSteps()[currentStep].key);
+        clearReviewMark(wizardSteps[currentStep].key);
       }
       setCurrentStep(currentStep + 1);
     }
@@ -1081,7 +1084,7 @@ const PatentAudit = () => {
   // 6. Progress indicator
   const renderProgress = () => (
     <div className="w-full flex justify-center items-center mb-6">
-      <span className="text-gray-700 font-medium">Step {currentStep + 1} of {getWizardSteps().length}</span>
+      <span className="text-gray-700 font-medium">Step {currentStep + 1} of {wizardSteps.length}</span>
     </div>
   );
 
@@ -1874,6 +1877,15 @@ const PatentAudit = () => {
     return sectionsNeedingReview.has(stepKey);
   };
 
+  // Mark step for review when validation fails
+  const markForReview = (stepKey) => {
+    setSectionsNeedingReview(prev => {
+      const newSet = new Set(prev);
+      newSet.add(stepKey);
+      return newSet;
+    });
+  };
+
   // Clear review mark when section is completed
   const clearReviewMark = (stepKey) => {
     setSectionsNeedingReview(prev => {
@@ -2397,7 +2409,7 @@ const PatentAudit = () => {
                         setCompletedSections(prev => ({ ...prev, 'CrossReference': true }));
                         // Automatically advance to next step
                         setTimeout(() => {
-                          if (currentStep < getWizardSteps().length - 1) {
+                          if (currentStep < wizardSteps.length - 1) {
                             setCurrentStep(currentStep + 1);
                           }
                         }, 500);
@@ -2509,7 +2521,7 @@ const PatentAudit = () => {
                         setCompletedSections(prev => ({ ...prev, 'FederalResearch': true }));
                         // Automatically advance to next step
                         setTimeout(() => {
-                          if (currentStep < getWizardSteps().length - 1) {
+                          if (currentStep < wizardSteps.length - 1) {
                             setCurrentStep(currentStep + 1);
                           }
                         }, 500);
@@ -4266,7 +4278,7 @@ const PatentAudit = () => {
   // Update the main return to include sidebar
   try {
     // Ensure currentStep is within bounds
-    const steps = getWizardSteps();
+    const steps = wizardSteps;
     const safeCurrentStep = Math.min(Math.max(0, currentStep), steps.length - 1);
     
     return (
