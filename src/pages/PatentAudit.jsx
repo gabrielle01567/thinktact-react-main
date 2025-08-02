@@ -2395,6 +2395,12 @@ const PatentAudit = () => {
                         setHasCrossReference(false);
                         setCrossReference('None');
                         setCompletedSections(prev => ({ ...prev, 'CrossReference': true }));
+                        // Automatically advance to next step
+                        setTimeout(() => {
+                          if (currentStep < getWizardSteps().length - 1) {
+                            setCurrentStep(currentStep + 1);
+                          }
+                        }, 500);
                       }}
                       className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
                     >
@@ -2501,6 +2507,12 @@ const PatentAudit = () => {
                         setHasFederalSponsorship(false);
                         setFederalResearch('None');
                         setCompletedSections(prev => ({ ...prev, 'FederalResearch': true }));
+                        // Automatically advance to next step
+                        setTimeout(() => {
+                          if (currentStep < getWizardSteps().length - 1) {
+                            setCurrentStep(currentStep + 1);
+                          }
+                        }, 500);
                       }}
                       className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-medium"
                     >
